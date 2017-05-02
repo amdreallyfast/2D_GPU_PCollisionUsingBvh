@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{612CB533-6A7D-4936-B6E9-9646D44C868D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>2D_GPU_PCollisionWithZOrderCurveRadixSorting
+    <RootNamespace>2D_GPU_PCollisionWithGeometry
     </RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -89,7 +89,7 @@
       <WarningLevel>Level4</WarningLevel>
       <Optimization>Disabled</Optimization>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <AdditionalIncludeDirectories>$(SolutionDir);G:\Users\amdre\OneDrive\Documents\GitHub\2D_GPU_PCollisionWithZOrderCurveRadixSorting\ThirdParty\freetype-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir);$(SolutionDir)\ThirdParty\freetype-2.6.1\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
