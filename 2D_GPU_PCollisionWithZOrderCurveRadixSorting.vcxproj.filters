@@ -1,0 +1,269 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Shaders\ShaderStorage.cpp">
+      <Filter>Shaders</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\OpenGlErrorHandling.cpp">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RenderFrameRate\FreeTypeAtlas.cpp">
+      <Filter>Source\RenderFrameRate</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RenderFrameRate\FreeTypeEncapsulated.cpp">
+      <Filter>Source\RenderFrameRate</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp">
+      <Filter>Source\RenderFrameRate</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParticleCollide.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParticleReset.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParticleUpdate.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\RenderParticles.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Particles\ParticleEmitterPoint.cpp">
+      <Filter>Source\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Particles\ParticleEmitterBar.cpp">
+      <Filter>Source\Particles</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\IntermediateDataSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\PrefixSumSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\SsboBase.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\CountNearbyParticles.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp">
+      <Filter>Source\Buffers</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Shaders\ShaderStorage.h">
+      <Filter>Shaders</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\OpenGlErrorHandling.h">
+      <Filter>Include</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderFrameRate\FreeTypeAtlas.h">
+      <Filter>Include\RenderFrameRate</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderFrameRate\Stopwatch.h">
+      <Filter>Include\RenderFrameRate</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h">
+      <Filter>Include\RenderFrameRate</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParallelSort.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParticleCollide.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParticleReset.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParticleUpdate.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\RenderParticles.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Particles\ParticleEmitterPoint.h">
+      <Filter>Include\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Particles\IParticleEmitter.h">
+      <Filter>Include\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Particles\Particle.h">
+      <Filter>Include\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Particles\ParticleEmitterBar.h">
+      <Filter>Include\Particles</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\IntermediateData.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\IntermediateDataSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\CountNearbyParticles.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Shaders">
+      <UniqueIdentifier>{888165dd-9b93-4108-b23e-0c57b4ac9561}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include">
+      <UniqueIdentifier>{244c599d-7f54-47ff-aba8-e930e46165c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{edb898f2-6571-4166-865e-689d93ec7233}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\RenderFrameRate">
+      <UniqueIdentifier>{948f0825-f7bd-4e99-9ff8-44ea962a9fe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\RenderFrameRate">
+      <UniqueIdentifier>{876335fb-702c-4383-b253-b2d2d534542d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ComputeHeaders">
+      <UniqueIdentifier>{4a9181d3-a159-42fa-8a8f-939c4cebf171}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ParallelSort">
+      <UniqueIdentifier>{4092c9e6-ca98-4729-9404-0e9fde5d45c5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\ShaderControllers">
+      <UniqueIdentifier>{bc6dc51e-3dad-4527-898b-7fe365093c28}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\ShaderControllers">
+      <UniqueIdentifier>{a73809c4-b73c-469b-9701-2aeed3a14341}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Particles">
+      <UniqueIdentifier>{d357cb74-d829-434b-821c-4223fcc76f76}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ParticleReset">
+      <UniqueIdentifier>{ce113326-66ad-4566-a7bf-ddcbaaa9cd79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Particles">
+      <UniqueIdentifier>{66bbd978-c998-4177-bcb5-0a213a4c3b54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Buffers">
+      <UniqueIdentifier>{c2f70ea0-9cfc-4275-9332-efa4059d446f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Buffers\SSBOs">
+      <UniqueIdentifier>{a861b27d-1f08-4a46-8e60-34c4cd4f119b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Buffers">
+      <UniqueIdentifier>{10d689cb-a3de-4060-a112-cde5c25ebc09}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source\Buffers\SSBOs">
+      <UniqueIdentifier>{97485e9a-3d07-412a-b71e-506f09045e38}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Shaders\FreeType.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\FreeType.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ComputeHeaders\SsboBufferBindings.comp">
+      <Filter>Shaders\ComputeHeaders</Filter>
+    </None>
+    <None Include="Shaders\ComputeHeaders\Version.comp">
+      <Filter>Shaders\ComputeHeaders</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\ParallelPrefixScan.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\PrefixScanBuffer.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\IntermediateSortBuffers.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\SortIntermediateData.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\GetBitForPrefixScan.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\SortParticleData.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParallelSort\ParticleDataToIntermediateData.comp">
+      <Filter>Shaders\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\ParticleBuffer.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleUpdate.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ComputeHeaders\ComputeShaderWorkGroupSizes.comp">
+      <Filter>Shaders\ComputeHeaders</Filter>
+    </None>
+    <None Include="Shaders\ComputeHeaders\CrossShaderUniformLocations.comp">
+      <Filter>Shaders\ComputeHeaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleReset\ParticleResetBarEmitter.comp">
+      <Filter>Shaders\ParticleReset</Filter>
+    </None>
+    <None Include="Shaders\ParticleReset\ParticleResetPointEmitter.comp">
+      <Filter>Shaders\ParticleReset</Filter>
+    </None>
+    <None Include="Shaders\ParticleReset\QuickNormalize.comp">
+      <Filter>Shaders\ParticleReset</Filter>
+    </None>
+    <None Include="Shaders\ParticleReset\Random.comp">
+      <Filter>Shaders\ParticleReset</Filter>
+    </None>
+    <None Include="Shaders\PositionToMortonCode.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleRender.vert">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleRender.frag">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleCollisions.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\CountNearbyParticles.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\CountNearbyParticlesLimits.comp">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\ParticleRegionBoundaries.comp">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Shaders\ParticleReset\ReadMe.txt">
+      <Filter>Shaders\ParticleReset</Filter>
+    </Text>
+    <Text Include="Shaders\ParallelSort\ReadMe.txt">
+      <Filter>Shaders\ParallelSort</Filter>
+    </Text>
+  </ItemGroup>
+</Project>

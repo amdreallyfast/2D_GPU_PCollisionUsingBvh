@@ -1,0 +1,75 @@
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// - PARALLEL_SORT_WORK_GROUP_SIZE_X
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES PositionToMortonCode.comp
+// REQUIRES CountNearbyParticlesLimits.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Counts up to NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE on either side of the particle's index.  
+    These are already sorted according to their Morton Codes, so they should be the 10 nearest 
+    particles (??is that right??).  Count however many of them are within a "nearby radius" 
+    (currently a hard-coded multiple of the particle's collision radius).
+Parameters: None
+Returns:    None
+Creator:    John Cox, 4/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    uint index = gl_GlobalInvocationID.x;
+    if (index >= uParticleBufferSize)
+    {
+        return;
+    }
+    
+    // the radius of nearby particles that could pose an imminent collision 
+    vec4 particlePos = AllParticles[index]._pos;
+    float nearbyRadius = AllParticles[index]._collisionRadius * 1.0f;    //??*3??
+
+    vec4 upperCorner = particlePos + vec4(nearbyRadius, nearbyRadius, 0.0f, 0.0f);
+    vec4 lowerCorner = particlePos - vec4(nearbyRadius, nearbyRadius, 0.0f, 0.0f);
+    
+    uint upperBoundMortonCode = PositionToMortonCode(upperCorner);
+    uint lowerBoundMortonCode = PositionToMortonCode(lowerCorner);
+    
+    // Ex: There are 50,000 particles and index is 49,996.  Next offsets are 49997, 49998, and 
+    // 49999.  That's 3 total (50000 - 49996 - 1), but remember that loop end conditions are 
+    // typically <, not <=, so if the particle is too close to the end of the buffer, use 
+    // buffer size - index (50000 - 49996 = 4).  The loop end condition will prevent index 
+    // overrun.
+    uint maxOffsetIndex = 
+        (index + NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE < uParticleBufferSize) 
+        ? NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE 
+        : (uParticleBufferSize - index);
+
+    // Ex: Index is 4.  Previous offsets are 3, 2, 1, and 0.  That's 4 total, so if the particle 
+    // is too close to 0, just use the index.
+    uint minOffsetIndex = 
+        (index - NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE > 0) 
+        ? NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE 
+        : (index);
+
+    uint begin = index - minOffsetIndex;
+    uint end = index + maxOffsetIndex;
+    uint nearbyParticles = 0;
+    for (uint otherIndex = begin; otherIndex < end; otherIndex++)
+    {
+        Particle pCopy = AllParticles[otherIndex];
+        if (pCopy._isActive == 1 && 
+            pCopy._mortonCode < upperBoundMortonCode &&
+            pCopy._mortonCode > lowerBoundMortonCode)
+        {
+            nearbyParticles++;
+        }
+    }
+
+    // write the result back to global memory
+    AllParticles[index]._numberOfNearbyParticles = nearbyParticles;
+}
+

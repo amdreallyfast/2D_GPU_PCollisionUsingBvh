@@ -1,0 +1,112 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// - PARALLEL_SORT_WORK_GROUP_SIZE_X
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+// collision detection in the current demo (4-15-2017) runs twice:
+// (1) Each thread checks two particles: i against i + 1.
+// (2) Each thread checks two particles: i + 1 against i + 2.
+// Note: Why?  Suppose there are several particles in an array: [0, 1, 2, 3, 4, 5, 6].
+// On the first pass, 0 checks against 1, 2 against 3, and 4 against 5, but 6+1 is out of 
+// bounds, so it doesn't check.  Also, 1 against 2 and 3 against 4 and 5 against 6 have not 
+// been checked.  So run the collision again.  On the second pass, 1 checks against 2, 3 
+// checks aginst 4, and 5 checks against 6.  Elastic collisions are expected to be between 
+// only two particles at most every frame.  So if two particles collide on the first pass, 
+// if there is another that is very close by on that same frame, ignore it.  The particles 
+// should be so small that no three particles should collide anyway.  
+// Also Note: If they do, decrease the radius of influence.
+uniform uint uIndexOffsetBy0Or1;
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    If the distance between the two particles is close enough, then an elastic collision is 
+    calculated.  
+
+    Note: For an elastic collision between two particles of equal mass, the velocities of the 
+    two will be exchanged.  I could use this simplified idea for this demo, but I want to 
+    eventually have the option of different masses of particles, so I will use the general 
+    case elastic collision calculations (bottom of page at link).
+    http://hyperphysics.phy-astr.gsu.edu/hbase/colsta.html
+
+    For elastic collisions between two different masses (ignoring rotation because these 
+    particles are points), use the calculations from this article (I followed them on paper too 
+    and it seems legit)
+    http://www.gamasutra.com/view/feature/3015/pool_hall_lessons_fast_accurate_.php?page=3
+Parameters: None
+Returns:    None
+Creator:    John Cox, 4/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    // Note: Collisions should happen between two particles simultaneously.  It is possible to 
+    // do collisions like I did in the "render_particles_2D_GPU_p_on_p_collisions" project, in 
+    // which each particle checked for collisions between itself and others and then only 
+    // altered itself, but I want to do collisions better this time, which mean making particles 
+    // collide in pairs.  In turn, that means that the ParticleCollisions shader controller will 
+    // launch this compute shader with half as many threads as there are particles.  Multiply 
+    // the thread's global index by 2 to get the first of the Particle pairs.
+    uint index = (gl_GlobalInvocationID.x * 2) + uIndexOffsetBy0Or1;
+    uint rightNeighborIndex = index + 1;
+    
+    if (index >= uParticleBufferSize || rightNeighborIndex >= uParticleBufferSize)
+    {
+        return;
+    }
+
+    // local copies will be easier (and faster because it is shared memory instead of global?) 
+    // to work with
+    Particle p1 = AllParticles[index];
+    Particle p2 = AllParticles[rightNeighborIndex];
+
+    if (p1._isActive == 0 || p2._isActive == 0)
+    {
+        return;
+    }
+
+    if (p1._hasCollidedAlreadyThisFrame != 0 || p2._hasCollidedAlreadyThisFrame != 0)
+    {
+        // already collided this frame
+        return;
+    }
+
+    float minDistForCollision = p1._collisionRadius + p2._collisionRadius;
+    float minDistForCollisionSqr = minDistForCollision * minDistForCollision;
+
+    // partial pythagorean theorem so that I don't have to take the square root
+    // Note: Only pluck out the positional information for these calculations.  Ignore the W 
+    // component of the position.  It should end up as 0 after the subtraction, but force it to 
+    // 0 just in case.
+    vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
+    float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+
+    if (distP1ToP2Sqr > minDistForCollisionSqr)
+    {
+        // no collision
+        return;
+    }
+    // have collision
+
+
+    // Note: I don't have an intuitive understanding of these calculations, but they work.  If I 
+    // understood it better, then I could write better comments and variable names, but I don't, 
+    // so I'm keeping it the way that I found it in the gamasutra article, or at least as much 
+    // as I can given that it is math and pseudocode.
+    vec4 normalizedLineOfContact = inversesqrt(distP1ToP2Sqr) * p1ToP2;
+    float a1 = dot(p1._vel, p1ToP2);
+    float a2 = dot(p2._vel, p1ToP2);
+    float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
+    vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
+    vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
+
+    // write results back to global memory
+    AllParticles[index]._vel = p1VelocityPrime;
+    AllParticles[index]._hasCollidedAlreadyThisFrame = 1;
+    AllParticles[rightNeighborIndex]._vel = p2VelocityPrime;
+    AllParticles[rightNeighborIndex]._hasCollidedAlreadyThisFrame = 1;
+}
+

@@ -1,0 +1,74 @@
+// REQUIRES SsboBufferBindings.comp
+//  PREFIX_SCAN_BUFFER_BINDING
+// REQUIRES CrossShaderUniformLocations
+//  UNIFORM_LOCATION_INTERMEDIATE_BUFFER_HALF_SIZE
+//  UNIFORM_LOCATION_INTERMEDIATE_BUFFER_READ_OFFSET
+//  UNIFORM_LOCATION_INTERMEDIATE_BUFFER_WRITE_OFFSET
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    The meat of the sorting algorithm comes down to the prefix scan, which is doing a lot of 
+    memory reads and writes and so much be a simple array of integers for best performance.  The 
+    data that may need to be sorted though may not be a simple set of integers, but may be 
+    structures that need to be sorted according to a particular field (ex: particles sorted by 
+    position along a Z-order curve).  The parallel sort runs through the Radix Sort algorithm, 
+    which is tailor-made for parallel computing, but has the side effect of doing an 
+    intermediate sort after each prefix scan, which means more memory reads and writes on top of 
+    the prefix scan.
+
+    Enter the intermediate structure.  This is a 2-word structure that contains:
+    (1) the data that the Radix Sort will sort by
+    (2) the original index of the thing that needs to be sorted.
+
+    This info is filled out prior to sorting in DataToIntermediateDataForSorting.comp.
+    It is read one bit at a time in each loop of the Radix Sort in GetNextBitForPrefixSums.comp.
+    It is shuffled around in SortIntermediateDataUsingPrefixSums.comp in each Radix Sort loop.
+    After the Radix Sorting, it used to sort the original data in 
+    SortDataWithSortedIntermediateData.comp.
+Creator:    John Cox, 3/17/2017
+------------------------------------------------------------------------------------------------*/
+struct IntermediateData
+{
+    uint _data;
+    uint _globalIndexOfOriginalData;
+};
+
+
+// this should be the same size as the PrefixScanBuffer::PrefixSumsPerWorkGroup array
+// Note: Why use the half size instead of the full size?  Because the IntermediateDataBuffer is 
+// twice the size of the PrefixScanBuffer::PrefixSumsPerWorkGroup array but there is still the 
+// idea of a "read buffer" and "write buffer".  If reading from or writing to the "second" 
+// buffer, then any index calculation will need to have the size of the "first" buffer (that is, 
+// half the IntermediateDataBuffer size) added to it.
+layout(location = UNIFORM_LOCATION_INTERMEDIATE_BUFFER_HALF_SIZE) uniform uint uIntermediateBufferHalfSize;
+
+// should be self-explanatory
+layout(location = UNIFORM_LOCATION_INTERMEDIATE_BUFFER_READ_OFFSET) uniform uint uIntermediateBufferReadOffset;
+layout(location = UNIFORM_LOCATION_INTERMEDIATE_BUFFER_WRITE_OFFSET) uniform uint uIntermediateBufferWriteOffset;
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Should be 2x the size as PrefixScanBuffer::PrefixSumsPerWorkGroup.  The IntermediateData 
+    structures will need to be moved around in parallel after each prefix scan over the course 
+    of the parallel Radix Sorting (buffer 1 to buffer 2, then buffer 2 to buffer 1, then 
+    buffer 1 to buffer 2, etc.).  
+    
+    Note: In an ealier stage of this demo there were two buffers, but doing that required 
+    conditional branching in GetBitforPrefixScan.comp and in SortIntermediateData.comp, which is 
+    expected to have a negative impact on performance.  In switching to a single buffer and using
+    the "read offset" and "write offset" uniforms, there was an approximate doubling of 
+    computation time, but it was a matter of ~50microseconds vs ~100microsecond for a data size 
+    of 1,000,000+, which is a very small deal for me, and the single buffer is easier to 
+    maintain, so I'll keep the 1-buffer system.
+
+    Also Note: It is called IntermediateSortBuffers (plural) despite being a single buffer 
+    because it contains enough space for two buffers (plural) and is read from and written to as 
+    if there were two buffers (plural).
+
+Creator:    John Cox, 3-2017
+------------------------------------------------------------------------------------------------*/
+layout (std430, binding = INTERMEDIATE_SORT_BUFFERS_BINDING) buffer IntermediateSortBuffers
+{
+    IntermediateData IntermediateDataBuffer[];
+};

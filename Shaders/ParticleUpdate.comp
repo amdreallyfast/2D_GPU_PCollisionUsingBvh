@@ -1,0 +1,71 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// - PARALLEL_SORT_WORK_GROUP_SIZE_X
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES ParticleRegionBoundaries.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+
+// unlike SSBOs, atomic counter buffers seem to need a declaration like this and cannot be bound 
+// dynamically as in ParticleSsbo and PolygonSsbo, so declare the atomic counters up front to 
+// make it easier to keep the numbers straight.
+// Note: Discovered by experience and through this: https://www.opengl.org/wiki/Atomic_Counter.
+layout (binding = ATOMIC_COUNTER_BUFFER_BINDING, offset = 0) uniform atomic_uint acActiveParticleCounter;
+
+
+//uniform vec4 uParticleRegionCenter;
+//uniform float uParticleRegionRadiusSqr;
+uniform float uDeltaTimeSec;
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    The compute shader's startup function.
+Parameters: None
+Returns:    None
+Creator:    John Cox (9-25-2016)
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    uint index = gl_GlobalInvocationID.x;
+    if (index < uParticleBufferSize)
+    {
+        Particle pCopy = AllParticles[index];
+
+        // only update active particles 
+        if (pCopy._isActive == 0)
+        {
+            return;
+        }
+
+        // when the compute shader is summoned to update active particles, this counter will 
+        // give a count of how many active particles exist
+        atomicCounterIncrement(acActiveParticleCounter);
+
+        pCopy._pos += (pCopy._vel * uDeltaTimeSec);
+
+        // if it went out of bounds, turn it off
+        vec3 particleRegionCenter = vec3(PARTICLE_REGION_CENTER_X, PARTICLE_REGION_CENTER_Y, 0.0f);
+        //vec4 regionCenterToParticle = pCopy._pos - uParticleRegionCenter;
+        vec3 regionCenterToParticle = pCopy._pos.xyz - particleRegionCenter;
+        float distToParticleSqr = dot(regionCenterToParticle, regionCenterToParticle);
+        //if (distToParticleSqr > uParticleRegionRadiusSqr)
+        if (distToParticleSqr > (PARTICLE_REGION_RADIUS * PARTICLE_REGION_RADIUS))
+        {
+            pCopy._isActive = 0;
+        }
+
+        // the particle moved, so let it have a chance to collide again
+        pCopy._hasCollidedAlreadyThisFrame = 0;
+
+        // and re-count the number of nearby particles
+        pCopy._numberOfNearbyParticles = 0;
+
+        // copy the particle back into global memory
+        AllParticles[index] = pCopy;
+    }
+}
+
