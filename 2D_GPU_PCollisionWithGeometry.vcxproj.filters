@@ -144,12 +144,6 @@
     <Filter Include="Source\RenderFrameRate">
       <UniqueIdentifier>{876335fb-702c-4383-b253-b2d2d534542d}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeHeaders">
-      <UniqueIdentifier>{4a9181d3-a159-42fa-8a8f-939c4cebf171}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\ParallelSort">
-      <UniqueIdentifier>{4092c9e6-ca98-4729-9404-0e9fde5d45c5}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Include\ShaderControllers">
       <UniqueIdentifier>{bc6dc51e-3dad-4527-898b-7fe365093c28}</UniqueIdentifier>
     </Filter>
@@ -158,9 +152,6 @@
     </Filter>
     <Filter Include="Include\Particles">
       <UniqueIdentifier>{d357cb74-d829-434b-821c-4223fcc76f76}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="Shaders\ParticleReset">
-      <UniqueIdentifier>{ce113326-66ad-4566-a7bf-ddcbaaa9cd79}</UniqueIdentifier>
     </Filter>
     <Filter Include="Source\Particles">
       <UniqueIdentifier>{66bbd978-c998-4177-bcb5-0a213a4c3b54}</UniqueIdentifier>
@@ -177,93 +168,114 @@
     <Filter Include="Source\Buffers\SSBOs">
       <UniqueIdentifier>{97485e9a-3d07-412a-b71e-506f09045e38}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Compute">
+      <UniqueIdentifier>{91cb0158-7a5f-47fa-8c85-3963db9683ca}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Render">
+      <UniqueIdentifier>{c7075e50-600e-45af-ae6e-4c333fc6c343}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Compute\ComputeHeaders">
+      <UniqueIdentifier>{c0ecb713-da03-4af4-b072-8be8773cf9df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Compute\ParallelSort">
+      <UniqueIdentifier>{a1d8fabd-ebfd-4946-abf8-6ffdc079e4d0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Compute\ParticleReset">
+      <UniqueIdentifier>{1c380013-9130-4db2-8030-ece09faf495c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\FreeType.frag">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Render\FreeType.frag">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\FreeType.vert">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Render\FreeType.vert">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\ComputeHeaders\SsboBufferBindings.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
+    <None Include="Shaders\Render\Geometry.frag">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\ComputeHeaders\Version.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
+    <None Include="Shaders\Render\Geometry.vert">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\ParallelPrefixScan.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Render\ParticleRender.frag">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\PrefixScanBuffer.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Render\ParticleRender.vert">
+      <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\IntermediateSortBuffers.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Compute\CountNearbyParticles.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\SortIntermediateData.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\GetBitForPrefixScan.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Compute\ParticleBuffer.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\SortParticleData.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Compute\ParticleCollisions.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParallelSort\ParticleDataToIntermediateData.comp">
-      <Filter>Shaders\ParallelSort</Filter>
+    <None Include="Shaders\Compute\ParticleRegionBoundaries.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParticleBuffer.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParticleUpdate.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ParticleUpdate.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\PositionToMortonCode.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\ComputeHeaders\ComputeShaderWorkGroupSizes.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
+    <None Include="Shaders\Compute\ComputeHeaders\ComputeShaderWorkGroupSizes.comp">
+      <Filter>Shaders\Compute\ComputeHeaders</Filter>
     </None>
-    <None Include="Shaders\ComputeHeaders\CrossShaderUniformLocations.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
+    <None Include="Shaders\Compute\ComputeHeaders\CrossShaderUniformLocations.comp">
+      <Filter>Shaders\Compute\ComputeHeaders</Filter>
     </None>
-    <None Include="Shaders\ParticleReset\ParticleResetBarEmitter.comp">
-      <Filter>Shaders\ParticleReset</Filter>
+    <None Include="Shaders\Compute\ComputeHeaders\SsboBufferBindings.comp">
+      <Filter>Shaders\Compute\ComputeHeaders</Filter>
     </None>
-    <None Include="Shaders\ParticleReset\ParticleResetPointEmitter.comp">
-      <Filter>Shaders\ParticleReset</Filter>
+    <None Include="Shaders\Compute\ComputeHeaders\Version.comp">
+      <Filter>Shaders\Compute\ComputeHeaders</Filter>
     </None>
-    <None Include="Shaders\ParticleReset\QuickNormalize.comp">
-      <Filter>Shaders\ParticleReset</Filter>
+    <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp">
+      <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
-    <None Include="Shaders\ParticleReset\Random.comp">
-      <Filter>Shaders\ParticleReset</Filter>
+    <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp">
+      <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
-    <None Include="Shaders\PositionToMortonCode.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParticleReset\QuickNormalize.comp">
+      <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
-    <None Include="Shaders\ParticleRender.vert">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParticleReset\Random.comp">
+      <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
-    <None Include="Shaders\ParticleRender.frag">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParallelSort\GetBitForPrefixScan.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
-    <None Include="Shaders\ParticleCollisions.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParallelSort\IntermediateSortBuffers.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
-    <None Include="Shaders\CountNearbyParticles.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParallelSort\ParallelPrefixScan.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
-    <None Include="Shaders\CountNearbyParticlesLimits.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParallelSort\ParticleDataToIntermediateData.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
-    <None Include="Shaders\ParticleRegionBoundaries.comp">
-      <Filter>Shaders</Filter>
+    <None Include="Shaders\Compute\ParallelSort\PrefixScanBuffer.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParallelSort\SortIntermediateData.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Shaders\ParticleReset\ReadMe.txt">
-      <Filter>Shaders\ParticleReset</Filter>
+    <Text Include="Shaders\Compute\ParticleReset\ReadMe.txt">
+      <Filter>Shaders\Compute\ParticleReset</Filter>
     </Text>
-    <Text Include="Shaders\ParallelSort\ReadMe.txt">
-      <Filter>Shaders\ParallelSort</Filter>
+    <Text Include="Shaders\Compute\ParallelSort\ReadMe.txt">
+      <Filter>Shaders\Compute\ParallelSort</Filter>
     </Text>
   </ItemGroup>
 </Project>

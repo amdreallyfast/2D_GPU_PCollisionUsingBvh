@@ -3,7 +3,7 @@
 #include <string>
 
 #include "Shaders/ShaderStorage.h"
-#include "Shaders/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
+#include "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 
@@ -35,15 +35,15 @@ namespace ShaderControllers
 
         std::string shaderKey = "count nearby particles";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
-            shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ComputeHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ParticleRegionBoundaries.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/PositionToMortonCode.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/CountNearbyParticlesLimits.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/CountNearbyParticles.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+            shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/CountNearbyParticlesLimits.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/CountNearbyParticles.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _computeProgramId = shaderStorageRef.GetShaderProgram(shaderKey);

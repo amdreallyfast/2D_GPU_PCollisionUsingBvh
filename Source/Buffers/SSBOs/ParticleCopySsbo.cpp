@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
-#include "Shaders/ComputeHeaders/SsboBufferBindings.comp"
+#include "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp"
 
 #include "Include/Particles/Particle.h"
 

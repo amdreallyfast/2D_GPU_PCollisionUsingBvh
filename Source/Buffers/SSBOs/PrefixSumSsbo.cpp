@@ -2,9 +2,9 @@
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 
-#include "Shaders/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
-#include "Shaders/ComputeHeaders/SsboBufferBindings.comp"
-#include "Shaders/ComputeHeaders/CrossShaderUniformLocations.comp"
+#include "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
+#include "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp"
+#include "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp"
 
 #include <vector>
 

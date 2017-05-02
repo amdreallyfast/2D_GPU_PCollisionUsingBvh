@@ -117,8 +117,8 @@ void Init()
     // FreeType initialization
     std::string freeTypeShaderKey = "freetype";
     shaderStorageRef.NewShader(freeTypeShaderKey);
-    shaderStorageRef.AddAndCompileShaderFile(freeTypeShaderKey, "Shaders/FreeType.vert", GL_VERTEX_SHADER);
-    shaderStorageRef.AddAndCompileShaderFile(freeTypeShaderKey, "Shaders/FreeType.frag", GL_FRAGMENT_SHADER);
+    shaderStorageRef.AddAndCompileShaderFile(freeTypeShaderKey, "Shaders/Render/FreeType.vert", GL_VERTEX_SHADER);
+    shaderStorageRef.AddAndCompileShaderFile(freeTypeShaderKey, "Shaders/Render/FreeType.frag", GL_FRAGMENT_SHADER);
     shaderStorageRef.LinkShader(freeTypeShaderKey);
     GLuint freeTypeProgramId = shaderStorageRef.GetShaderProgram(freeTypeShaderKey);
     gTextAtlases.Init("ThirdParty/freetype-2.6.1/FreeSans.ttf", freeTypeProgramId);
@@ -129,7 +129,7 @@ void Init()
     // between the SSBOs and the shaders, but the compute headers lessen the coupling that needs 
     // to happen on the CPU side.
     particleBuffer = std::make_unique<ParticleSsbo>(MAX_PARTICLE_COUNT);
-
+    
     // set up the particle region
     // Note: This mat4 is a convenience for easily moving the particle region center and all 
     // emitters.

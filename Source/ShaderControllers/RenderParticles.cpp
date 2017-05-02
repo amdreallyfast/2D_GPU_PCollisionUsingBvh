@@ -31,15 +31,12 @@ namespace ShaderControllers
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
 
         std::string shaderKey = "particle render";
-//        shaderStorageRef.NewShader(shaderKey);
-//        shaderStorageRef.AddAndCompileShaderFile(shaderKey, "Shaders/ParticleRender.vert", GL_VERTEX_SHADER);
-//        shaderStorageRef.AddAndCompileShaderFile(shaderKey, "Shaders/ParticleRender.frag", GL_FRAGMENT_SHADER);
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/CountNearbyParticlesLimits.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ParticleRender.vert");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/CountNearbyParticlesLimits.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Render/ParticleRender.vert");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_VERTEX_SHADER);
-        shaderStorageRef.AddAndCompileShaderFile(shaderKey, "Shaders/ParticleRender.frag", GL_FRAGMENT_SHADER);
+        shaderStorageRef.AddAndCompileShaderFile(shaderKey, "Shaders/Render/ParticleRender.frag", GL_FRAGMENT_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _renderProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 

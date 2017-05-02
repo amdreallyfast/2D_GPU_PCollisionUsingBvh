@@ -192,36 +192,38 @@
     <ClInclude Include="Shaders\ShaderStorage.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\ComputeHeaders\ComputeShaderWorkGroupSizes.comp" />
-    <None Include="Shaders\ComputeHeaders\CrossShaderUniformLocations.comp" />
-    <None Include="Shaders\ComputeHeaders\SsboBufferBindings.comp" />
-    <None Include="Shaders\ComputeHeaders\Version.comp" />
-    <None Include="Shaders\CountNearbyParticles.comp" />
-    <None Include="Shaders\CountNearbyParticlesLimits.comp" />
-    <None Include="Shaders\FreeType.frag" />
-    <None Include="Shaders\FreeType.vert" />
-    <None Include="Shaders\ParallelSort\GetBitForPrefixScan.comp" />
-    <None Include="Shaders\ParallelSort\IntermediateSortBuffers.comp" />
-    <None Include="Shaders\ParallelSort\ParallelPrefixScan.comp" />
-    <None Include="Shaders\ParallelSort\ParticleDataToIntermediateData.comp" />
-    <None Include="Shaders\ParallelSort\PrefixScanBuffer.comp" />
-    <None Include="Shaders\ParallelSort\SortIntermediateData.comp" />
-    <None Include="Shaders\ParallelSort\SortParticleData.comp" />
-    <None Include="Shaders\ParticleBuffer.comp" />
-    <None Include="Shaders\ParticleCollisions.comp" />
-    <None Include="Shaders\ParticleRegionBoundaries.comp" />
-    <None Include="Shaders\ParticleRender.frag" />
-    <None Include="Shaders\ParticleRender.vert" />
-    <None Include="Shaders\ParticleReset\ParticleResetBarEmitter.comp" />
-    <None Include="Shaders\ParticleReset\ParticleResetPointEmitter.comp" />
-    <None Include="Shaders\ParticleReset\QuickNormalize.comp" />
-    <None Include="Shaders\ParticleReset\Random.comp" />
-    <None Include="Shaders\ParticleUpdate.comp" />
-    <None Include="Shaders\PositionToMortonCode.comp" />
+    <None Include="Shaders\Compute\ComputeHeaders\ComputeShaderWorkGroupSizes.comp" />
+    <None Include="Shaders\Compute\ComputeHeaders\CrossShaderUniformLocations.comp" />
+    <None Include="Shaders\Compute\ComputeHeaders\SsboBufferBindings.comp" />
+    <None Include="Shaders\Compute\ComputeHeaders\Version.comp" />
+    <None Include="Shaders\Compute\CountNearbyParticles.comp" />
+    <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp" />
+    <None Include="Shaders\Compute\ParallelSort\GetBitForPrefixScan.comp" />
+    <None Include="Shaders\Compute\ParallelSort\IntermediateSortBuffers.comp" />
+    <None Include="Shaders\Compute\ParallelSort\ParallelPrefixScan.comp" />
+    <None Include="Shaders\Compute\ParallelSort\ParticleDataToIntermediateData.comp" />
+    <None Include="Shaders\Compute\ParallelSort\PrefixScanBuffer.comp" />
+    <None Include="Shaders\Compute\ParallelSort\SortIntermediateData.comp" />
+    <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp" />
+    <None Include="Shaders\Compute\ParticleBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions.comp" />
+    <None Include="Shaders\Compute\ParticleRegionBoundaries.comp" />
+    <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp" />
+    <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp" />
+    <None Include="Shaders\Compute\ParticleReset\QuickNormalize.comp" />
+    <None Include="Shaders\Compute\ParticleReset\Random.comp" />
+    <None Include="Shaders\Compute\ParticleUpdate.comp" />
+    <None Include="Shaders\Compute\PositionToMortonCode.comp" />
+    <None Include="Shaders\Render\FreeType.frag" />
+    <None Include="Shaders\Render\FreeType.vert" />
+    <None Include="Shaders\Render\Geometry.frag" />
+    <None Include="Shaders\Render\Geometry.vert" />
+    <None Include="Shaders\Render\ParticleRender.frag" />
+    <None Include="Shaders\Render\ParticleRender.vert" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Shaders\ParallelSort\ReadMe.txt" />
-    <Text Include="Shaders\ParticleReset\ReadMe.txt" />
+    <Text Include="Shaders\Compute\ParallelSort\ReadMe.txt" />
+    <Text Include="Shaders\Compute\ParticleReset\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

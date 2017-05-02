@@ -1,6 +1,6 @@
 #include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 
-#include "Shaders/ComputeHeaders/SsboBufferBindings.comp"
+#include "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 
