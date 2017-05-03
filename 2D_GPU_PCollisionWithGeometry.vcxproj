@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shaders\ShaderStorage.cpp" />
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\IntermediateDataSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp" />
@@ -161,6 +162,7 @@
     <ClCompile Include="Source\RenderFrameRate\FreeTypeEncapsulated.cpp" />
     <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp" />
     <ClCompile Include="Source\ShaderControllers\CountNearbyParticles.cpp" />
+    <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleCollide.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleReset.cpp" />
@@ -170,11 +172,14 @@
   <ItemGroup>
     <ClInclude Include="Include\Buffers\IntermediateData.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\IntermediateDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h" />
+    <ClInclude Include="Include\Geometry\MyVertex.h" />
+    <ClInclude Include="Include\Geometry\PolygonFace.h" />
     <ClInclude Include="Include\OpenGlErrorHandling.h" />
     <ClInclude Include="Include\Particles\IParticleEmitter.h" />
     <ClInclude Include="Include\Particles\Particle.h" />
@@ -184,6 +189,7 @@
     <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h" />
     <ClInclude Include="Include\RenderFrameRate\Stopwatch.h" />
     <ClInclude Include="Include\ShaderControllers\CountNearbyParticles.h" />
+    <ClInclude Include="Include\ShaderControllers\RenderGeometry.h" />
     <ClInclude Include="Include\ShaderControllers\ParallelSort.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleCollide.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleReset.h" />
@@ -213,6 +219,7 @@
     <None Include="Shaders\Compute\ParticleReset\QuickNormalize.comp" />
     <None Include="Shaders\Compute\ParticleReset\Random.comp" />
     <None Include="Shaders\Compute\ParticleUpdate.comp" />
+    <None Include="Shaders\Compute\PolygonBuffer.comp" />
     <None Include="Shaders\Compute\PositionToMortonCode.comp" />
     <None Include="Shaders\Render\FreeType.frag" />
     <None Include="Shaders\Render\FreeType.vert" />

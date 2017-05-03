@@ -70,8 +70,7 @@ Returns:    None
 Creator:    John Cox, 4/2017
 ------------------------------------------------------------------------------------------------*/
 ParticleSsbo::ParticleSsbo(unsigned int numItems) :
-    SsboBase(),  // generate buffers
-    _numItems(numItems)
+    SsboBase()  // generate buffers
 {
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 
@@ -108,21 +107,8 @@ void ParticleSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) cons
 {
     // the uniform should remain constant after this 
     glUseProgram(computeProgramId);
-    glUniform1ui(UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE, _numItems);
+    glUniform1ui(UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE, _numVertices);
     glUseProgram(0);
-}
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    A simple getter for the value that was passed in on creation.
-Parameters: None
-Returns:    
-    See Description.
-Creator:    John Cox, 3/2017
-------------------------------------------------------------------------------------------------*/
-unsigned int ParticleSsbo::NumItems() const
-{
-    return _numItems;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -163,77 +149,79 @@ void ParticleSsbo::ConfigureRender(unsigned int renderProgramId, unsigned int dr
     unsigned int vertexArrayIndex = 0;
     unsigned int bufferStartOffset = 0;
     unsigned int bytesPerStep = sizeof(Particle);
-    unsigned int sizeOfLastItem = 0;
+    unsigned int sizeOfItem = 0;
+    unsigned int numItems = 0;
 
     // position
     GLenum itemType = GL_FLOAT;
-    unsigned int numItems = sizeof(Particle::_position) / sizeof(float);
+    sizeOfItem = sizeof(Particle::_position);
+    numItems = sizeOfItem / sizeof(float);
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_position);
+    bufferStartOffset += sizeOfItem;
 
     // velocity
     itemType = GL_FLOAT;
-    numItems = sizeof(Particle::_velocity) / sizeof(float);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_velocity);
+    numItems = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_velocity);
+    bufferStartOffset += sizeOfItem;
 
     // numberOfNearbyParticles
     itemType = GL_UNSIGNED_INT;
-    numItems = sizeof(Particle::_numberOfNearbyParticles) / sizeof(unsigned int);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_numberOfNearbyParticles);
+    numItems = sizeOfItem / sizeof(unsigned int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_numberOfNearbyParticles);
+    bufferStartOffset += sizeOfItem;
 
     // mass
     itemType = GL_FLOAT;
-    numItems = sizeof(Particle::_mass) / sizeof(float);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_mass);
+    numItems = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_mass);
+    bufferStartOffset += sizeOfItem;
 
     // collision radius
     itemType = GL_FLOAT;
-    numItems = sizeof(Particle::_collisionRadius) / sizeof(float);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_collisionRadius);
+    numItems = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_collisionRadius);
+    bufferStartOffset += sizeOfItem;
 
-    // morton coode
+    // morton code
     itemType = GL_UNSIGNED_INT;
-    numItems = sizeof(Particle::_mortonCode) / sizeof(unsigned int);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_mortonCode);
+    numItems = sizeOfItem / sizeof(unsigned int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_mortonCode);
+    bufferStartOffset += sizeOfItem;
 
     // "has already collided this frame" flag
     itemType = GL_UNSIGNED_INT;
-    numItems = sizeof(Particle::_hasCollidedAlreadyThisFrame) / sizeof(unsigned int);
-    bufferStartOffset += sizeOfLastItem;
+    sizeOfItem = sizeof(Particle::_hasCollidedAlreadyThisFrame);
+    numItems = sizeOfItem / sizeof(unsigned int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_hasCollidedAlreadyThisFrame);
+    bufferStartOffset += sizeOfItem;
 
     // "is active" flag
     itemType = GL_INT;
+    sizeOfItem = sizeof(Particle::_isActive);
     numItems = sizeof(Particle::_isActive) / sizeof(int);
-    bufferStartOffset += sizeOfLastItem;
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    sizeOfLastItem = sizeof(Particle::_isActive);
+    bufferStartOffset += sizeOfItem;
 
     // cleanup
     glBindVertexArray(0);   // unbind this BEFORE the array or else the VAO will bind to buffer 0

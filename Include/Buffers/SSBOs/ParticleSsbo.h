@@ -14,14 +14,10 @@ class ParticleSsbo : public SsboBase
 {
 public:
     ParticleSsbo(unsigned int numItems);
+    virtual ~ParticleSsbo() = default;
     using SHARED_PTR = std::shared_ptr<ParticleSsbo>;
     using CONST_SHARED_PTR = std::shared_ptr<const ParticleSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     void ConfigureRender(unsigned int renderProgramId, unsigned int drawStyle) override;
-    
-    unsigned int NumItems() const;
-
-private:
-    unsigned int _numItems;
 };

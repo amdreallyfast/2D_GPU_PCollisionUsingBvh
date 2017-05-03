@@ -151,7 +151,7 @@ namespace ShaderControllers
         dataToSort->ConfigureConstantUniforms(_particleDataToIntermediateDataProgramId);
         dataToSort->ConfigureConstantUniforms(_sortParticlesProgramId);
 
-        unsigned int numParticles = dataToSort->NumItems();
+        unsigned int numParticles = dataToSort->NumVertices();
         _particleCopySsbo = std::make_unique<ParticleCopySsbo>(numParticles);
         _prefixSumSsbo = std::make_unique<PrefixSumSsbo>(numParticles);
 
@@ -289,7 +289,7 @@ namespace ShaderControllers
         // ParticleBuffer
         glBindBuffer(GL_COPY_READ_BUFFER, _particleCopySsbo->BufferId());
         glBindBuffer(GL_COPY_WRITE_BUFFER, _particleSsbo->BufferId());
-        unsigned int ParticleBufferSizeBytes = _particleSsbo->NumItems() * sizeof(Particle);
+        unsigned int ParticleBufferSizeBytes = _particleSsbo->NumVertices() * sizeof(Particle);
         glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, ParticleBufferSizeBytes);
         glBindBuffer(GL_COPY_READ_BUFFER, 0);
         glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
@@ -423,7 +423,7 @@ namespace ShaderControllers
         start = high_resolution_clock::now();
         glBindBuffer(GL_COPY_READ_BUFFER, _particleCopySsbo->BufferId());
         glBindBuffer(GL_COPY_WRITE_BUFFER, _particleSsbo->BufferId());
-        unsigned int ParticleBufferSizeBytes = _particleSsbo->NumItems() * sizeof(Particle);
+        unsigned int ParticleBufferSizeBytes = _particleSsbo->NumVertices() * sizeof(Particle);
         glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, ParticleBufferSizeBytes);
         glBindBuffer(GL_COPY_READ_BUFFER, 0);
         glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
@@ -436,7 +436,7 @@ namespace ShaderControllers
         // verify sorted data
         start = high_resolution_clock::now();
         unsigned int startingIndex = 0;
-        std::vector<Particle> checkOriginalData(_particleSsbo->NumItems());
+        std::vector<Particle> checkOriginalData(_particleSsbo->NumVertices());
         unsigned int bufferSizeBytes = checkOriginalData.size() * sizeof(Particle);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSsbo->BufferId());
         void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);

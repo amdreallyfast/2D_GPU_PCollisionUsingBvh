@@ -37,3 +37,5 @@ Creator:    John Cox, 3/2017
 // ParallelPrefixScan.comp
 #define UNIFORM_LOCATION_CALCULATE_ALL 6
 
+// PolygonBuffer.comp
+#define UNIFORM_LOCATION_POLYGON_BUFFER_SIZE 7

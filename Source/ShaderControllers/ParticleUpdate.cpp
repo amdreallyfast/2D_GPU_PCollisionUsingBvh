@@ -33,7 +33,7 @@ namespace ShaderControllers
         _unifLocDeltaTimeSec(-1),
         _activeParticlesAtomicCounter(nullptr)
     {
-        _totalParticleCount = ssboToUpdate->NumItems();
+        _totalParticleCount = ssboToUpdate->NumVertices();
         _activeParticlesAtomicCounter = PersistentAtomicCounterBuffer::GetInstance();
 
         // construct the compute shader

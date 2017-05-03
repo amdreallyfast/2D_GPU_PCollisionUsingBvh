@@ -1,0 +1,42 @@
+// REQUIRES SsboBufferBindings.comp
+//  PREFIX_SCAN_BUFFER_BINDING
+// REQUIRES CrossShaderUniformLocations
+//  UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE
+
+/*-----------------------------------------------------------------------------------------------
+Description:
+    Stores all info necessary to draw a single vertex.  This is used for drawing the quad tree's 
+    wireframe.
+Creator: John Cox (6-12-2016)
+-----------------------------------------------------------------------------------------------*/
+struct MyVertex
+{
+    vec4 _pos;
+    vec4 _normal;
+};
+
+/*-----------------------------------------------------------------------------------------------
+Description:
+    This is a simple structure that describes the face of a 2D polygon.  Useful for making the 
+    code that uses the buffer and the vertices more readable.
+Creator:    John Cox (9-8-2016)
+-----------------------------------------------------------------------------------------------*/
+struct PolygonFace
+{
+    MyVertex _start;
+    MyVertex _end;
+};
+
+// whatever size the user wants
+layout(location = UNIFORM_LOCATION_POLYGON_BUFFER_SIZE) uniform uint uMaxPolygons;
+
+/*-----------------------------------------------------------------------------------------------
+Description:
+    The SSBO that will contain all polygons necessary to draw the quad tree.  For this demo, it 
+    is only 2D, so each face only contains two vertexes;
+Creator: John Cox (9-25-2016)
+-----------------------------------------------------------------------------------------------*/
+layout (std430, binding = POLYGON_SSBO_BUFFER_BINDING) buffer PolygonBuffer
+{
+    PolygonFace AllPolygons[];
+};

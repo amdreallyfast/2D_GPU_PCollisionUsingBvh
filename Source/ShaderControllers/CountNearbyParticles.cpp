@@ -28,7 +28,8 @@ namespace ShaderControllers
         _totalParticleCount(0),
         _computeProgramId(0)
     {
-        _totalParticleCount = particlesToAnalyze->NumItems();
+        // particles are points (1 vertex per)
+        _totalParticleCount = particlesToAnalyze->NumVertices();
 
         // construct the compute shader
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
@@ -54,8 +55,7 @@ namespace ShaderControllers
     /*--------------------------------------------------------------------------------------------
     Description:
         Cleans up the shader program that was created for this shader controller.
-    Parameters: 
-        particlesToAnalyze  A copy of a const shared pointer to the particle SSBO.
+    Parameters: None
     Returns:    None
     Creator:    John Cox, 4/2017
     --------------------------------------------------------------------------------------------*/

@@ -59,6 +59,12 @@
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp">
       <Filter>Source\Buffers</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -127,6 +133,18 @@
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h">
       <Filter>Include\Buffers</Filter>
     </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\RenderGeometry.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Geometry\MyVertex.h">
+      <Filter>Include\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Geometry\PolygonFace.h">
+      <Filter>Include\Geometry</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -174,14 +192,17 @@
     <Filter Include="Shaders\Render">
       <UniqueIdentifier>{c7075e50-600e-45af-ae6e-4c333fc6c343}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\Compute\ComputeHeaders">
-      <UniqueIdentifier>{c0ecb713-da03-4af4-b072-8be8773cf9df}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Compute\ParallelSort">
       <UniqueIdentifier>{a1d8fabd-ebfd-4946-abf8-6ffdc079e4d0}</UniqueIdentifier>
     </Filter>
     <Filter Include="Shaders\Compute\ParticleReset">
       <UniqueIdentifier>{1c380013-9130-4db2-8030-ece09faf495c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Include\Geometry">
+      <UniqueIdentifier>{c5ee11ad-17e0-47b0-82bf-68fb8161553f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ComputeHeaders">
+      <UniqueIdentifier>{c0ecb713-da03-4af4-b072-8be8773cf9df}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -225,16 +246,16 @@
       <Filter>Shaders\Compute</Filter>
     </None>
     <None Include="Shaders\Compute\ComputeHeaders\ComputeShaderWorkGroupSizes.comp">
-      <Filter>Shaders\Compute\ComputeHeaders</Filter>
+      <Filter>Shaders\ComputeHeaders</Filter>
     </None>
     <None Include="Shaders\Compute\ComputeHeaders\CrossShaderUniformLocations.comp">
-      <Filter>Shaders\Compute\ComputeHeaders</Filter>
+      <Filter>Shaders\ComputeHeaders</Filter>
     </None>
     <None Include="Shaders\Compute\ComputeHeaders\SsboBufferBindings.comp">
-      <Filter>Shaders\Compute\ComputeHeaders</Filter>
+      <Filter>Shaders\ComputeHeaders</Filter>
     </None>
     <None Include="Shaders\Compute\ComputeHeaders\Version.comp">
-      <Filter>Shaders\Compute\ComputeHeaders</Filter>
+      <Filter>Shaders\ComputeHeaders</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp">
       <Filter>Shaders\Compute\ParticleReset</Filter>
@@ -268,6 +289,9 @@
     </None>
     <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp">
       <Filter>Shaders\Compute\ParallelSort</Filter>
+    </None>
+    <None Include="Shaders\Compute\PolygonBuffer.comp">
+      <Filter>Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

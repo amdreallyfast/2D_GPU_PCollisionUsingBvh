@@ -54,6 +54,7 @@
 #include "Include/ShaderControllers/ParticleCollide.h"
 #include "Include/ShaderControllers/CountNearbyParticles.h"
 #include "Include/ShaderControllers/RenderParticles.h"
+#include "Include/ShaderControllers/RenderGeometry.h"
 
 
 // for the frame rate counter
@@ -64,14 +65,174 @@ Stopwatch gTimer;
 FreeTypeEncapsulated gTextAtlases;
 
 ParticleSsbo::SHARED_PTR particleBuffer = nullptr;
+PolygonSsbo::SHARED_PTR polygonBuffer = nullptr;
 std::unique_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::unique_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
 std::unique_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
 std::unique_ptr<ShaderControllers::ParticleCollide> particleCollisions = nullptr;
 std::unique_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
 std::unique_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
+std::unique_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
 const unsigned int MAX_PARTICLE_COUNT = 50000;
+
+
+
+
+
+struct MortonCodeVertex
+{
+    MortonCodeVertex() :
+        _point(glm::vec4(), glm::vec4()),
+        _mortonCode(0)
+    {
+
+    }
+    MyVertex _point;
+    unsigned int _mortonCode;
+};
+
+
+unsigned int ExpandBits(unsigned int i)
+{
+    unsigned int expandedI = i;
+
+    expandedI = (expandedI * 0x00010001u) & 0xFF0000FFu;
+    expandedI = (expandedI * 0x00000101u) & 0x0F00F00Fu;
+    expandedI = (expandedI * 0x00000011u) & 0xC30C30C3u;
+    expandedI = (expandedI * 0x00000005u) & 0x49249249u;
+
+    return expandedI;
+}
+
+unsigned int PositionToMortonCode(glm::vec4 pos)
+{
+    //if (pos.x < 0.05f && pos.x > -0.05f && pos.y < 0.05f && pos.y > -0.05f)
+    //{
+    //    // roughly the center
+    //    printf("");
+    //}
+
+
+    pos.w = 0.0f;
+
+    // bring to range [-1,1]
+    //pos = glm::normalize(pos);
+    //pos.x = pos.x / 2002.0f; 
+    //pos.y = pos.y / 2002.0f;
+    pos.x = pos.x / 2.0f;
+    pos.y = pos.y / 2.0f;
+
+    // range [-1,+1] to range [0,1]
+    pos = (pos + glm::vec4(+1, +1, +1, 0)) * 0.5f;
+
+    float clampX = glm::min(glm::max(pos.x * 1024.0f, 0.0f), 1023.0f);
+    float clampY = glm::min(glm::max(pos.y * 1024.0f, 0.0f), 1023.0f);
+    float clampZ = glm::min(glm::max(pos.z * 1024.0f, 0.0f), 1023.0f);
+
+    unsigned int xx = ExpandBits((unsigned int)clampX);
+    unsigned int yy = ExpandBits((unsigned int)clampY);
+    unsigned int zz = ExpandBits((unsigned int)clampZ);
+
+    return (xx * 4) + (yy * 2) + zz;
+}
+
+
+void GenerateZOrderCurveMortonCodes(std::vector<MortonCodeVertex> *updateThis)
+{
+    for (size_t i = 0; i < updateThis->size(); i++)
+    {
+        (*updateThis)[i]._mortonCode = PositionToMortonCode((*updateThis)[i]._point._position);
+    }
+}
+
+void GenerateVerticesForZOrderCurve(std::vector<MortonCodeVertex> *putDataHere)
+{
+    putDataHere->clear();
+    float increment = 100.0f;
+    float totalRange = 1001.0f;
+
+    float start = 100.0f;
+    float end = totalRange - 100.0f;
+    for (float x = start; x < end; x += increment)
+    {
+        for (float y = start; y < end; y += increment)
+        {
+            MortonCodeVertex thing;
+
+            // generate a position along the range to [-1,+1] on both axes
+            // Note: 
+            // - normalize the value to the range [0,1]
+            // - shift it back along the axis to [-0.5,+0.5]
+            // - multiply by 2 to bring it to the range [-1,+1]
+            float newX = (((x / totalRange) - 0.5f) * 2.0f);
+            float newY = (((y / totalRange) - 0.5f) * 2.0f);
+
+            thing._point._position = glm::vec4(newX, newY, 0.0f, 1.0f);
+            putDataHere->push_back(thing);
+        }
+    }
+}
+
+bool SortByMortonCode(const MortonCodeVertex &A, const MortonCodeVertex &B)
+{
+    if (A._mortonCode < B._mortonCode)
+    {
+        return true;
+    }
+    return false;
+}
+
+#include <algorithm>
+
+void GenerateZOrderCurveGeometry(std::vector<PolygonFace> *putDataHere)
+{
+    std::vector<MortonCodeVertex> theThing;
+    GenerateVerticesForZOrderCurve(&theThing);
+    GenerateZOrderCurveMortonCodes(&theThing);
+    std::sort(theThing.begin(), theThing.end(), SortByMortonCode);
+
+    //for (size_t i = 0; i < theThing.size() - 1; i++)
+    //{
+    //    //if (theThing[i]._mortonCode > theThing[i + 1]._mortonCode)
+    //    //{
+    //    //    printf("");
+    //    //}
+
+    //    int x = theThing[i]._point._position.x;
+    //    int y = theThing[i]._point._position.y;
+
+    //    if (x < -1.0f || x > +1.0f)
+    //    {
+    //        printf("");
+    //    }
+    //    else if (y < -1.0f || y > +1.0f)
+    //    {
+    //        printf("");
+    //    }
+    //    else if (x < 0.05f && x > -0.05f && y < 0.05f && y > -0.05f)
+    //    {
+    //        // roughly the center
+    //        printf("");
+    //    }
+    //}
+
+    putDataHere->clear();
+    // "size - 1" - skip the last vertex
+    for (size_t i = 0; i < theThing.size() - 1; i++)
+    {
+        PolygonFace newFace;
+        newFace._start = theThing[i]._point;
+        newFace._end = theThing[i + 1]._point;
+
+        putDataHere->push_back(newFace);
+    }
+}
+
+
+std::vector<PolygonFace> zOrderCurvePolygonFaces;
+
+
 
 
 /*------------------------------------------------------------------------------------------------
@@ -128,7 +289,7 @@ void Init()
     // needing to pass the SSBO into it.  GPU computing in multiple steps creates coupling 
     // between the SSBOs and the shaders, but the compute headers lessen the coupling that needs 
     // to happen on the CPU side.
-    particleBuffer = std::make_unique<ParticleSsbo>(MAX_PARTICLE_COUNT);
+    particleBuffer = std::make_shared<ParticleSsbo>(MAX_PARTICLE_COUNT);
     
     // set up the particle region
     // Note: This mat4 is a convenience for easily moving the particle region center and all 
@@ -153,16 +314,16 @@ void Init()
     barEmitter1->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter1);
 
-    // bar on the right and emitting up and left
-    //glm::vec2 bar2P1 = glm::vec2(-0.5f, -0.8f);
-    //glm::vec2 bar2P2 = glm::vec2(-0.1f, -0.8f);
-    //glm::vec2 emitDir2 = glm::vec2(0.0f, +1.0f);
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, +0.2f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, -0.2f);
-    glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.1f);
-    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
-    barEmitter2->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter2);
+//    // bar on the right and emitting up and left
+//    //glm::vec2 bar2P1 = glm::vec2(-0.5f, -0.8f);
+//    //glm::vec2 bar2P2 = glm::vec2(-0.1f, -0.8f);
+//    //glm::vec2 emitDir2 = glm::vec2(0.0f, +1.0f);
+//    glm::vec2 bar2P1 = glm::vec2(+0.8f, +0.2f);
+//    glm::vec2 bar2P2 = glm::vec2(+0.8f, -0.2f);
+//    glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.1f);
+//    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
+//    barEmitter2->SetTransform(windowSpaceTransform);
+//    particleResetter->AddEmitter(barEmitter2);
 
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
@@ -176,8 +337,17 @@ void Init()
     // determines particle color
     nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
 
-    // for rendering particles
-    particleRenderer = std::make_unique<ShaderControllers::RenderParticles>(particleBuffer);
+    // for drawing particles
+    particleRenderer = std::make_unique<ShaderControllers::RenderParticles>();
+    particleRenderer->ConfigureSsboForRendering(particleBuffer);
+
+    // for drawing non-particle things
+    geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
+
+    zOrderCurvePolygonFaces.clear();
+    GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
+    polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
+    geometryRenderer->ConfigureSsboForRendering(polygonBuffer, GL_LINES);
 
 
 
@@ -222,6 +392,8 @@ void UpdateAllTheThings()
 
 
 
+
+
     // tell glut to call this display() function again on the next iteration of the main loop
     // Note: https://www.opengl.org/discussion_boards/showthread.php/168717-I-dont-understand-what-glutPostRedisplay()-does
     // Also Note: This display() function will also be registered to run if the window is moved
@@ -257,8 +429,8 @@ void Display()
     glClearDepth(1.0f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    particleRenderer->Render();
-
+    particleRenderer->Render(particleBuffer);
+    geometryRenderer->Render(polygonBuffer);
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));
@@ -420,7 +592,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif
