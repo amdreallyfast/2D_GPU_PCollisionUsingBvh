@@ -37,7 +37,7 @@ namespace ShaderControllers
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp"); 
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/ParticleCollisions.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _computeProgramId = shaderStorageRef.GetShaderProgram(shaderKey);

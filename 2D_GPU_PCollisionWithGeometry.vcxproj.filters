@@ -204,6 +204,9 @@
     <Filter Include="Shaders\ComputeHeaders">
       <UniqueIdentifier>{c0ecb713-da03-4af4-b072-8be8773cf9df}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Shaders\Compute\ParticleCollisions">
+      <UniqueIdentifier>{cb7de57a-7acc-451c-b1a7-29d72ba96d3a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\Render\FreeType.frag">
@@ -231,9 +234,6 @@
       <Filter>Shaders\Compute</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleBuffer.comp">
-      <Filter>Shaders\Compute</Filter>
-    </None>
-    <None Include="Shaders\Compute\ParticleCollisions.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleRegionBoundaries.comp">
@@ -292,6 +292,15 @@
     </None>
     <None Include="Shaders\Compute\PolygonBuffer.comp">
       <Filter>Shaders</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\BuildBoundingVolumeHierarchy.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\NodeBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\ParticleCollisions.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
