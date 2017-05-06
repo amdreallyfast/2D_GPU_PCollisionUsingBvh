@@ -198,10 +198,6 @@
     <ClInclude Include="Shaders\ShaderStorage.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Compute\ComputeHeaders\ComputeShaderWorkGroupSizes.comp" />
-    <None Include="Shaders\Compute\ComputeHeaders\CrossShaderUniformLocations.comp" />
-    <None Include="Shaders\Compute\ComputeHeaders\SsboBufferBindings.comp" />
-    <None Include="Shaders\Compute\ComputeHeaders\Version.comp" />
     <None Include="Shaders\Compute\CountNearbyParticles.comp" />
     <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp" />
     <None Include="Shaders\Compute\ParallelSort\GetBitForPrefixScan.comp" />
@@ -212,8 +208,9 @@
     <None Include="Shaders\Compute\ParallelSort\SortIntermediateData.comp" />
     <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\BuildBoundingVolumeHierarchy.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\NodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\BuildBvh.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\BuildBvhBoundingBoxes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\BvhNodeBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ParticleCollisions.comp" />
     <None Include="Shaders\Compute\ParticleRegionBoundaries.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp" />
@@ -229,6 +226,10 @@
     <None Include="Shaders\Render\Geometry.vert" />
     <None Include="Shaders\Render\ParticleRender.frag" />
     <None Include="Shaders\Render\ParticleRender.vert" />
+    <None Include="Shaders\ShaderHeaders\ComputeShaderWorkGroupSizes.comp" />
+    <None Include="Shaders\ShaderHeaders\CrossShaderUniformLocations.comp" />
+    <None Include="Shaders\ShaderHeaders\SsboBufferBindings.comp" />
+    <None Include="Shaders\ShaderHeaders\Version.comp" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="Shaders\Compute\ParallelSort\ReadMe.txt" />

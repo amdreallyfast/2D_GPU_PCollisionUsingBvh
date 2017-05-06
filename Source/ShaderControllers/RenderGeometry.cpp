@@ -3,7 +3,7 @@
 #include <string>
 
 #include "Shaders/ShaderStorage.h"
-#include "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
+#include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 

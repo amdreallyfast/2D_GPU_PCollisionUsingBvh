@@ -29,4 +29,7 @@ struct IntermediateData
     unsigned int _data;
     unsigned int _globalIndexOfOriginalData;
 
+    // Note: No padding needed.  OpenGL only pads array elements out to 16bytes if they would 
+    // otherwise straddle the 16byte alignment.  This structure is 8bytes, which doesn't 
+    // straddle 16bytes, so no padding needed.
 };

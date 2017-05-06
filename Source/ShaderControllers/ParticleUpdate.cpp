@@ -3,7 +3,7 @@
 #include <string>
 
 #include "Shaders/ShaderStorage.h"
-#include "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
+#include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 #include "ThirdParty/glm/gtc/type_ptr.hpp"
@@ -41,10 +41,10 @@ namespace ShaderControllers
 
         std::string shaderKey = "particle update";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleUpdate.comp");

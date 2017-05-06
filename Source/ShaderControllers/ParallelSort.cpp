@@ -6,8 +6,8 @@
 #include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
 #include "Include/Particles/Particle.h"     // for copying data back and verifying 
 
-#include "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp"
-#include "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp"
+#include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
+#include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
 
 #include <iostream>
 #include <fstream>
@@ -76,11 +76,11 @@ namespace ShaderControllers
         // the index of the original data structure in the ParticleBuffer
         shaderKey = "particle data to intermediate data";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
@@ -93,10 +93,10 @@ namespace ShaderControllers
         // PrefixScanBuffer::PrefixSumsPerWorkGroup array
         shaderKey = "get bit for prefix sums";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/PrefixScanBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/GetBitForPrefixScan.comp");
@@ -108,10 +108,10 @@ namespace ShaderControllers
         // the scan again over PrefixScanBuffer::PrefixSumsOfWorkGroupSums
         shaderKey = "parallel prefix scan";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/PrefixScanBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParallelPrefixScan.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
@@ -121,10 +121,10 @@ namespace ShaderControllers
         // and finally sort the "read" array from IntermediateSortBuffers into the "write" array
         shaderKey = "sort intermediate data";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/PrefixScanBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/SortIntermediateData.comp");
@@ -135,11 +135,11 @@ namespace ShaderControllers
         // after the loop, sort the original data according to the sorted intermediate data
         shaderKey = "sort original data";
         shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ComputeHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/SortParticleData.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);

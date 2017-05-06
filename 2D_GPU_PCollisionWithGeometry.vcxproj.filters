@@ -201,11 +201,11 @@
     <Filter Include="Include\Geometry">
       <UniqueIdentifier>{c5ee11ad-17e0-47b0-82bf-68fb8161553f}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Shaders\ComputeHeaders">
-      <UniqueIdentifier>{c0ecb713-da03-4af4-b072-8be8773cf9df}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Shaders\Compute\ParticleCollisions">
       <UniqueIdentifier>{cb7de57a-7acc-451c-b1a7-29d72ba96d3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\ShaderHeaders">
+      <UniqueIdentifier>{facd62e8-a3a4-4307-85fc-a451c756424a}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -245,18 +245,6 @@
     <None Include="Shaders\Compute\PositionToMortonCode.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\Compute\ComputeHeaders\ComputeShaderWorkGroupSizes.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
-    </None>
-    <None Include="Shaders\Compute\ComputeHeaders\CrossShaderUniformLocations.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
-    </None>
-    <None Include="Shaders\Compute\ComputeHeaders\SsboBufferBindings.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
-    </None>
-    <None Include="Shaders\Compute\ComputeHeaders\Version.comp">
-      <Filter>Shaders\ComputeHeaders</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp">
       <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
@@ -293,13 +281,28 @@
     <None Include="Shaders\Compute\PolygonBuffer.comp">
       <Filter>Shaders</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\BuildBoundingVolumeHierarchy.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
-    <None Include="Shaders\Compute\ParticleCollisions\NodeBuffer.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\ParticleCollisions.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\ShaderHeaders\ComputeShaderWorkGroupSizes.comp">
+      <Filter>Shaders\ShaderHeaders</Filter>
+    </None>
+    <None Include="Shaders\ShaderHeaders\CrossShaderUniformLocations.comp">
+      <Filter>Shaders\ShaderHeaders</Filter>
+    </None>
+    <None Include="Shaders\ShaderHeaders\SsboBufferBindings.comp">
+      <Filter>Shaders\ShaderHeaders</Filter>
+    </None>
+    <None Include="Shaders\ShaderHeaders\Version.comp">
+      <Filter>Shaders\ShaderHeaders</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\BuildBvh.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\BvhNodeBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\BuildBvhBoundingBoxes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>
