@@ -149,7 +149,7 @@ void GenerateZOrderCurveMortonCodes(std::vector<MortonCodeVertex> *updateThis)
 void GenerateVerticesForZOrderCurve(std::vector<MortonCodeVertex> *putDataHere)
 {
     putDataHere->clear();
-    float increment = 100.0f;
+    float increment = 50.0f;
     float totalRange = 1001.0f;
 
     float start = 100.0f;
@@ -290,6 +290,7 @@ void Init()
     // between the SSBOs and the shaders, but the compute headers lessen the coupling that needs 
     // to happen on the CPU side.
     particleBuffer = std::make_shared<ParticleSsbo>(MAX_PARTICLE_COUNT);
+    particleBuffer->ConfigureRender(GL_POINTS);
     
     // set up the particle region
     // Note: This mat4 is a convenience for easily moving the particle region center and all 
@@ -339,7 +340,6 @@ void Init()
 
     // for drawing particles
     particleRenderer = std::make_unique<ShaderControllers::RenderParticles>();
-    particleRenderer->ConfigureSsboForRendering(particleBuffer);
 
     // for drawing non-particle things
     geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
@@ -347,7 +347,7 @@ void Init()
     zOrderCurvePolygonFaces.clear();
     GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
     polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
-    geometryRenderer->ConfigureSsboForRendering(polygonBuffer, GL_LINES);
+    polygonBuffer->ConfigureRender(GL_LINES);
 
 
 
@@ -592,7 +592,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif

@@ -84,14 +84,13 @@ Description:
     and those SSBO don't do anything with rendering, so let this be a virtual method, not pure 
     virtual.
 
-    Note: This method cannot be const if the user needs to record either the render program ID 
-    or the draw style for later use.
+    Note: This method cannot be const because the the user needs to record the draw style.
 Parameters: 
     Ignored
 Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
-void SsboBase::ConfigureRender(unsigned int, unsigned int)
+void SsboBase::ConfigureRender(unsigned int)
 {
     // nothing
 }

@@ -18,7 +18,7 @@ public:
     using SHARED_PTR = std::shared_ptr<PolygonSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
-    void ConfigureRender(unsigned int renderProgramId, unsigned int drawStyle) override;
+    void ConfigureRender(unsigned int drawStyle) override;
 
     unsigned int NumItems() const;
 

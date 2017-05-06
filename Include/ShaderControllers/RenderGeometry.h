@@ -16,7 +16,6 @@ namespace ShaderControllers
         RenderGeometry();
         ~RenderGeometry();
 
-        void ConfigureSsboForRendering(const PolygonSsbo::SHARED_PTR &ssboToRender, unsigned int drawStyle);
         void Render(const PolygonSsbo::SHARED_PTR &ssboToRender) const;
 
     private:

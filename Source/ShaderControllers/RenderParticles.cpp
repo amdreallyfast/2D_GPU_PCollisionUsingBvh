@@ -47,21 +47,6 @@ namespace ShaderControllers
 
     /*--------------------------------------------------------------------------------------------
     Description:
-        Only this shader controller knows the program ID, so only it can tell the SSBO to 
-        configure itself for rendering with this render program.
-    Parameters: 
-        particleSsboToRender    Contains the VAO ID, draw style, and number of vertices.
-    Returns:    None
-    Creator:    John Cox, 5/2017
-    --------------------------------------------------------------------------------------------*/
-    void RenderParticles::ConfigureSsboForRendering(const ParticleSsbo::SHARED_PTR &configureThis)
-    {
-        // particles are points, so every vertex is a point
-        configureThis->ConfigureRender(_renderProgramId, GL_POINTS);
-    }
-
-    /*--------------------------------------------------------------------------------------------
-    Description:
         Binds the VAO for the particle SSBO, then calls glDrawArrays(...).
     Parameters: 
         particleSsboToRender    Contains the VAO ID, draw style, and number of vertices.
