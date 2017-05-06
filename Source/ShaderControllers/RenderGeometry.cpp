@@ -46,26 +46,6 @@ namespace ShaderControllers
 
     /*--------------------------------------------------------------------------------------------
     Description:
-        Exists so that this shader controller doesn't have to allow the program ID out of its 
-        sight (read, "returned to other code").
-
-        // TODO: ??better way to do this? why does the VAO require a bound program??
-
-
-    Parameters: 
-        ssboToRender    The SSBO that needs to have its attribute pointers set up.
-        drawStyle       GL_POINTS, GL_LINES, GL_TRIANGLES, etc.
-    Returns:    None
-    Creator:    John Cox, 5/2017
-    --------------------------------------------------------------------------------------------*/
-    void RenderGeometry::ConfigureSsboForRendering(const PolygonSsbo::SHARED_PTR &ssboToRender, unsigned int drawStyle)
-    {
-        // TODO: try to set up the VAO with a p
-        ssboToRender->ConfigureRender(_renderProgramId, drawStyle);
-    }
-
-    /*--------------------------------------------------------------------------------------------
-    Description:
         Binds the render program and the SSBO's VAO, draws all the SSBO's vertices, and cleans 
         the VAO and program bindings.
     Parameters: 

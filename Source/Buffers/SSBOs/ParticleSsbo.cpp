@@ -115,28 +115,18 @@ void ParticleSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) cons
 Description:
     Sets up the vertex attribute pointers for this SSBO's VAO.
 Parameters: 
-    renderProgramId     Self-explanatory
     drawStyle           Expected to be GL_POINTS.
 Returns:    None
 Creator:    John Cox, 11-24-2016
 ------------------------------------------------------------------------------------------------*/
-void ParticleSsbo::ConfigureRender(unsigned int renderProgramId, unsigned int drawStyle)
+void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
 {
     _drawStyle = drawStyle;
 
-    // set up the VAO
-    // now set up the vertex array indices for the drawing shader
-    // Note: MUST bind the program beforehand or else the VAO binding will blow up.  It won't 
-    // spit out an error but will rather silently bind to whatever program is currently bound, 
-    // even if it is the undefined program 0.
-    glUseProgram(renderProgramId);
+    // the vertex array attributes will make an association between whatever is bound to the 
+    // array buffer and whatever is set up with glVertexAttrib*(...)
     glBindVertexArray(_vaoId);
-
-    // the vertex array attributes only work on whatever is bound to the array buffer, so bind 
-    // shader storage buffer to the array buffer, set up the vertex array attributes, and the 
-    // VAO will then use the buffer ID of whatever is bound to it
     glBindBuffer(GL_ARRAY_BUFFER, _bufferId);
-    // do NOT call glBufferData(...) because it was called earlier for the shader storage buffer
 
     // vertex attribute order is same as the structure
     // - glm::vec4 _position;
@@ -226,5 +216,4 @@ void ParticleSsbo::ConfigureRender(unsigned int renderProgramId, unsigned int dr
     // cleanup
     glBindVertexArray(0);   // unbind this BEFORE the array or else the VAO will bind to buffer 0
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUseProgram(0);    // render program
 }

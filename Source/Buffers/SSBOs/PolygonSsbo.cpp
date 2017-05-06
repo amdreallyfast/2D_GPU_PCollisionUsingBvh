@@ -62,20 +62,14 @@ void PolygonSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
 Description:
     Sets up the vertex attribute pointers for this SSBO's VAO.
 Parameters: 
-    RenderProgramId     Self-explanatory
     drawStyle           Expected to be GL_LINES (2D program) or GL_TRIANGLES (3D program).
 Returns:    None
 Creator: John Cox, 11-24-2016
 -----------------------------------------------------------------------------------------------*/
-void PolygonSsbo::ConfigureRender(unsigned int renderProgramId, unsigned int drawStyle)
+void PolygonSsbo::ConfigureRender(unsigned int drawStyle)
 {
     _drawStyle = drawStyle;
 
-    // the render program is required for vertex attribute initialization or else the program 
-    // WILL crash at runtime
-    //glUseProgram(renderProgramId);
-    glUseProgram(0);
-    glGenVertexArrays(1, &_vaoId);
     glBindVertexArray(_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, _bufferId);
 
@@ -108,7 +102,6 @@ void PolygonSsbo::ConfigureRender(unsigned int renderProgramId, unsigned int dra
     // cleanup
     glBindVertexArray(0);   // unbind this BEFORE the array
     glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glUseProgram(0);    // render program
 }
 
 /*------------------------------------------------------------------------------------------------
