@@ -229,8 +229,182 @@ void GenerateZOrderCurveGeometry(std::vector<PolygonFace> *putDataHere)
     }
 }
 
+int Sign(int x)
+{
+    // Thanks to stackoverflow user NPE for his answer here:
+    // http://stackoverflow.com/questions/14579920/fast-sign-of-integer-in-c
+    return (int)((x > 0) - (x < 0));
+}
 
-std::vector<PolygonFace> zOrderCurvePolygonFaces;
+int LengthOfCommonPrefix(int indexA, int indexB, const std::vector<int> &data)
+{
+    // don't need to check 'a' because that is a thread ID and therefore should always be in bounds
+    if (indexB < 0 || indexB >= data.size())
+    {
+        return -1;
+    }
+
+    // shouldn't be necessary if the calling function is paying attention
+    if (indexA == indexB)
+    {
+        return 32;
+    }
+
+    // take the base-2 log to get the number of bits in use
+    // I don't know how to intuitively explain why the +1 is needed, but the math doesn't work out correctly otherwise.  I suspect that it has something to do with float rounding to integer.
+    int valueA = data[indexA];
+    int valueB = data[indexB];
+
+    // this will leave only the bits that are different
+    int thing = 0;
+    int result = 0;
+    int valueNumCommonBits = 0;
+    int indexNumCommonBits = 0;
+
+    thing = valueA ^ valueB;
+    result = 5 - (int(log2(valueA ^ valueB)) + 1);
+    valueNumCommonBits = (thing == 0) ? 5 : result;
+
+    thing = indexA ^ indexB;
+    result = 5 - (int(log2(indexA ^ indexB)) + 1);
+    indexNumCommonBits = (thing == 0) ? 5 : result;
+    
+    int retVal = (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
+    return retVal;
+
+    //int numCommonBits = 0;
+    //if (valueA != valueB)
+    //{
+    //    numCommonBits = 32 - (int(log2(valueA ^ valueB)) + 1);
+    //}
+    //else  // read, valueA == valueB
+    //{
+    //    //valueA += indexA;
+    //    valueB += 1;
+    //    numCommonBits = 32 - (int(log2(valueA ^ valueB)) + 1);
+
+    //}
+
+    //return numCommonBits;
+}
+
+int DetermineRange(int index, int direction, const std::vector<int> &data)
+{
+    // compute upper/lower bound using a binary search
+    int minimumCommonPrefixLength = LengthOfCommonPrefix(index, index - direction, data);
+    int maxPossibleLength = 2;
+    while (LengthOfCommonPrefix(index, index + (maxPossibleLength * direction), data) > minimumCommonPrefixLength)
+    {
+        maxPossibleLength *= 2;
+    }
+
+    // find actual length using a binary search on the max possible length
+    //??what is "t"? "temp"??
+    // Note: It may be possible to find the actual length in a single loop, but the only way that I'm aware of is a linear search through all items.  The point of a binary search is to reduce an O(n) solution to O(log n), so keep the 2-loop solution.
+    int actualLength = 0;
+    for (int t = maxPossibleLength / 2; t >= 1; t >>= 1)
+    {
+        if (LengthOfCommonPrefix(index, index + ((actualLength + t) * direction), data) > minimumCommonPrefixLength)
+        {
+            actualLength += t;
+        }
+    }
+
+    return actualLength;
+}
+
+#include <algorithm>    // std::min(...)
+int FindSplitPosition(int index, int otherEnd, int length, int direction, const std::vector<int> &data)
+{
+    int commonPrefixLengthBetweenBeginAndEnd = LengthOfCommonPrefix(index, otherEnd, data);
+    int splitOffset = 0;
+
+
+    // some kind of temporary value; don't know what else to call it
+    // Note: The loop runs through t = 1 with a ceiling function, so it should run up until t == 1, then one one more time only or else the loop will run forever (the ceiling of any fraction between 0-1 is 1).
+    float t = static_cast<float>(length);
+    do
+    {
+        t = ceil(t / 2.0f);
+        int commonPrefixLength = LengthOfCommonPrefix(index, index + ((splitOffset + (int)t) * direction), data);
+        if (commonPrefixLength > commonPrefixLengthBetweenBeginAndEnd)
+        {
+            splitOffset += t;
+        }
+
+    } while (t > 1);
+
+    int splitIndex = index + (splitOffset * direction) + std::min(direction, 0);
+
+    return splitIndex;
+}
+
+void GenerateRadixBinaryTree()
+{
+    struct InternalNode
+    {
+        InternalNode() :
+            _left(-1),
+            _right(-1)
+        {
+        }
+
+        // TODO: int _parent;
+        int _left;
+        int _right;
+    };
+
+    struct LeafNode
+    {
+        LeafNode() :
+            _data(0)
+        {
+        }
+
+        // TODO: int _parent;
+        int _data;
+    };
+
+    std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 26, 26, 28 };
+    //std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 22, 26, 28 };
+    std::vector<InternalNode> branches(sortedData.size() - 1);
+    std::vector<LeafNode> leaves(sortedData.size());
+
+
+    int gerble = 0;
+    gerble = LengthOfCommonPrefix(1, 2, sortedData);
+    gerble = LengthOfCommonPrefix(4, 5, sortedData);
+    gerble = LengthOfCommonPrefix(8, 9, sortedData);
+    gerble = LengthOfCommonPrefix(13, 14, sortedData);
+
+    int index = 13;
+    int commonPrefixLengthBefore = LengthOfCommonPrefix(index, index - 1, sortedData);
+    int commonPrefixLengthAfter = LengthOfCommonPrefix(index, index + 1, sortedData);
+    int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
+
+    int length = DetermineRange(index, d, sortedData);
+
+    int otherEndIndex = index + (length * d);
+
+    int splitIndex = FindSplitPosition(index, otherEndIndex, length, d, sortedData);
+
+
+
+    for (size_t i = 0; i < sortedData.size(); i++)
+    {
+
+
+
+    }
+
+
+
+    printf("");
+}
+
+
+
+
 
 
 
@@ -246,6 +420,13 @@ Creator:    John Cox (3-7-2016)
 ------------------------------------------------------------------------------------------------*/
 void Init()
 {
+    GenerateRadixBinaryTree();
+
+
+
+
+
+
     // this OpenGL setup stuff is so that the frame rate text renders correctly
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
@@ -344,7 +525,8 @@ void Init()
     // for drawing non-particle things
     geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
 
-    zOrderCurvePolygonFaces.clear();
+    std::vector<PolygonFace> zOrderCurvePolygonFaces;
+    //zOrderCurvePolygonFaces.clear();
     GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
     polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
     polygonBuffer->ConfigureRender(GL_LINES);
@@ -376,6 +558,9 @@ Creator:    John Cox (1-2-2017)
 ------------------------------------------------------------------------------------------------*/
 void UpdateAllTheThings()
 {
+
+
+
     using namespace std::chrono;
     steady_clock::time_point start = high_resolution_clock::now();
     
@@ -388,6 +573,36 @@ void UpdateAllTheThings()
     //parallelSort->SortWithProfiling();
     particleCollisions->DetectAndResolveCollisions();
     nearbyParticleCounter->Count();
+
+
+    // TODO: put this stuff into a "wait for old commands to catch up" function
+
+
+    // okay to declare static; they won't be initialized until the first call to this function, 
+    // before which Init() was already called, so the OpenGL context will be initialized by the 
+    // time that the code gets here
+    static GLsync updateSyncFences[3] = //{ 0,0,0 };
+    {
+        0,  // the "current" index will make a new fence sync object here at the end of the first time through, so don't give it one on startup
+        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
+        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
+    };
+    static int currentSyncFenceIndex = 0;
+    static int waitSyncFenceIndex = 1;
+
+    GLenum waitReturn = GL_UNSIGNALED;
+    while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
+    {
+        waitReturn = glClientWaitSync(updateSyncFences[waitSyncFenceIndex], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+    }
+    glDeleteSync(updateSyncFences[waitSyncFenceIndex]);
+
+    // new sync
+    updateSyncFences[currentSyncFenceIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+
+    // update indices
+    currentSyncFenceIndex = (currentSyncFenceIndex == 2) ? 0 : currentSyncFenceIndex + 1;
+    waitSyncFenceIndex = (waitSyncFenceIndex == 2) ? 0 : waitSyncFenceIndex + 1;
 
 
 
