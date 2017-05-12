@@ -341,35 +341,46 @@ int FindSplitPosition(int index, int otherEnd, int length, int direction, const 
 
 void GenerateRadixBinaryTree()
 {
-    struct InternalNode
+    struct Node
     {
-        InternalNode() :
-            _left(-1),
-            _right(-1)
-        {
-        }
-
-        // TODO: int _parent;
-        int _left;
-        int _right;
-    };
-
-    struct LeafNode
-    {
-        LeafNode() :
+        Node() :
+            _parent(-1),
+            _isLeaf(false),
+            _leftChildIndex(-1),
+            _rightChildIndex(-1),
             _data(0)
         {
         }
 
-        // TODO: int _parent;
+        int _parent;
+        bool _isLeaf;
+        int _leftChildIndex;
+        int _rightChildIndex;
         int _data;
     };
 
-    std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 26, 26, 28 };
-    //std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 22, 26, 28 };
-    std::vector<InternalNode> branches(sortedData.size() - 1);
-    std::vector<LeafNode> leaves(sortedData.size());
+    //struct LeafNode
+    //{
+    //    LeafNode() :
+    //        _data(0)
+    //    {
+    //    }
 
+    //    // TODO: int _parent;
+    //    int _data;
+    //};
+
+    std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 26, 26, 28 };
+    
+    int numLeaves = sortedData.size();
+    int numInternalNodes = sortedData.size() - 1;
+    std::vector<Node> bvh(numLeaves + numInternalNodes);
+
+    for (size_t i = 0; i < sortedData.size(); i++)
+    {
+        bvh[i]._isLeaf = true;
+        bvh[i]._data = sortedData[i];
+    }
 
     int gerble = 0;
     gerble = LengthOfCommonPrefix(1, 2, sortedData);
@@ -377,24 +388,62 @@ void GenerateRadixBinaryTree()
     gerble = LengthOfCommonPrefix(8, 9, sortedData);
     gerble = LengthOfCommonPrefix(13, 14, sortedData);
 
-    int index = 13;
-    int commonPrefixLengthBefore = LengthOfCommonPrefix(index, index - 1, sortedData);
-    int commonPrefixLengthAfter = LengthOfCommonPrefix(index, index + 1, sortedData);
-    int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
+    //int index = 13;
+    //int commonPrefixLengthBefore = LengthOfCommonPrefix(index, index - 1, sortedData);
+    //int commonPrefixLengthAfter = LengthOfCommonPrefix(index, index + 1, sortedData);
+    //int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
 
-    int length = DetermineRange(index, d, sortedData);
+    //int length = DetermineRange(index, d, sortedData);
 
-    int otherEndIndex = index + (length * d);
+    //int otherEndIndex = index + (length * d);
 
-    int splitIndex = FindSplitPosition(index, otherEndIndex, length, d, sortedData);
+    //int splitIndex = FindSplitPosition(index, otherEndIndex, length, d, sortedData);
 
 
 
-    for (size_t i = 0; i < sortedData.size(); i++)
+    for (size_t i = 0; i < numInternalNodes; i++)
     {
+        int thisNodeIndex = static_cast<int>(i);
+        int commonPrefixLengthBefore = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex - 1, sortedData);
+        int commonPrefixLengthAfter = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex + 1, sortedData);
+        int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
+        int length = DetermineRange(thisNodeIndex, d, sortedData);
+        int otherEndIndex = thisNodeIndex + (length * d);
+        int splitIndex = FindSplitPosition(thisNodeIndex, otherEndIndex, length, d, sortedData);
 
+        int leftChildIndex = -1;
+        if (std::min(thisNodeIndex, otherEndIndex) == splitIndex)
+        {
+            // left child is a leaf node
+            leftChildIndex = splitIndex;
+        }
+        else
+        {
+            // left child is an internal node
+            leftChildIndex = numLeaves + splitIndex;
+        }
+        bvh[numLeaves + thisNodeIndex]._leftChildIndex = leftChildIndex;
 
+        int rightChildIndex = -1;
+        if (std::max(thisNodeIndex, otherEndIndex) == (splitIndex + 1))
+        {
+            // right child is a leaf node
+            rightChildIndex = splitIndex + 1;
+        }
+        else
+        {
+            // right child is an internal node
+            rightChildIndex = numLeaves + splitIndex + 1;
+        }
+        bvh[numLeaves + thisNodeIndex]._rightChildIndex = rightChildIndex;
 
+        //if (leftChildIsLeaf != rightChildIsLeaf)
+        //{
+        //    // one is a leaf and the other is not, so give them both a parent 
+        //}
+        // give only the right child a parent
+        // Note: This is for the sake of the next stage, in which each each thread creates a bounding box for a leaf, and if the node has a parent, then it proceeds to that internal node and combines the bounding boxes of the two children.  The thread will abort if the node does not have a parent.  To prevent race conditions, only give the right child (and hence only one thread) a way to get the parent.
+        bvh[rightChildIndex]._parent = thisNodeIndex;
     }
 
 
