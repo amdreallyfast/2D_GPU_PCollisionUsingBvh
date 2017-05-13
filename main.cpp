@@ -105,30 +105,52 @@ unsigned int ExpandBits(unsigned int i)
     return expandedI;
 }
 
-unsigned int PositionToMortonCode(glm::vec4 pos)
+//unsigned int PositionToMortonCode(glm::vec4 pos, float rangeX, float rangeY)
+//{
+//    //if (pos.x < 0.05f && pos.x > -0.05f && pos.y < 0.05f && pos.y > -0.05f)
+//    //{
+//    //    // roughly the center
+//    //    printf("");
+//    //}
+//
+//
+//    pos.w = 0.0f;
+//
+//    // bring to range [-1,1]
+//    //pos = glm::normalize(pos);
+//    //pos.x = pos.x / 2002.0f; 
+//    //pos.y = pos.y / 2002.0f;
+//    pos.x = pos.x / rangeX;
+//    pos.y = pos.y / rangeY;
+//
+//    // range [-1,+1] to range [0,1]
+//    //pos += glm::vec4(+1, +1, +1, 0);
+//    //pos *= 0.5f;
+//    //pos = (pos + glm::vec4(+1, +1, +1, 0)) * 0.5f;
+//
+//    float clampX = glm::min(glm::max(pos.x * 1024.0f, 0.0f), 1023.0f);
+//    float clampY = glm::min(glm::max(pos.y * 1024.0f, 0.0f), 1023.0f);
+//    float clampZ = glm::min(glm::max(pos.z * 1024.0f, 0.0f), 1023.0f);
+//
+//    unsigned int xx = ExpandBits((unsigned int)clampX);
+//    unsigned int yy = ExpandBits((unsigned int)clampY);
+//    unsigned int zz = ExpandBits((unsigned int)clampZ);
+//
+//    return (xx * 4) + (yy * 2) + zz;
+//}
+
+unsigned int PositionToMortonCode(glm::vec4 pos, float rangeXLeft, float rangeXWidth, float rangeYBottom, float rangeYHeight)
 {
-    //if (pos.x < 0.05f && pos.x > -0.05f && pos.y < 0.05f && pos.y > -0.05f)
-    //{
-    //    // roughly the center
-    //    printf("");
-    //}
+    // bring to range [0,1]
+    // Note: This conversion should work regardless of whether all the particle region borders 
+    // are in the negative octant or all the borders are in the postive octant or the particle 
+    // region is centered on the origin (0,0,0) and there is a mix of positive and negative.
+    pos.x = (pos.x - rangeXLeft) / rangeXWidth;
+    pos.y = (pos.y - rangeYBottom) / rangeYHeight;
 
-
-    pos.w = 0.0f;
-
-    // bring to range [-1,1]
-    //pos = glm::normalize(pos);
-    //pos.x = pos.x / 2002.0f; 
-    //pos.y = pos.y / 2002.0f;
-    pos.x = pos.x / 2.0f;
-    pos.y = pos.y / 2.0f;
-
-    // range [-1,+1] to range [0,1]
-    pos = (pos + glm::vec4(+1, +1, +1, 0)) * 0.5f;
-
-    float clampX = glm::min(glm::max(pos.x * 1024.0f, 0.0f), 1023.0f);
-    float clampY = glm::min(glm::max(pos.y * 1024.0f, 0.0f), 1023.0f);
-    float clampZ = glm::min(glm::max(pos.z * 1024.0f, 0.0f), 1023.0f);
+    float clampX = std::min(std::max(pos.x * 1024.0f, 0.0f), 1023.0f);
+    float clampY = std::min(std::max(pos.y * 1024.0f, 0.0f), 1023.0f);
+    float clampZ = std::min(std::max(pos.z * 1024.0f, 0.0f), 1023.0f);
 
     unsigned int xx = ExpandBits((unsigned int)clampX);
     unsigned int yy = ExpandBits((unsigned int)clampY);
@@ -138,11 +160,12 @@ unsigned int PositionToMortonCode(glm::vec4 pos)
 }
 
 
+
 void GenerateZOrderCurveMortonCodes(std::vector<MortonCodeVertex> *updateThis)
 {
     for (size_t i = 0; i < updateThis->size(); i++)
     {
-        (*updateThis)[i]._mortonCode = PositionToMortonCode((*updateThis)[i]._point._position);
+        (*updateThis)[i]._mortonCode = PositionToMortonCode((*updateThis)[i]._point._position, -1.0f, 2.0f, -1.0f, 2.0f);
     }
 }
 
@@ -229,228 +252,6 @@ void GenerateZOrderCurveGeometry(std::vector<PolygonFace> *putDataHere)
     }
 }
 
-int Sign(int x)
-{
-    // Thanks to stackoverflow user NPE for his answer here:
-    // http://stackoverflow.com/questions/14579920/fast-sign-of-integer-in-c
-    return (int)((x > 0) - (x < 0));
-}
-
-int LengthOfCommonPrefix(int indexA, int indexB, const std::vector<int> &data)
-{
-    // don't need to check 'a' because that is a thread ID and therefore should always be in bounds
-    if (indexB < 0 || indexB >= data.size())
-    {
-        return -1;
-    }
-
-    // shouldn't be necessary if the calling function is paying attention
-    if (indexA == indexB)
-    {
-        return 32;
-    }
-
-    // take the base-2 log to get the number of bits in use
-    // I don't know how to intuitively explain why the +1 is needed, but the math doesn't work out correctly otherwise.  I suspect that it has something to do with float rounding to integer.
-    int valueA = data[indexA];
-    int valueB = data[indexB];
-
-    // this will leave only the bits that are different
-    int thing = 0;
-    int result = 0;
-    int valueNumCommonBits = 0;
-    int indexNumCommonBits = 0;
-
-    thing = valueA ^ valueB;
-    result = 5 - (int(log2(valueA ^ valueB)) + 1);
-    valueNumCommonBits = (thing == 0) ? 5 : result;
-
-    thing = indexA ^ indexB;
-    result = 5 - (int(log2(indexA ^ indexB)) + 1);
-    indexNumCommonBits = (thing == 0) ? 5 : result;
-    
-    int retVal = (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
-    return retVal;
-
-    //int numCommonBits = 0;
-    //if (valueA != valueB)
-    //{
-    //    numCommonBits = 32 - (int(log2(valueA ^ valueB)) + 1);
-    //}
-    //else  // read, valueA == valueB
-    //{
-    //    //valueA += indexA;
-    //    valueB += 1;
-    //    numCommonBits = 32 - (int(log2(valueA ^ valueB)) + 1);
-
-    //}
-
-    //return numCommonBits;
-}
-
-int DetermineRange(int index, int direction, const std::vector<int> &data)
-{
-    // compute upper/lower bound using a binary search
-    int minimumCommonPrefixLength = LengthOfCommonPrefix(index, index - direction, data);
-    int maxPossibleLength = 2;
-    while (LengthOfCommonPrefix(index, index + (maxPossibleLength * direction), data) > minimumCommonPrefixLength)
-    {
-        maxPossibleLength *= 2;
-    }
-
-    // find actual length using a binary search on the max possible length
-    //??what is "t"? "temp"??
-    // Note: It may be possible to find the actual length in a single loop, but the only way that I'm aware of is a linear search through all items.  The point of a binary search is to reduce an O(n) solution to O(log n), so keep the 2-loop solution.
-    int actualLength = 0;
-    for (int t = maxPossibleLength / 2; t >= 1; t >>= 1)
-    {
-        if (LengthOfCommonPrefix(index, index + ((actualLength + t) * direction), data) > minimumCommonPrefixLength)
-        {
-            actualLength += t;
-        }
-    }
-
-    return actualLength;
-}
-
-#include <algorithm>    // std::min(...)
-int FindSplitPosition(int index, int otherEnd, int length, int direction, const std::vector<int> &data)
-{
-    int commonPrefixLengthBetweenBeginAndEnd = LengthOfCommonPrefix(index, otherEnd, data);
-    int splitOffset = 0;
-
-
-    // some kind of temporary value; don't know what else to call it
-    // Note: The loop runs through t = 1 with a ceiling function, so it should run up until t == 1, then one one more time only or else the loop will run forever (the ceiling of any fraction between 0-1 is 1).
-    float t = static_cast<float>(length);
-    do
-    {
-        t = ceil(t / 2.0f);
-        int commonPrefixLength = LengthOfCommonPrefix(index, index + ((splitOffset + (int)t) * direction), data);
-        if (commonPrefixLength > commonPrefixLengthBetweenBeginAndEnd)
-        {
-            splitOffset += t;
-        }
-
-    } while (t > 1);
-
-    int splitIndex = index + (splitOffset * direction) + std::min(direction, 0);
-
-    return splitIndex;
-}
-
-void GenerateRadixBinaryTree()
-{
-    struct Node
-    {
-        Node() :
-            _parent(-1),
-            _isLeaf(false),
-            _leftChildIndex(-1),
-            _rightChildIndex(-1),
-            _data(0)
-        {
-        }
-
-        int _parent;
-        bool _isLeaf;
-        int _leftChildIndex;
-        int _rightChildIndex;
-        int _data;
-    };
-
-    //struct LeafNode
-    //{
-    //    LeafNode() :
-    //        _data(0)
-    //    {
-    //    }
-
-    //    // TODO: int _parent;
-    //    int _data;
-    //};
-
-    std::vector<int> sortedData = { 1, 2, 3, 9, 9, 14, 15, 16, 17, 18, 20, 22, 22, 26, 26, 28 };
-    
-    int numLeaves = sortedData.size();
-    int numInternalNodes = sortedData.size() - 1;
-    std::vector<Node> bvh(numLeaves + numInternalNodes);
-
-    for (size_t i = 0; i < sortedData.size(); i++)
-    {
-        bvh[i]._isLeaf = true;
-        bvh[i]._data = sortedData[i];
-    }
-
-    int gerble = 0;
-    gerble = LengthOfCommonPrefix(1, 2, sortedData);
-    gerble = LengthOfCommonPrefix(4, 5, sortedData);
-    gerble = LengthOfCommonPrefix(8, 9, sortedData);
-    gerble = LengthOfCommonPrefix(13, 14, sortedData);
-
-    //int index = 13;
-    //int commonPrefixLengthBefore = LengthOfCommonPrefix(index, index - 1, sortedData);
-    //int commonPrefixLengthAfter = LengthOfCommonPrefix(index, index + 1, sortedData);
-    //int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
-
-    //int length = DetermineRange(index, d, sortedData);
-
-    //int otherEndIndex = index + (length * d);
-
-    //int splitIndex = FindSplitPosition(index, otherEndIndex, length, d, sortedData);
-
-
-
-    for (size_t i = 0; i < numInternalNodes; i++)
-    {
-        int thisNodeIndex = static_cast<int>(i);
-        int commonPrefixLengthBefore = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex - 1, sortedData);
-        int commonPrefixLengthAfter = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex + 1, sortedData);
-        int d = Sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
-        int length = DetermineRange(thisNodeIndex, d, sortedData);
-        int otherEndIndex = thisNodeIndex + (length * d);
-        int splitIndex = FindSplitPosition(thisNodeIndex, otherEndIndex, length, d, sortedData);
-
-        int leftChildIndex = -1;
-        if (std::min(thisNodeIndex, otherEndIndex) == splitIndex)
-        {
-            // left child is a leaf node
-            leftChildIndex = splitIndex;
-        }
-        else
-        {
-            // left child is an internal node
-            leftChildIndex = numLeaves + splitIndex;
-        }
-        bvh[numLeaves + thisNodeIndex]._leftChildIndex = leftChildIndex;
-
-        int rightChildIndex = -1;
-        if (std::max(thisNodeIndex, otherEndIndex) == (splitIndex + 1))
-        {
-            // right child is a leaf node
-            rightChildIndex = splitIndex + 1;
-        }
-        else
-        {
-            // right child is an internal node
-            rightChildIndex = numLeaves + splitIndex + 1;
-        }
-        bvh[numLeaves + thisNodeIndex]._rightChildIndex = rightChildIndex;
-
-        //if (leftChildIsLeaf != rightChildIsLeaf)
-        //{
-        //    // one is a leaf and the other is not, so give them both a parent 
-        //}
-        // give only the right child a parent
-        // Note: This is for the sake of the next stage, in which each each thread creates a bounding box for a leaf, and if the node has a parent, then it proceeds to that internal node and combines the bounding boxes of the two children.  The thread will abort if the node does not have a parent.  To prevent race conditions, only give the right child (and hence only one thread) a way to get the parent.
-        bvh[rightChildIndex]._parent = thisNodeIndex;
-    }
-
-
-
-    printf("");
-}
-
 
 
 
@@ -469,13 +270,6 @@ Creator:    John Cox (3-7-2016)
 ------------------------------------------------------------------------------------------------*/
 void Init()
 {
-    GenerateRadixBinaryTree();
-
-
-
-
-
-
     // this OpenGL setup stuff is so that the frame rate text renders correctly
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
