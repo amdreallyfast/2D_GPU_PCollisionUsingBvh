@@ -1,9 +1,12 @@
 // REQUIRES SsboBufferBindings.comp
-//  PREFIX_SCAN_BUFFER_BINDING
 // REQUIRES CrossShaderUniformLocations
-//  UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE
 
 
+/*------------------------------------------------------------------------------------------------
+Description:   
+    A convenience structure for BvhNode.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
 struct BoundingBox
 {
     float _left;
@@ -15,26 +18,30 @@ struct BoundingBox
 /*------------------------------------------------------------------------------------------------
 Description:   
     Stores info about a single node in the BVH.  Can be either an internal node or a leaf node.  
-    If internal, then its children are either leaf nodes or other internal nodes.  If a leaf, 
-    then it will have an index to the particle whose bounding box it describes.
+    If internal, then its children are either leaf nodes or other internal nodes.  If a leaf 
+    node, then it will have _data to analyze.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-struct Node
+struct BvhNode
 {
     BoundingBox _boundingBox;
 
-    uint _leftChildNodeIndex;
-    uint _rightChildNodeIndex;
-    bool _isLeaf;
+    uint _isLeaf;
+    uint _parentIndex;
+    uint _leftChildIndex;
+    uint _rightChildIndex;
+    uint _data;
 
-    // only valid if _isLeaf is true
-    uint _particleIndex;
+    //   4-word bounding box (16 bytes)
+    // + 4x 4-word members (16 bytes)
+    // + 1x 4-word member
+    // => need 3x * 4-word = 12bytes of buffer space on the CPU side
 };
 
 
 // see description of BvhNodeBuffer for detail
-layout(location = UNIFORM_LOCATION_BVH_NUMBER_INTERNAL_NODES) uniform uint uBvhNumberInternalNodes;
 layout(location = UNIFORM_LOCATION_BVH_NUMBER_LEAVES) uniform uint uBvhNumberLeaves;
+layout(location = UNIFORM_LOCATION_BVH_NUMBER_INTERNAL_NODES) uniform uint uBvhNumberInternalNodes;
 layout(location = UNIFORM_LOCATION_BVH_NODE_BUFFER_SIZE) uniform uint uBvhNodeBufferSize;
 
 /*-----------------------------------------------------------------------------------------------
@@ -48,7 +55,7 @@ Creator:    John Cox, 5/2017
 -----------------------------------------------------------------------------------------------*/
 layout (std430, binding = BVH_NODE_BUFFER_BINDING) buffer BvhNodeBuffer
 {
-    // internal nodes first, then leaf nodes
+    // leaf nodes first, then internal nodes 
     Node AllBvhNodes[];
 };
 

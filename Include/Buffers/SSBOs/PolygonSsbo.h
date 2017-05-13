@@ -15,7 +15,8 @@ class PolygonSsbo : public SsboBase
 public:
     PolygonSsbo(const std::vector<PolygonFace> &faceCollection);
     virtual ~PolygonSsbo() = default;
-    using SHARED_PTR = std::shared_ptr<PolygonSsbo>;
+    using SharedPtr = std::shared_ptr<PolygonSsbo>;
+    using SharedConstPtr = std::shared_ptr<const PolygonSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     void ConfigureRender(unsigned int drawStyle) override;

@@ -14,8 +14,8 @@ class SsboBase
 public:
     SsboBase();
     virtual ~SsboBase();
-    using SHARED_PTR = std::shared_ptr<SsboBase>;
-
+    using SharedPtr = std::shared_ptr<SsboBase>;
+    using SharedConstPtr = std::shared_ptr<const SsboBase>;
 
     // derived class needs customized Init(...) function to initialize member values
     virtual void ConfigureConstantUniforms(unsigned int computeProgramId) const;

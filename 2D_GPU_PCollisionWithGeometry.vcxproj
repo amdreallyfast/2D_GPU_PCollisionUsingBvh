@@ -149,6 +149,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="Shaders\ShaderStorage.cpp" />
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\IntermediateDataSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp" />
@@ -172,9 +173,11 @@
     <ClCompile Include="Source\ShaderControllers\RenderParticles.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Buffers\BvhNode.h" />
     <ClInclude Include="Include\Buffers\IntermediateData.h" />
+    <ClInclude Include="Include\Buffers\Particle.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
-    <ClInclude Include="Include\Buffers\SSBOs\BvhSsbo.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\IntermediateDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h" />
@@ -185,7 +188,6 @@
     <ClInclude Include="Include\Geometry\PolygonFace.h" />
     <ClInclude Include="Include\OpenGlErrorHandling.h" />
     <ClInclude Include="Include\Particles\IParticleEmitter.h" />
-    <ClInclude Include="Include\Particles\Particle.h" />
     <ClInclude Include="Include\Particles\ParticleEmitterBar.h" />
     <ClInclude Include="Include\Particles\ParticleEmitterPoint.h" />
     <ClInclude Include="Include\RenderFrameRate\FreeTypeAtlas.h" />

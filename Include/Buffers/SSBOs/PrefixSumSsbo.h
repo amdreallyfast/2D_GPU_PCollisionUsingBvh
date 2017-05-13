@@ -15,7 +15,8 @@ class PrefixSumSsbo : public SsboBase
 public:
     PrefixSumSsbo(unsigned int numDataEntries);
     virtual ~PrefixSumSsbo() = default;
-    using SHARED_PTR = std::shared_ptr<PrefixSumSsbo>;
+    using SharedPtr = std::shared_ptr<PrefixSumSsbo>;
+    using SharedConstPtr = std::shared_ptr<const PrefixSumSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     unsigned int NumPerGroupPrefixSums() const;

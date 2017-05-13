@@ -71,6 +71,9 @@
     <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -107,9 +110,6 @@
       <Filter>Include\Particles</Filter>
     </ClInclude>
     <ClInclude Include="Include\Particles\IParticleEmitter.h">
-      <Filter>Include\Particles</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Particles\Particle.h">
       <Filter>Include\Particles</Filter>
     </ClInclude>
     <ClInclude Include="Include\Particles\ParticleEmitterBar.h">
@@ -157,8 +157,14 @@
     <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Buffers\SSBOs\BvhSsbo.h">
+    <ClInclude Include="Include\Buffers\BvhNode.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h">
       <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\Particle.h">
+      <Filter>Include\Buffers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

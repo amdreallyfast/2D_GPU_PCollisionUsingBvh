@@ -35,12 +35,12 @@ namespace ShaderControllers
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
     GenerateBoundingVolumeHierarchy::GenerateBoundingVolumeHierarchy(
-        const ParticleSsbo::CONST_SHARED_PTR particleSsbo,
+        const ParticleSsbo::SharedConstPtr particleSsbo,
         const BvhNodeSsbo::SharedConstPtr bvhSsbo) :
-        _numLeaves(bvhSsbo->NumLeaves()),
+        _numLeaves(bvhSsbo->NumLeafNodes()),
         _generateBinaryRadixTreeProgramId(0),
-        _generateBoundingBoxesProgramId(0),
-        _bvhNodeSsbo(nullptr)
+        _generateBoundingBoxesProgramId(0)
+        //_bvhNodeSsbo(nullptr)
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
@@ -204,5 +204,5 @@ namespace ShaderControllers
         }
         outFile.close();
     }
-
+    
 }

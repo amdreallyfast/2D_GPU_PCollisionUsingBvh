@@ -18,7 +18,7 @@ namespace ShaderControllers
     {
     public:
         //??is the particle SSBO really necessary??
-        GenerateBoundingVolumeHierarchy(const ParticleSsbo::CONST_SHARED_PTR particleSsbo, const BvhNodeSsbo::SharedConstPtr bvhSsbo);
+        GenerateBoundingVolumeHierarchy(const ParticleSsbo::SharedConstPtr particleSsbo, const BvhNodeSsbo::SharedConstPtr bvhSsbo);
         ~GenerateBoundingVolumeHierarchy();
 
         void GenerateBvhWithoutProfiling() const;

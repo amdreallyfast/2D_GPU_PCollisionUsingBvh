@@ -17,7 +17,8 @@ class ParticleCopySsbo : public SsboBase
 public:
     ParticleCopySsbo(unsigned int numItems);
     virtual ~ParticleCopySsbo() = default;
-    using SHARED_PTR = std::shared_ptr<ParticleCopySsbo>;
+    using SharedPtr = std::shared_ptr<ParticleCopySsbo>;
+    using SharedConstPtr = std::shared_ptr<const ParticleCopySsbo>;
 
 private:
 };
