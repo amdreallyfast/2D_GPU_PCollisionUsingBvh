@@ -45,34 +45,43 @@
 #include "ThirdParty/glm/vec2.hpp"
 #include "ThirdParty/glm/gtc/matrix_transform.hpp"
 
-#include "Include/Particles/Particle.h"
+#include "Include/Buffers/Particle.h"
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
+#include ""
 #include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Include/ShaderControllers/ParticleReset.h"
 #include "Include/ShaderControllers/ParticleUpdate.h"
 #include "Include/ShaderControllers/ParallelSort.h"
+#include "Include/ShaderControllers/GenerateBoundingVolumeHierarchy.h"
+
+
+
+
+
 #include "Include/ShaderControllers/ParticleCollide.h"
 #include "Include/ShaderControllers/CountNearbyParticles.h"
 #include "Include/ShaderControllers/RenderParticles.h"
 #include "Include/ShaderControllers/RenderGeometry.h"
 
 
-// for the frame rate counter
+// for the frame rate counter (and other profiling)
+#include "Include/ShaderControllers/ProfilingWaitToFinish.h"
 #include "Include/RenderFrameRate/FreeTypeEncapsulated.h"
 #include "Include/RenderFrameRate/Stopwatch.h"
 
 Stopwatch gTimer;
 FreeTypeEncapsulated gTextAtlases;
 
-ParticleSsbo::SHARED_PTR particleBuffer = nullptr;
-PolygonSsbo::SHARED_PTR polygonBuffer = nullptr;
-std::unique_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
-std::unique_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
-std::unique_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
-std::unique_ptr<ShaderControllers::ParticleCollide> particleCollisions = nullptr;
-std::unique_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
-std::unique_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
-std::unique_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
+ParticleSsbo::SharedPtr particleBuffer = nullptr;
+PolygonSsbo::SharedPtr polygonBuffer = nullptr;
+std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
+std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
+std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
+std::shared_ptr<ShaderControllers::GenerateBoundingVolumeHierarchy> GenerateBvh = nullptr;
+std::shared_ptr<ShaderControllers::ParticleCollide> particleCollisions = nullptr;
+std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
+std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
+std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
 const unsigned int MAX_PARTICLE_COUNT = 50000;
 
@@ -322,8 +331,14 @@ void Init()
     // for sorting particles once they've been updated
     parallelSort = std::make_unique<ShaderControllers::ParallelSort>(particleBuffer);
 
+
+
+    // TODO: change the "generate BVH" shader controller into "collision detection and resolution", then keep the BVH internally
     // for detecting and resolving collisions once the particles have been sorted
-    particleCollisions = std::make_unique<ShaderControllers::ParticleCollide>(particleBuffer);
+    GenerateBvh = std::make_shared<ShaderControllers::GenerateBoundingVolumeHierarchy>(particleBuffer, bvhNodeBuffer);
+    //particleCollisions = std::make_unique<ShaderControllers::ParticleCollide>(particleBuffer);
+
+
 
     // determines particle color
     nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
@@ -367,9 +382,6 @@ Creator:    John Cox (1-2-2017)
 ------------------------------------------------------------------------------------------------*/
 void UpdateAllTheThings()
 {
-
-
-
     using namespace std::chrono;
     steady_clock::time_point start = high_resolution_clock::now();
     
@@ -384,25 +396,7 @@ void UpdateAllTheThings()
     nearbyParticleCounter->Count();
 
 
-    // TODO: put this stuff into a "wait for old commands to catch up" function
-
-
-    // okay to declare static; they won't be initialized until the first call to this function, 
-    // before which Init() was already called, so the OpenGL context will be initialized by the 
-    // time that the code gets here
-    static GLsync updateSyncFences[3] =
-    {
-        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
-        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
-        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
-    };
-
-    static int waitSyncFenceIndex = 0;
-    glClientWaitSync(updateSyncFences[waitSyncFenceIndex], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-    glDeleteSync(updateSyncFences[waitSyncFenceIndex]);
-    updateSyncFences[waitSyncFenceIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-    waitSyncFenceIndex++;
-    if (waitSyncFenceIndex >= 3) waitSyncFenceIndex = 0;
+    WaitForComputeToFinish();
 
 
 

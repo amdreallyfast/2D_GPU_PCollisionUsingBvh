@@ -20,9 +20,6 @@
     <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ShaderControllers\ParticleCollide.cpp">
-      <Filter>Source\ShaderControllers</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ShaderControllers\ParticleReset.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
@@ -65,14 +62,17 @@
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ShaderControllers\GenerateBoundingVolumeHierarchy.cpp">
-      <Filter>Source\ShaderControllers</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParticleCollide_old.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ParticleCollisions.cpp">
+      <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -92,9 +92,6 @@
       <Filter>Include\RenderFrameRate</Filter>
     </ClInclude>
     <ClInclude Include="Include\ShaderControllers\ParallelSort.h">
-      <Filter>Include\ShaderControllers</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ShaderControllers\ParticleCollide.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
     <ClInclude Include="Include\ShaderControllers\ParticleReset.h">
@@ -151,9 +148,6 @@
     <ClInclude Include="Include\Geometry\PolygonFace.h">
       <Filter>Include\Geometry</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ShaderControllers\GenerateBoundingVolumeHierarchy.h">
-      <Filter>Include\ShaderControllers</Filter>
-    </ClInclude>
     <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
@@ -165,6 +159,12 @@
     </ClInclude>
     <ClInclude Include="Include\Buffers\Particle.h">
       <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParticleCollide_old.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h">
+      <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

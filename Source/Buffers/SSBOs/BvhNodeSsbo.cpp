@@ -19,12 +19,12 @@ Parameters:
 Returns:    None
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-BvhNodeSsbo::BvhNodeSsbo(unsigned int numLeaves)
+BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles)
 {
     // binary trees with N leaves have N-1 branches
-    _numLeaves = numLeaves;
-    _numInternalNodes = numLeaves - 1;
-    _numTotalNodes = numLeaves + (numLeaves - 1);
+    _numLeaves = numParticles;
+    _numInternalNodes = numParticles - 1;
+    _numTotalNodes = _numLeaves + _numInternalNodes;
     std::vector<BvhNode> v(_numTotalNodes);
 
     // now bind this new buffer to the dedicated buffer binding location
@@ -54,7 +54,9 @@ void BvhNodeSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
 {
     // the uniform should remain constant after this 
     glUseProgram(computeProgramId);
-    glUniform1ui(UNIFORM_LOCATION_INTERMEDIATE_BUFFER_HALF_SIZE, UNIFORM_LOCATION_BVH_NUMBER_LEAVES);
+    glUniform1ui(UNIFORM_LOCATION_BVH_NUMBER_LEAVES, _numLeaves);
+    glUniform1ui(UNIFORM_LOCATION_BVH_NUMBER_INTERNAL_NODES, _numInternalNodes);
+    glUniform1ui(UNIFORM_LOCATION_BVH_NODE_BUFFER_SIZE, _numTotalNodes);
     glUseProgram(0);
 
 }

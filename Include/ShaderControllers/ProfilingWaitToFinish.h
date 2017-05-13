@@ -1,4 +1,8 @@
 #pragma once
 
-void WaitForComputeToFinish();
+namespace ShaderControllers
+{
+    void WaitForComputeToFinish();
+}
+
 

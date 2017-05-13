@@ -23,7 +23,7 @@ Creator:    John Cox, 3/2017
 class BvhNodeSsbo : public SsboBase
 {
 public:
-    BvhNodeSsbo(unsigned int numLeaves);
+    BvhNodeSsbo(unsigned int numParticles);
     virtual ~BvhNodeSsbo() = default;
     using SharedPtr = std::shared_ptr<BvhNodeSsbo>;
     using SharedConstPtr = std::shared_ptr<const BvhNodeSsbo>;
