@@ -74,7 +74,7 @@ std::unique_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter =
 std::unique_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::unique_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 1000000;
+const unsigned int MAX_PARTICLE_COUNT = 50000;
 
 
 
@@ -342,12 +342,12 @@ void Init()
 
 
 
-    // for profiling 
-    // Note: The first call uploads all the buffers before sorting, so the numbers are screwed a 
-    // bit.  They are already loaded on the second call, so that call runs more like what it 
-    // would run in real time.
-    parallelSort->SortWithProfiling();
-    parallelSort->SortWithProfiling();
+    //// for profiling 
+    //// Note: The first call uploads all the buffers before sorting, so the numbers are screwed a 
+    //// bit.  They are already loaded on the second call, so that call runs more like what it 
+    //// would run in real time.
+    //parallelSort->SortWithProfiling();
+    //parallelSort->SortWithProfiling();
 
     // the timer will be used for framerate calculations
     gTimer.Start();

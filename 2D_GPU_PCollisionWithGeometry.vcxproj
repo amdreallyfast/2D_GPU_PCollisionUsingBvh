@@ -162,6 +162,8 @@
     <ClCompile Include="Source\RenderFrameRate\FreeTypeEncapsulated.cpp" />
     <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp" />
     <ClCompile Include="Source\ShaderControllers\CountNearbyParticles.cpp" />
+    <ClCompile Include="Source\ShaderControllers\GenerateBoundingVolumeHierarchy.cpp" />
+    <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp" />
     <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleCollide.cpp" />
@@ -172,6 +174,7 @@
   <ItemGroup>
     <ClInclude Include="Include\Buffers\IntermediateData.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\BvhSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\IntermediateDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h" />
@@ -189,6 +192,8 @@
     <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h" />
     <ClInclude Include="Include\RenderFrameRate\Stopwatch.h" />
     <ClInclude Include="Include\ShaderControllers\CountNearbyParticles.h" />
+    <ClInclude Include="Include\ShaderControllers\GenerateBoundingVolumeHierarchy.h" />
+    <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h" />
     <ClInclude Include="Include\ShaderControllers\RenderGeometry.h" />
     <ClInclude Include="Include\ShaderControllers\ParallelSort.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleCollide.h" />

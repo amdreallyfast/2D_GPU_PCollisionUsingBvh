@@ -65,6 +65,12 @@
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\GenerateBoundingVolumeHierarchy.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp">
+      <Filter>Source\ShaderControllers</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -144,6 +150,15 @@
     </ClInclude>
     <ClInclude Include="Include\Geometry\PolygonFace.h">
       <Filter>Include\Geometry</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\GenerateBoundingVolumeHierarchy.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h">
+      <Filter>Include\ShaderControllers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\BvhSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

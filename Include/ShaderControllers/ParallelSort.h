@@ -38,11 +38,12 @@ namespace ShaderControllers
         useful for a single OriginalDataSsbo.  Compute shaders are not as flexible as CPU-bound 
         shaders, so you have to hold their hand, and the consequence is high coupling.
 
-        The benefit is that it can sort 1,000,000 structures in less than 6 milliseconds (at
-        least for the OriginalData structures that was ).
-        Note: In the GpuRadixSort demo, I could sort 1,000,000 1-integer structures 
-        (OriginalData) in ~4.8 milliseconds.  I am now sorting particles, and I can sort 
-        1,000,000 particles by position in ~4.8 milliseconds.  Nice!  No perceptable change.
+        The benefit is that it can sort 1,000,000 Particle structures in ~127 milliseconds on my 
+        GeForce GTX 560M.  In my GpuRadixSort demo I claimed that the sort happened in <5ms, but 
+        I wasn't properly waiting for the GPU to finish before I used std::chrono to record the 
+        end time.  This is not acceptable for real time (somewhere north of 30fps), but it isn't 
+        bad for a 2011-era laptop GPU.  Fifty thousand particles (50,000) is better, running at 
+        ~50fps (with other shaders alongside it), and 100,000 drops fps down to ~30fps.
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
     class ParallelSort
@@ -55,8 +56,6 @@ namespace ShaderControllers
         void SortWithProfiling() const;
 
     private:
-        void WaitForComputeToFinish() const;
-
         unsigned int _particleDataToIntermediateDataProgramId;
         unsigned int _getBitForPrefixScansProgramId;
         unsigned int _parallelPrefixScanProgramId;
