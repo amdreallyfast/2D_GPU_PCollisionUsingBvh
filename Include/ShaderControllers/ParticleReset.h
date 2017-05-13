@@ -35,7 +35,7 @@ namespace ShaderControllers
     class ParticleReset
     {
     public:
-        ParticleReset(const ParticleSsbo::SHARED_PTR &ssboToReset);
+        ParticleReset(const ParticleSsbo::SharedConstPtr &ssboToReset);
         ~ParticleReset();
 
         // Note: Have to use a copy, not a reference, in order for a shared pointer argument to 

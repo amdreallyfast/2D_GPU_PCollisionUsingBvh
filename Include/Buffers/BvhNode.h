@@ -43,10 +43,10 @@ struct BvhNode
     
     BoundingBox _boundingBox;
 
-    unsigned int _isLeaf;
-    unsigned int _parentIndex;
-    unsigned int _leftChildIndex;
-    unsigned int _rightChildIndex;
+    int _isLeaf;
+    int _parentIndex;
+    int _leftChildIndex;
+    int _rightChildIndex;
     unsigned int _data;
 
     // any necessary padding out to 16 bytes to match the GPU's version

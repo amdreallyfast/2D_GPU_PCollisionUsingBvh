@@ -5,7 +5,7 @@
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 #include "Shaders/ShaderHeaders/SsboBufferBindings.comp"
 
-#include "Include/Particles/Particle.h"
+#include "Include/Buffers/Particle.h"
 
 
 /*------------------------------------------------------------------------------------------------

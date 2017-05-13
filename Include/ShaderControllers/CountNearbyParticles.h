@@ -22,7 +22,7 @@ namespace ShaderControllers
     class CountNearbyParticles
     {
     public:
-        CountNearbyParticles(const ParticleSsbo::CONST_SHARED_PTR particlesToAnalyze);
+        CountNearbyParticles(const ParticleSsbo::SharedConstPtr particlesToAnalyze);
         ~CountNearbyParticles();
 
         void Count() const;

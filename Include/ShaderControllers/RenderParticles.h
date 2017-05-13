@@ -16,7 +16,7 @@ namespace ShaderControllers
         RenderParticles();
         ~RenderParticles();
 
-        void Render(const ParticleSsbo::SHARED_PTR &particleSsboToRender) const;
+        void Render(const ParticleSsbo::SharedPtr &particleSsboToRender) const;
 
     private:
         unsigned int _renderProgramId;

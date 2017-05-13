@@ -24,7 +24,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 4/2017
     ----------------------------------------------------------------------------------------*/
-    ParticleReset::ParticleReset(const ParticleSsbo::SHARED_PTR &ssboToReset) :
+    ParticleReset::ParticleReset(const ParticleSsbo::SharedConstPtr &ssboToReset) :
         _totalParticleCount(0),
         _computeProgramIdBarEmitters(0),
         _computeProgramIdPointEmitters(0),

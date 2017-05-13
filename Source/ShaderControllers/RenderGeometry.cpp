@@ -53,7 +53,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void RenderGeometry::Render(const PolygonSsbo::SHARED_PTR &ssboToRender) const
+    void RenderGeometry::Render(const PolygonSsbo::SharedConstPtr &ssboToRender) const
     {
         glUseProgram(_renderProgramId);
         glBindVertexArray(ssboToRender->VaoId());

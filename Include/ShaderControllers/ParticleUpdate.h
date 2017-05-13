@@ -24,7 +24,7 @@ namespace ShaderControllers
     class ParticleUpdate
     {
     public:
-        ParticleUpdate(const ParticleSsbo::SHARED_PTR &ssboToUpdate);
+        ParticleUpdate(const ParticleSsbo::SharedConstPtr &ssboToUpdate);
         ~ParticleUpdate();
 
         void Update(float deltaTimeSec);

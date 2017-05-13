@@ -3,7 +3,7 @@
 #include <memory>
 
 #include "Include/Particles/IParticleEmitter.h"
-#include "Include/Particles/Particle.h"
+#include "Include/Buffers/Particle.h"
 #include "ThirdParty/glm/vec2.hpp"
 
 /*------------------------------------------------------------------------------------------------

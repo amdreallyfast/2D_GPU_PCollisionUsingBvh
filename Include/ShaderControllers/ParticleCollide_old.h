@@ -13,7 +13,7 @@ namespace ShaderControllers
     class ParticleCollide
     {
     public:
-        ParticleCollide(ParticleSsbo::SHARED_PTR &ssboToWorkWith);
+        ParticleCollide(ParticleSsbo::SharedPtr &ssboToWorkWith);
         ~ParticleCollide();
 
         void DetectAndResolveCollisions();

@@ -4,7 +4,7 @@
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 
 #include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
-#include "Include/Particles/Particle.h"     // for copying data back and verifying 
+#include "Include/Buffers/Particle.h"     // for copying data back and verifying 
 #include "Include/ShaderControllers/ProfilingWaitToFinish.h"
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
@@ -58,7 +58,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
-    ParallelSort::ParallelSort(const ParticleSsbo::CONST_SHARED_PTR dataToSort) :
+    ParallelSort::ParallelSort(const ParticleSsbo::SharedConstPtr dataToSort) :
         _particleDataToIntermediateDataProgramId(0),
         _getBitForPrefixScansProgramId(0),
         _parallelPrefixScanProgramId(0),

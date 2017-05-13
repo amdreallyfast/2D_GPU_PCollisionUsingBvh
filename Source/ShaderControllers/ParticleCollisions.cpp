@@ -46,16 +46,21 @@ namespace ShaderControllers
         // copy the particle's Morton code and generate a bounding box for the leaf node, then 
         // generate all the tree's internal nodes
         shaderKey = "generate binary radix tree";
+        // REQUIRES Version.comp
+        // REQUIRES ComputeShaderWorkGroupSizes.comp
+        // REQUIRES SsboBufferBindings.comp
+        // REQUIRES CrossShaderUniformLocations.comp
+        // REQUIRES ParticleBuffer.comp
+        // REQUIRES BvhNodeBuffer.comp
+
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParticleDataToIntermediateData.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBinaryRadixTree.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _generateBinaryRadixTreeProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
@@ -63,19 +68,19 @@ namespace ShaderControllers
         // take the generated tree and merge the bounding boxes from the leaves up to the root, 
         // thus finishing the hierarchy of bounding volumes
         shaderKey = "generate bounding volumes";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParticleDataToIntermediateData.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        //shaderStorageRef.NewCompositeShader(shaderKey);
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
+        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParticleDataToIntermediateData.comp");
+        //shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        //shaderStorageRef.LinkShader(shaderKey);
+        //_generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
         // TODO: create particle collision detection and resolution shader
 

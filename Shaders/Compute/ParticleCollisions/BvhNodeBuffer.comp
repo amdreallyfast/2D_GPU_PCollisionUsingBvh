@@ -26,10 +26,10 @@ struct BvhNode
 {
     BoundingBox _boundingBox;
 
-    uint _isLeaf;
-    uint _parentIndex;
-    uint _leftChildIndex;
-    uint _rightChildIndex;
+    int _isLeaf;
+    int _parentIndex;
+    int _leftChildIndex;
+    int _rightChildIndex;
     uint _data;
 
     //   4-word bounding box (16 bytes)
@@ -56,7 +56,7 @@ Creator:    John Cox, 5/2017
 layout (std430, binding = BVH_NODE_BUFFER_BINDING) buffer BvhNodeBuffer
 {
     // leaf nodes first, then internal nodes 
-    Node AllBvhNodes[];
+    BvhNode AllBvhNodes[];
 };
 
 

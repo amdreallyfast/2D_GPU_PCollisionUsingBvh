@@ -53,7 +53,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 4/2017
     --------------------------------------------------------------------------------------------*/
-    void RenderParticles::Render(const ParticleSsbo::SHARED_PTR &particleSsboToRender) const
+    void RenderParticles::Render(const ParticleSsbo::SharedPtr &particleSsboToRender) const
     {
         glUseProgram(_renderProgramId);
         glBindVertexArray(particleSsboToRender->VaoId());

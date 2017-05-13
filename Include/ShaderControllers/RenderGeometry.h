@@ -16,7 +16,7 @@ namespace ShaderControllers
         RenderGeometry();
         ~RenderGeometry();
 
-        void Render(const PolygonSsbo::SHARED_PTR &ssboToRender) const;
+        void Render(const PolygonSsbo::SharedConstPtr &ssboToRender) const;
 
     private:
         unsigned int _renderProgramId;

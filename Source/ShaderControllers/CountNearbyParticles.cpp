@@ -24,7 +24,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 4/2017
     --------------------------------------------------------------------------------------------*/
-    CountNearbyParticles::CountNearbyParticles(const ParticleSsbo::CONST_SHARED_PTR particlesToAnalyze) :
+    CountNearbyParticles::CountNearbyParticles(const ParticleSsbo::SharedConstPtr particlesToAnalyze) :
         _totalParticleCount(0),
         _computeProgramId(0)
     {

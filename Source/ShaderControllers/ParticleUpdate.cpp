@@ -26,7 +26,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 4/2017
     --------------------------------------------------------------------------------------------*/
-    ParticleUpdate::ParticleUpdate(const ParticleSsbo::SHARED_PTR &ssboToUpdate) :
+    ParticleUpdate::ParticleUpdate(const ParticleSsbo::SharedConstPtr &ssboToUpdate) :
         _totalParticleCount(0),
         _activeParticleCount(0),
         _computeProgramId(0),
