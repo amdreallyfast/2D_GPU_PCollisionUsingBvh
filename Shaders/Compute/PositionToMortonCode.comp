@@ -68,24 +68,13 @@ Description:
     Like ExpandBits(...), this code is also copied from 
     https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
 Parameters: 
-    A position vector (vec4).
+    A copy of the position vector (vec4).
 Returns:    
     A 30bit unsigned int Morton Code.
 Creator:    John Cox, 2/2017
 ------------------------------------------------------------------------------------------------*/
 uint PositionToMortonCode(vec4 pos)
 {
-    // convert X, Y, and Z into 10bit unsigned integers
-    // Note: This means no negative values.  
-    // - Extract only the position from the vector 
-    //  (ignore the W, which will distort the normalizing if it is non-0)
-    // - Normalize them to the range (-1.0,+1.0) on each axis.  
-    // - Add 1 to each axis to bring them to the range (0.0,+2.0) on each axis.
-    // - Multiply each axis by 0.5 to bring them to the range (0.0,+1.0).
-    // - Multiply each axis by 1023.0f to make a float on the range (0.0,1023.0).
-    // - Cast to unsigned int.
-    // - VOILA!  All particle positions are now 10bit unsigned integers.
-
     // make sure that the W won't interfere with the position normalization
     // Note: In GLSL, all values are passed in by copy.  It is ok to reuse the argument.
     // Also Note: I thought that re-using the argument would make stack operations faster when 
@@ -93,33 +82,22 @@ uint PositionToMortonCode(vec4 pos)
     // noticed a measurable difference.  I'll re-use because it's already there.
     pos.w = 0.0f;
 
-    // reduce it to the range [-1,+1] on all axes
-    // Note: It is okay to divide by a hard-coded size.  The value is in a single variable, and 
-    // if a particle goes outside the particle region, then Particleupdate.comp flags it as 
-    // inactive, in which case that particle's position will never be fed into this function 
-    // anyway.
-    // Also Note: For a circular particle region (or spherical), all ranges are the same size.
-    float inverseParticleRange = 1.0f / (2.0f * PARTICLE_REGION_RADIUS);
-    pos.x = pos.x * inverseParticleRange;
-    pos.y = pos.y * inverseParticleRange;
-    pos.z = pos.z * inverseParticleRange;
+    // reduce to the range [0,1] on all axes
+    pos.x = (pos.x - PARTICLE_REGION_MIN_X) / PARTICLE_REGION_RANGE_X;
+    pos.x = (pos.x - PARTICLE_REGION_MIN_Y) / PARTICLE_REGION_RANGE_Y;
+    pos.x = (pos.x - PARTICLE_REGION_MIN_Z) / PARTICLE_REGION_RANGE_Z;
 
-    // reduce from range (-1,+1) on each axis to (0,+1) on each axis
-    // Note: If this particle is only in 2D, then Z will be 0, but after this operation it will 
-    // be +0.5f.  This is ok because all the particles will have the same Z value going into 
-    // their Morton Code, which in turn means that it will be irrelevant when sorting them.
-    pos = (pos + vec4(+1,+1,+1,0)) * 0.5f;
-
-    // I don't know if this clamping is necessary, but it is in the source code
-    // Note: The multiplying of a 0.0-1.0 by 1024 is definitely necessary though.
-    float clampX = min(max(pos.x * 1024.0f, 0.0f), 1023.0f);
-    float clampY = min(max(pos.y * 1024.0f, 0.0f), 1023.0f);
-    float clampZ = min(max(pos.z * 1024.0f, 0.0f), 1023.0f);
+    // create a 10bit integer for each coordinate
+    // Note: I don't know if this clamping is necessary, but it is in the source code.  The 
+    // multiplying of a 0.0-1.0 by 1024 is definitely necessary though.
+    uint clampX = uint(min(max(pos.x * 1024.0f, 0.0f), 1023.0f));
+    uint clampY = uint(min(max(pos.y * 1024.0f, 0.0f), 1023.0f));
+    uint clampZ = uint(min(max(pos.z * 1024.0f, 0.0f), 1023.0f));
 
     // now expand to 30bit values apiece
-    unsigned int xx = ExpandBits(uint(clampX));
-    unsigned int yy = ExpandBits(uint(clampY));
-    unsigned int zz = ExpandBits(uint(clampZ));
+    unsigned int xx = ExpandBits(clampX);
+    unsigned int yy = ExpandBits(clampY);
+    unsigned int zz = ExpandBits(clampZ);
 
     // and interleave to make the final Morton Code
     return (xx * 4) + (yy * 2) + zz;

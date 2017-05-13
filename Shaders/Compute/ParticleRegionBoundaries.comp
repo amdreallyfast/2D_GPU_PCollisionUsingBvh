@@ -1,3 +1,5 @@
+// REQUIRES CrossShaderUniformLocations.comp
+
 /*------------------------------------------------------------------------------------------------
 Description:
     This file was created because ParticleUpdate.comp and PositionToMortonCode.comp's need to 
@@ -11,7 +13,19 @@ Description:
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 
-#define PARTICLE_REGION_CENTER_X 0
-#define PARTICLE_REGION_CENTER_Y 0
-#define PARTICLE_REGION_RADIUS 0.9
+// starting to use a rectangular region instead of circular like in previous demos
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_ORIGIN_X) uniform float uParticleRegionMinX;
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_ORIGIN_Y) uniform float uParticleRegionMinY;
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_ORIGIN_Z) uniform float uParticleRegionMinZ;
+//
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_RANGE_X) uniform float uParticleRegionRangeX;
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_RANGE_Y) uniform float uParticleRegionRangeY;
+//layout(location = UNIFORM_LOCATION_PARTICLE_REGION_RANGE_Z) uniform float uParticleRegionRangeZ;
+
+#define PARTICLE_REGION_MIN_X (-1.0f)
+#define PARTICLE_REGION_MIN_Y (-1.0f)
+#define PARTICLE_REGION_MIN_Z (-1.0f)
+#define PARTICLE_REGION_RANGE_X (+2.0f)
+#define PARTICLE_REGION_RANGE_Y (+2.0f)
+#define PARTICLE_REGION_RANGE_Z (+2.0f)
 
