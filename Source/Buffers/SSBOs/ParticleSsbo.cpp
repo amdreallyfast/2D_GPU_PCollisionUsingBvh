@@ -8,7 +8,7 @@
 #include "Shaders/ShaderHeaders/SsboBufferBindings.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
 
-#include "Include/Particles/Particle.h"
+#include "Include/Buffers/Particle.h"
 
 
 
@@ -76,6 +76,7 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     // Note: This can't be set in the class initializer list.  The class initializer list is for 
     // members of this class only (ParticleSsbo), not for base class members. 
     _numVertices = numItems;
+    _numParticles = numItems;
 
     std::vector<Particle> v(numItems);
     InitializeWithRandomData(v);
@@ -216,4 +217,18 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
     // cleanup
     glBindVertexArray(0);   // unbind this BEFORE the array or else the VAO will bind to buffer 0
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    A simple getter for the value that was passed in on creation.
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int ParticleSsbo::NumParticles() const
+{
+    return _numParticles;
 }

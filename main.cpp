@@ -47,18 +47,11 @@
 
 #include "Include/Buffers/Particle.h"
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
-#include ""
 #include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Include/ShaderControllers/ParticleReset.h"
 #include "Include/ShaderControllers/ParticleUpdate.h"
 #include "Include/ShaderControllers/ParallelSort.h"
-#include "Include/ShaderControllers/GenerateBoundingVolumeHierarchy.h"
-
-
-
-
-
-#include "Include/ShaderControllers/ParticleCollide.h"
+#include "Include/ShaderControllers/ParticleCollisions.h"
 #include "Include/ShaderControllers/CountNearbyParticles.h"
 #include "Include/ShaderControllers/RenderParticles.h"
 #include "Include/ShaderControllers/RenderGeometry.h"
@@ -77,8 +70,7 @@ PolygonSsbo::SharedPtr polygonBuffer = nullptr;
 std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
 std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
-std::shared_ptr<ShaderControllers::GenerateBoundingVolumeHierarchy> GenerateBvh = nullptr;
-std::shared_ptr<ShaderControllers::ParticleCollide> particleCollisions = nullptr;
+std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
 std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
@@ -331,14 +323,8 @@ void Init()
     // for sorting particles once they've been updated
     parallelSort = std::make_unique<ShaderControllers::ParallelSort>(particleBuffer);
 
-
-
-    // TODO: change the "generate BVH" shader controller into "collision detection and resolution", then keep the BVH internally
     // for detecting and resolving collisions once the particles have been sorted
-    GenerateBvh = std::make_shared<ShaderControllers::GenerateBoundingVolumeHierarchy>(particleBuffer, bvhNodeBuffer);
-    //particleCollisions = std::make_unique<ShaderControllers::ParticleCollide>(particleBuffer);
-
-
+    particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer);
 
     // determines particle color
     nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
@@ -392,11 +378,11 @@ void UpdateAllTheThings()
     particleUpdater->Update(deltaTimeSec);
     parallelSort->SortWithoutProfiling();
     //parallelSort->SortWithProfiling();
-    particleCollisions->DetectAndResolveCollisions();
+    //particleCollisions->DetectAndResolveCollisions();
     nearbyParticleCounter->Count();
 
 
-    WaitForComputeToFinish();
+    ShaderControllers::WaitForComputeToFinish();
 
 
 

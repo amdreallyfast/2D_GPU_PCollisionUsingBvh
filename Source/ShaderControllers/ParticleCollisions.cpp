@@ -1,4 +1,4 @@
-#include "Include/ShaderControllers/GenerateBoundingVolumeHierarchy.h"
+#include "Include/ShaderControllers/ParticleCollisions.h"
 
 #include "Shaders/ShaderStorage.h"
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
@@ -34,19 +34,17 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
-    GenerateBoundingVolumeHierarchy::GenerateBoundingVolumeHierarchy(
-        const ParticleSsbo::SharedConstPtr particleSsbo,
-        const BvhNodeSsbo::SharedConstPtr bvhSsbo) :
-        _numLeaves(bvhSsbo->NumLeafNodes()),
+    ParticleCollisions::ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo) :
+        _numLeaves(particleSsbo->NumParticles()),
         _generateBinaryRadixTreeProgramId(0),
-        _generateBoundingBoxesProgramId(0)
-        //_bvhNodeSsbo(nullptr)
+        _generateBoundingVolumesProgramId(0),
+        _bvhNodeSsbo(nullptr)
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
 
-        // copy the Morton code and generate a bounding box from the particle for the leaf node, 
-        // then generate all the tree's internal nodes
+        // copy the particle's Morton code and generate a bounding box for the leaf node, then 
+        // generate all the tree's internal nodes
         shaderKey = "generate binary radix tree";
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
@@ -64,7 +62,7 @@ namespace ShaderControllers
 
         // take the generated tree and merge the bounding boxes from the leaves up to the root, 
         // thus finishing the hierarchy of bounding volumes
-        shaderKey = "generate bounding boxes";
+        shaderKey = "generate bounding volumes";
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
@@ -77,13 +75,20 @@ namespace ShaderControllers
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParticleDataToIntermediateData.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
-        _generateBoundingBoxesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
+        // TODO: create particle collision detection and resolution shader
+
+        // generate the BVH that will used for all this collision detection
+        _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
 
 
         // set buffer sizes for each of the programs
         particleSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
-        bvhSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
-        bvhSsbo->ConfigureConstantUniforms(_generateBoundingBoxesProgramId);
+        particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
+        // TODO: configure for particle detection and resolution
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -94,24 +99,27 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    GenerateBoundingVolumeHierarchy::~GenerateBoundingVolumeHierarchy()
+    ParticleCollisions::~ParticleCollisions()
     {
         glDeleteProgram(_generateBinaryRadixTreeProgramId);
-        glDeleteProgram(_generateBoundingBoxesProgramId);
+        glDeleteProgram(_generateBoundingVolumesProgramId);
     }
 
     /*--------------------------------------------------------------------------------------------
     Description:
-        Constructs a binary radix tree, using an algorithm that generates all internal nodes on 
-        one pass.  Then constructs the bounding volumes for each node in the tree from the 
-        leaves to the root.
+        (1) Constructs a binary radix tree using an algorithm that generates all internal nodes 
+        on one pass.  
+        (2) Then constructs the bounding volumes for each node in the tree from the leaves to 
+        the root.
+        (3) Each particle navigates the tree from the root and collects a list of all particles 
+        whose bounding boxes overlap, then calculates a collision between the most overlapped 
+        particles.
     Parameters: None
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void GenerateBoundingVolumeHierarchy::GenerateBvhWithoutProfiling() const
+    void ParticleCollisions::DetectAndResolveWithoutProfiling() const
     {
-        // working on a 1D array (X dimension), so these are always 1
         int numWorkGroupsX = (_numLeaves / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
@@ -122,11 +130,13 @@ namespace ShaderControllers
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         // merge the bounding boxes of individual leaves (particles) up to the root
-        glUseProgram(_generateBoundingBoxesProgramId);
+        glUseProgram(_generateBoundingVolumesProgramId);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        // end sorting
+        //TODO: collision detection and resolution
+
+        // end collision detection and resolution
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         glUseProgram(0);
     }
@@ -140,7 +150,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
-    void GenerateBoundingVolumeHierarchy::GenerateBvhWithProfiling() const
+    void ParticleCollisions::DetectAndResolveWithProfiling() const
     {
         cout << "Generating BVH for " << _numLeaves << " particle leaves" << endl;
 
@@ -155,7 +165,6 @@ namespace ShaderControllers
         // begin
         generateBvhStart = high_resolution_clock::now();
 
-        // working on a 1D array (X dimension), so these are always 1
         int numWorkGroupsX = (_numLeaves / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
@@ -171,7 +180,7 @@ namespace ShaderControllers
 
         // merge the bounding boxes of individual leaves (particles) up to the root
         start = high_resolution_clock::now();
-        glUseProgram(_generateBoundingBoxesProgramId);
+        glUseProgram(_generateBoundingVolumesProgramId);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();

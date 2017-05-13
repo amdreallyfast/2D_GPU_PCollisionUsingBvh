@@ -26,6 +26,10 @@ BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles)
     _numInternalNodes = numParticles - 1;
     _numTotalNodes = _numLeaves + _numInternalNodes;
     std::vector<BvhNode> v(_numTotalNodes);
+    for (size_t leafNodeIndex = 0; leafNodeIndex < v.size(); leafNodeIndex++)
+    {
+        v[leafNodeIndex]._isLeaf = true;
+    }
 
     // now bind this new buffer to the dedicated buffer binding location
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, BVH_NODE_BUFFER_BINDING, _bufferId);

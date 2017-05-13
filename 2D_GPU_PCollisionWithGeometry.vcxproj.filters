@@ -317,13 +317,13 @@
     <None Include="Shaders\ShaderHeaders\Version.comp">
       <Filter>Shaders\ShaderHeaders</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\BuildBvh.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\BvhNodeBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\BuildBvhBoundingBoxes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateBoundingVolumes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>
