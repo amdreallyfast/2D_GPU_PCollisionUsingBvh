@@ -349,6 +349,7 @@ namespace ShaderControllers
         glUseProgram(_particleDataToIntermediateDataProgramId);
         glDispatchCompute(numWorkGroupsXByWorkGroupSize, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
         end = high_resolution_clock::now();
         durationOriginalDataToIntermediateData = duration_cast<microseconds>(end - start).count();
     
@@ -368,6 +369,7 @@ namespace ShaderControllers
             glUniform1ui(UNIFORM_LOCATION_BIT_NUMBER, bitNumber);
             glDispatchCompute(numWorkGroupsXByWorkGroupSize, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsGetBitForPrefixScan[bitNumber] = (duration_cast<microseconds>(end - start).count());
 
@@ -378,6 +380,7 @@ namespace ShaderControllers
             glUniform1ui(UNIFORM_LOCATION_CALCULATE_ALL, 1);
             glDispatchCompute(numWorkGroupsXByItemsPerWorkGroup, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsPrefixScanAll[bitNumber] = (duration_cast<microseconds>(end - start).count());
 
@@ -388,6 +391,7 @@ namespace ShaderControllers
             glUniform1ui(UNIFORM_LOCATION_CALCULATE_ALL, 0);
             glDispatchCompute(1, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsPrefixScanWorkGroupSums[bitNumber] = (duration_cast<microseconds>(end - start).count());
 
@@ -399,6 +403,7 @@ namespace ShaderControllers
             glUniform1ui(UNIFORM_LOCATION_BIT_NUMBER, bitNumber);
             glDispatchCompute(numWorkGroupsXByWorkGroupSize, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsSortIntermediateData[bitNumber] = (duration_cast<microseconds>(end - start).count());
 
@@ -415,6 +420,7 @@ namespace ShaderControllers
         glUniform1ui(UNIFORM_LOCATION_INTERMEDIATE_BUFFER_READ_OFFSET, intermediateDataReadBufferOffset);
         glDispatchCompute(numWorkGroupsXByWorkGroupSize, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
         end = high_resolution_clock::now();
         long long durationSortParticleData = duration_cast<microseconds>(end - start).count();
 
@@ -427,6 +433,7 @@ namespace ShaderControllers
         glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, ParticleBufferSizeBytes);
         glBindBuffer(GL_COPY_READ_BUFFER, 0);
         glBindBuffer(GL_COPY_WRITE_BUFFER, 0);
+        WaitForComputeToFinish();
         end = high_resolution_clock::now();
         long long durationCopySortedOriginalData = duration_cast<microseconds>(end - start).count();
 
@@ -538,5 +545,27 @@ namespace ShaderControllers
 
     }
 
+    /*------------------------------------------------------------------------------------------------
+    Description:
+        This function is used to wait for the GPU to finish its commands.  It is useful during 
+        profiling.  It was recommended to me by Osbios on the OpenGL subbreddit question 
+        https://www.reddit.com/r/opengl/comments/69ri6l/increasing_buffer_size_for_compute_operations/.  
+        It was recommended over glFinish() because that function needs to make a round-trip to the 
+        GPU and back (??glClientWaitSync(...) doesn't??) and that apparently eats up some extra 
+        cycles that can throw off my profiling.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    ------------------------------------------------------------------------------------------------*/
+    void ParallelSort::WaitForComputeToFinish() const
+    {
+        GLsync waitSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        GLenum waitReturn = GL_UNSIGNALED;
+        while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
+        {
+            waitReturn = glClientWaitSync(waitSync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+        }
+        glDeleteSync(waitSync);
+    }
 
 }

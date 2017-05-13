@@ -74,7 +74,7 @@ std::unique_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter =
 std::unique_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::unique_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 50000;
+const unsigned int MAX_PARTICLE_COUNT = 1000000;
 
 
 
@@ -104,40 +104,6 @@ unsigned int ExpandBits(unsigned int i)
 
     return expandedI;
 }
-
-//unsigned int PositionToMortonCode(glm::vec4 pos, float rangeX, float rangeY)
-//{
-//    //if (pos.x < 0.05f && pos.x > -0.05f && pos.y < 0.05f && pos.y > -0.05f)
-//    //{
-//    //    // roughly the center
-//    //    printf("");
-//    //}
-//
-//
-//    pos.w = 0.0f;
-//
-//    // bring to range [-1,1]
-//    //pos = glm::normalize(pos);
-//    //pos.x = pos.x / 2002.0f; 
-//    //pos.y = pos.y / 2002.0f;
-//    pos.x = pos.x / rangeX;
-//    pos.y = pos.y / rangeY;
-//
-//    // range [-1,+1] to range [0,1]
-//    //pos += glm::vec4(+1, +1, +1, 0);
-//    //pos *= 0.5f;
-//    //pos = (pos + glm::vec4(+1, +1, +1, 0)) * 0.5f;
-//
-//    float clampX = glm::min(glm::max(pos.x * 1024.0f, 0.0f), 1023.0f);
-//    float clampY = glm::min(glm::max(pos.y * 1024.0f, 0.0f), 1023.0f);
-//    float clampZ = glm::min(glm::max(pos.z * 1024.0f, 0.0f), 1023.0f);
-//
-//    unsigned int xx = ExpandBits((unsigned int)clampX);
-//    unsigned int yy = ExpandBits((unsigned int)clampY);
-//    unsigned int zz = ExpandBits((unsigned int)clampZ);
-//
-//    return (xx * 4) + (yy * 2) + zz;
-//}
 
 unsigned int PositionToMortonCode(glm::vec4 pos, float rangeXLeft, float rangeXWidth, float rangeYBottom, float rangeYHeight)
 {
@@ -376,12 +342,12 @@ void Init()
 
 
 
-    //// for profiling 
-    //// Note: The first call uploads all the buffers before sorting, so the numbers are screwed a 
-    //// bit.  They are already loaded on the second call, so that call runs more like what it 
-    //// would run in real time.
-    //parallelSort->SortWithProfiling();
-    //parallelSort->SortWithProfiling();
+    // for profiling 
+    // Note: The first call uploads all the buffers before sorting, so the numbers are screwed a 
+    // bit.  They are already loaded on the second call, so that call runs more like what it 
+    // would run in real time.
+    parallelSort->SortWithProfiling();
+    parallelSort->SortWithProfiling();
 
     // the timer will be used for framerate calculations
     gTimer.Start();
@@ -424,28 +390,19 @@ void UpdateAllTheThings()
     // okay to declare static; they won't be initialized until the first call to this function, 
     // before which Init() was already called, so the OpenGL context will be initialized by the 
     // time that the code gets here
-    static GLsync updateSyncFences[3] = //{ 0,0,0 };
+    static GLsync updateSyncFences[3] =
     {
-        0,  // the "current" index will make a new fence sync object here at the end of the first time through, so don't give it one on startup
+        glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
         glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0),
         glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0)
     };
-    static int currentSyncFenceIndex = 0;
-    static int waitSyncFenceIndex = 1;
 
-    GLenum waitReturn = GL_UNSIGNALED;
-    while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
-    {
-        waitReturn = glClientWaitSync(updateSyncFences[waitSyncFenceIndex], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-    }
+    static int waitSyncFenceIndex = 0;
+    glClientWaitSync(updateSyncFences[waitSyncFenceIndex], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
     glDeleteSync(updateSyncFences[waitSyncFenceIndex]);
-
-    // new sync
-    updateSyncFences[currentSyncFenceIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-
-    // update indices
-    currentSyncFenceIndex = (currentSyncFenceIndex == 2) ? 0 : currentSyncFenceIndex + 1;
-    waitSyncFenceIndex = (waitSyncFenceIndex == 2) ? 0 : waitSyncFenceIndex + 1;
+    updateSyncFences[waitSyncFenceIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+    waitSyncFenceIndex++;
+    if (waitSyncFenceIndex >= 3) waitSyncFenceIndex = 0;
 
 
 

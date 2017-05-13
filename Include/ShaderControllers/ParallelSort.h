@@ -51,10 +51,12 @@ namespace ShaderControllers
         ParallelSort(const ParticleSsbo::CONST_SHARED_PTR dataToSort);
         ~ParallelSort();
 
-        void SortWithProfiling() const;
         void SortWithoutProfiling() const;
+        void SortWithProfiling() const;
 
     private:
+        void WaitForComputeToFinish() const;
+
         unsigned int _particleDataToIntermediateDataProgramId;
         unsigned int _getBitForPrefixScansProgramId;
         unsigned int _parallelPrefixScanProgramId;
