@@ -376,8 +376,10 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(20);
     particleUpdater->Update(deltaTimeSec);
-    parallelSort->SortWithoutProfiling();
     //parallelSort->SortWithProfiling();
+    parallelSort->SortWithoutProfiling();
+    particleCollisions->DetectAndResolveWithProfiling();
+    //particleCollisions->DetectAndResolveWithoutProfiling();
     //particleCollisions->DetectAndResolveCollisions();
     nearbyParticleCounter->Count();
 

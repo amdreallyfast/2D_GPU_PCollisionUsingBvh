@@ -31,7 +31,7 @@ public:
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     unsigned int NumLeafNodes() const;
     //unsigned int NumInternalNodes() const;
-    //unsigned int NumTotalNodes() const;
+    unsigned int NumTotalNodes() const;
 
 private:
     unsigned int _numLeaves;

@@ -16,8 +16,9 @@ layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 // (it's honestly not much, but still).
 // Also Note: A shared array's initialization will be called once per thread.  These values are 
 // all constant, so it doesn't matter.
-shared int[256] clz_lkup = int[256] 
-(
+//shared int[256] clz_lkup = int[256](0);
+const int[] clz_lkup = 
+{
     32, 31, 30, 30, 29, 29, 29, 29,
     28, 28, 28, 28, 28, 28, 28, 28,
     27, 27, 27, 27, 27, 27, 27, 27,
@@ -50,7 +51,7 @@ shared int[256] clz_lkup = int[256]
     24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24,
     24, 24, 24, 24, 24, 24, 24, 24
-);
+};
 
 /*------------------------------------------------------------------------------------------------
 Description:
@@ -95,6 +96,9 @@ int CLZ1(uint x) {
         }
     }
     return clz_lkup[x >> n] - n;
+    //return fastTempArr[x >> n] - n;
+    //fastTempArr[x >> n] = n;
+    //return n;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -313,9 +317,9 @@ void main()
         return;
     }
 
-    // copy values from the particle and reset as necessary
-    AllBvhNodes[threadIndex]._parentIndex = -1;
-    AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
+//    // copy values from the particle and reset as necessary
+//    AllBvhNodes[threadIndex]._parentIndex = -1;
+//    AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
 
     // Note: There are n-1 internal nodes, so need to shave off one more thread.
     if (threadIndex >= uBvhNumberInternalNodes)
@@ -343,6 +347,7 @@ void main()
     // calculation is cheap and it's needed, so do it again
     int otherEndIndex = thisNodeIndex + (range * d);
 
+
     // need a signed version of this for child index calculations so that GLSL doesn't complain 
     // about int/uint mismatches
     int numLeaves = int(uBvhNumberLeaves);
@@ -359,6 +364,7 @@ void main()
         leftChildIndex = numLeaves + splitIndex;
     }
     AllBvhNodes[numLeaves + thisNodeIndex]._leftChildIndex = leftChildIndex;
+    //AllBvhNodes[16 + thisNodeIndex]._leftChildIndex = leftChildIndex;
 
     int rightChildIndex = -1;
     if (max(thisNodeIndex, otherEndIndex) == (splitIndex + 1))
@@ -372,6 +378,7 @@ void main()
         rightChildIndex = numLeaves + splitIndex + 1;
     }
     AllBvhNodes[numLeaves + thisNodeIndex]._rightChildIndex = rightChildIndex;
+    //AllBvhNodes[16 + thisNodeIndex]._rightChildIndex = rightChildIndex;
 
     // give only the right child a parent
     // Note: This is for the sake of the next stage, in which each each thread creates a 

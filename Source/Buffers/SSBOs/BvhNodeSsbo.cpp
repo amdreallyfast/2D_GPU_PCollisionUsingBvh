@@ -77,3 +77,16 @@ unsigned int BvhNodeSsbo::NumLeafNodes() const
 {
     return _numLeaves;
 }
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    A simple getter
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int BvhNodeSsbo::NumTotalNodes() const
+{
+    return _numTotalNodes;
+}

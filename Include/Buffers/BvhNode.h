@@ -50,6 +50,6 @@ struct BvhNode
     unsigned int _data;
 
     // any necessary padding out to 16 bytes to match the GPU's version
-    int _padding[3];
+    //int _padding[3];
 };
 
