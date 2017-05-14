@@ -32,10 +32,10 @@ struct BvhNode
     int _rightChildIndex;
     uint _data;
 
-    //   4-word bounding box (16 bytes)
-    // + 4x 4-word members (16 bytes)
-    // + 1x 4-word member
-    // => need 3x * 4-word = 12bytes of buffer space on the CPU side
+    // no padding needed as long as there are no vec* or mat* variables declared (yes, vec2's 
+    // included)
+    // Note: If there are, like the Particle structure in ParticleBuffer.comp, then the CPU-side 
+    // must be padded out to 16byte alignment.
 };
 
 

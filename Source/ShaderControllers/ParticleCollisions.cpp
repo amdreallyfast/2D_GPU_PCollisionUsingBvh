@@ -199,10 +199,10 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        // merge the bounding boxes of individual leaves (particles) up to the root
-        glUseProgram(_generateBoundingVolumesProgramId);
-        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        //// merge the bounding boxes of individual leaves (particles) up to the root
+        //glUseProgram(_generateBoundingVolumesProgramId);
+        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         //TODO: collision detection and resolution
 

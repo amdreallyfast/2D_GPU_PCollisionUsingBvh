@@ -22,6 +22,7 @@ struct BoundingBox
     float _bottom;
 };
 
+#include "ThirdParty/glm/vec2.hpp"
 /*------------------------------------------------------------------------------------------------
 Description:   
     Must match the corresponding structure in BvhNodeBuffer.comp.
@@ -49,7 +50,13 @@ struct BvhNode
     int _rightChildIndex;
     unsigned int _data;
 
-    // any necessary padding out to 16 bytes to match the GPU's version
-    //int _padding[3];
+    // Note: Lesson learned about buffer padding.  It is only necessary if the structure defines 
+    // a vec* (yes, vec2 included; I tested it) or mat*.  The CPU side can declare whatever it 
+    // wants, but if the GLSL structure contains one of them, then the shader compiler will 
+    // expect the buffer that contains those structures to be 16-byte aligned, as if it were an 
+    // entire array of the things.  Th Particle structure has a couple vec4's, so it is under 
+    // this restriction and the CPU-side structure must be padded to a 16-byte alignment.  If 
+    // there are only primitives in the structure definition, like this BvhNode structure, then 
+    // no padding necessary.
 };
 

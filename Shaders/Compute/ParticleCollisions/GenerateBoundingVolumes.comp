@@ -1,0 +1,46 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES BvhNodeBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Performs a parallel construction of a binary radix tree.
+
+    The algorithm has been adapted from this paper to OpenGL compute shaders:
+    http://devblogs.nvidia.com/parallelforall/wp-content/uploads/2012/11/karras2012hpg_paper.pdf
+
+    Other influence came from the article that linked to the paper:
+    https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
+
+    This algorithm has been worked through by hand and followed by a CPU implementation before 
+    creating this compute shader version.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    // all the leaf nodes are at the front of the BvhNodeBuffer, sharing the same indices with 
+    // the particles, so this same index can be used for both ParticleBuffer access and 
+    // BvhNodeBuffer access
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uBvhNumberLeaves)
+    {
+        return;
+    }
+
+    // the tree was only generated for active particles, so no need to perform an "active particle" check
+
+    //AllBvhNodes[rightChildIndex]._parentIndex = numLeaves + thisNodeIndex;
+}
+
+
+
+
