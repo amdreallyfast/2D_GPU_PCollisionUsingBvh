@@ -376,12 +376,12 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(20);
     particleUpdater->Update(deltaTimeSec);
-    //parallelSort->SortWithProfiling();
-    parallelSort->SortWithoutProfiling();
+    parallelSort->SortWithProfiling();
+    //parallelSort->SortWithoutProfiling();
     particleCollisions->DetectAndResolveWithProfiling();
     //particleCollisions->DetectAndResolveWithoutProfiling();
     //particleCollisions->DetectAndResolveCollisions();
-    nearbyParticleCounter->Count();
+    //nearbyParticleCounter->Count();
 
 
     ShaderControllers::WaitForComputeToFinish();

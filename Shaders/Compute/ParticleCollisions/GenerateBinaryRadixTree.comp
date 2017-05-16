@@ -317,9 +317,9 @@ void main()
         return;
     }
 
-//    // copy values from the particle and reset as necessary
-//    AllBvhNodes[threadIndex]._parentIndex = -1;
-//    AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
+    // copy values from the particle and reset as necessary
+    AllBvhNodes[threadIndex]._parentIndex = -1;
+    AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
 
     // Note: There are n-1 internal nodes, so need to shave off one more thread.
     if (threadIndex >= uBvhNumberInternalNodes)
@@ -364,7 +364,6 @@ void main()
         leftChildIndex = numLeaves + splitIndex;
     }
     AllBvhNodes[numLeaves + thisNodeIndex]._leftChildIndex = leftChildIndex;
-    //AllBvhNodes[16 + thisNodeIndex]._leftChildIndex = leftChildIndex;
 
     int rightChildIndex = -1;
     if (max(thisNodeIndex, otherEndIndex) == (splitIndex + 1))
@@ -378,7 +377,6 @@ void main()
         rightChildIndex = numLeaves + splitIndex + 1;
     }
     AllBvhNodes[numLeaves + thisNodeIndex]._rightChildIndex = rightChildIndex;
-    //AllBvhNodes[16 + thisNodeIndex]._rightChildIndex = rightChildIndex;
 
     // give only the right child a parent
     // Note: This is for the sake of the next stage, in which each each thread creates a 
@@ -387,6 +385,7 @@ void main()
     // node does not have a parent.  Repeat all the way up to the root node, which should 
     // encompass all the bounding boxes of all collidable objects.  To prevent race conditions, 
     // only give the right child (and hence only one thread) a way to get the parent.
+    AllBvhNodes[leftChildIndex]._parentIndex = -1;
     AllBvhNodes[rightChildIndex]._parentIndex = numLeaves + thisNodeIndex;
 }
 

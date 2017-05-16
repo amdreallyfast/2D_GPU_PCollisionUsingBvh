@@ -12,6 +12,99 @@
 
 
 
+// TODO: header
+// I have the rest of this stuff written down.
+static void GenerateTestParticlesForBvhGeneration(std::vector<Particle> &initThese)
+{
+    initThese.clear();
+
+    // make them active, give them position, but no velocity
+    Particle p;
+    p._isActive = true;
+
+    // P0
+    p._position = glm::vec4(0.12f, 0.05f, 0.0f, 1.0f);
+    //p._mortonCode = 1271858;
+    initThese.push_back(p);
+
+    // P1
+    p._position = glm::vec4(0.04f, 0.32f, 0.0f, 1.0f);
+    //p._mortonCode = 34211986;
+    initThese.push_back(p);
+
+    // P2
+    p._position = glm::vec4(0.24f, 0.43f, 0.0f, 1.0f);
+    //p._mortonCode = 47408388;
+    initThese.push_back(p);
+
+    // P3
+    p._position = glm::vec4(0.40f, 0.01f, 0.0f, 1.0f);
+    //p._mortonCode = 75516948;
+    initThese.push_back(p);
+
+    // P4
+    p._position = glm::vec4(0.49f, 0.39f, 0.0f, 1.0f);
+    //p._mortonCode = 114443670;
+    initThese.push_back(p);
+
+    // P5
+    p._position = glm::vec4(0.18f, 0.50f, 0.0f, 1.0f);
+    //p._mortonCode = 276973568;
+    initThese.push_back(p);
+
+    // P6
+    p._position = glm::vec4(0.01f, 0.98f, 0.0f, 1.0f);
+    //p._mortonCode = 306777138;
+    initThese.push_back(p);
+
+    // P7
+    p._position = glm::vec4(0.48f, 0.55f, 0.0f, 1.0f);
+    //p._mortonCode = 345188406;
+    initThese.push_back(p);
+
+    // P8
+    p._position = glm::vec4(0.62f, 0.11f, 0.0f, 1.0f);
+    //p._mortonCode = 538667040;
+    initThese.push_back(p);
+
+    // P9
+    p._position = glm::vec4(0.65f, 0.19f, 0.0f, 1.0f);
+    //p._mortonCode = 549996564;
+    initThese.push_back(p);
+
+    // P10
+    p._position = glm::vec4(0.57f, 0.40f, 0.0f, 1.0f);
+    //p._mortonCode = 575677734;
+    initThese.push_back(p);
+
+    // P11
+    p._position = glm::vec4(0.73f, 0.39f, 0.0f, 1.0f);
+    //p._mortonCode = 584191158;
+    initThese.push_back(p);
+
+    // P12
+    p._position = glm::vec4(0.79f, 0.26f, 0.0f, 1.0f);
+    //p._mortonCode = 637668368;
+    initThese.push_back(p);
+
+    // P13
+    p._position = glm::vec4(0.83f, 0.46f, 0.0f, 1.0f);
+    //p._mortonCode = 643326102;
+    initThese.push_back(p);
+
+    // P14
+    p._position = glm::vec4(0.57f, 0.55f, 0.0f, 1.0f);
+    //p._mortonCode = 806428982;
+    initThese.push_back(p);
+
+    // P15
+    p._position = glm::vec4(0.73f, 0.61f, 0.0f, 1.0f);
+    //p._mortonCode = 815474724;
+    initThese.push_back(p);
+
+
+}
+
 /*------------------------------------------------------------------------------------------------
 Description:
     Particle resetting on the GPU requires several random numbers.  GLSL doesn't have GPU 
@@ -72,14 +165,17 @@ Creator:    John Cox, 4/2017
 ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     SsboBase()  // generate buffers
 {
+    std::vector<Particle> v(numItems);
+    //InitializeWithRandomData(v);
+
+    // test buffer
+    GenerateTestParticlesForBvhGeneration(v);
+
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 
     // members of this class only (ParticleSsbo), not for base class members. 
-    _numVertices = numItems;
-    _numParticles = numItems;
-
-    std::vector<Particle> v(numItems);
-    InitializeWithRandomData(v);
+    _numVertices = v.size();
+    _numParticles = v.size();
 
     // now bind this new buffer to the dedicated buffer binding location
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_BUFFER_BINDING, _bufferId);

@@ -9,16 +9,17 @@
 layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 
 
-
-
 /*------------------------------------------------------------------------------------------------
 Description:
-    Performs a parallel construction of a binary radix tree.
+    This shader generates bounding boxes for each of the leaves, then works up the tree to the 
+    root, merging bounding boxes as they go.  Only one thread is allowed to do the merging of 
+    two child nodes at a time, so the number of active threads decreases as they go up the 
+    chain.  This shouldn't be much of a performance problem though because the algorithm is 
+    simple and fast and only goes through log2N iterations at most (16 for 50,000 particles 
+    (leaves), 20 for 1,000,000 particles).
 
-    The algorithm has been adapted from this paper to OpenGL compute shaders:
-    http://devblogs.nvidia.com/parallelforall/wp-content/uploads/2012/11/karras2012hpg_paper.pdf
-
-    Other influence came from the article that linked to the paper:
+    This comes as part of this BVH algorithm, specifically the section 
+    "Bounding Box Calculation":
     https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
 
     This algorithm has been worked through by hand and followed by a CPU implementation before 
@@ -36,9 +37,59 @@ void main()
         return;
     }
 
-    // the tree was only generated for active particles, so no need to perform an "active particle" check
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+        // no leaf was made for this particle
+        return;
+    }
 
-    //AllBvhNodes[rightChildIndex]._parentIndex = numLeaves + thisNodeIndex;
+    // create the leaf's bounding box
+    vec4 pos = AllParticles[threadIndex]._pos;
+    float r = AllParticles[threadIndex]._collisionRadius;
+    
+    BoundingBox bb;
+    bb._left = pos.x - r;
+    bb._right = pos.x + r;
+    bb._bottom = pos.y - r;
+    bb._top = pos.y + r;
+    AllBvhNodes[threadIndex]._boundingBox = bb;
+
+    // now go up through the internal nodes and merge the bounding boxes until the root
+    // Note: The binary radix tree was constructed such that only one of the two child nodes had 
+    // an index to the parent.  That makes avoiding race conditions easy: the thread that does 
+    // not detect a parent will simply return.
+    int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
+    //while(nodeIndex != -1)
+    if (nodeIndex != -1)
+    {
+        int leftChildIndex = AllBvhNodes[nodeIndex]._leftChildIndex;
+        int rightChildIndex = AllBvhNodes[nodeIndex]._rightChildIndex;
+        BoundingBox leftBb = AllBvhNodes[leftChildIndex]._boundingBox;
+        BoundingBox rightBb = AllBvhNodes[rightChildIndex]._boundingBox;
+
+        AllBvhNodes[nodeIndex]._boundingBox._left = min(leftBb._left, rightBb._left);
+        AllBvhNodes[nodeIndex]._boundingBox._right = max(leftBb._right, rightBb._right);
+        AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
+        AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
+
+        nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
+    }
+
+    if (nodeIndex != -1)
+    {
+        int leftChildIndex = AllBvhNodes[nodeIndex]._leftChildIndex;
+        int rightChildIndex = AllBvhNodes[nodeIndex]._rightChildIndex;
+        BoundingBox leftBb = AllBvhNodes[leftChildIndex]._boundingBox;
+        BoundingBox rightBb = AllBvhNodes[rightChildIndex]._boundingBox;
+
+        AllBvhNodes[nodeIndex]._boundingBox._left = min(leftBb._left, rightBb._left);
+        AllBvhNodes[nodeIndex]._boundingBox._right = max(leftBb._right, rightBb._right);
+        AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
+        AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
+
+        nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
+    }
+
 }
 
 

@@ -126,38 +126,36 @@ namespace ShaderControllers
         // take the generated tree and merge the bounding boxes from the leaves up to the root, 
         // thus finishing the hierarchy of bounding volumes
         shaderKey = "generate bounding volumes";
-        //shaderStorageRef.NewCompositeShader(shaderKey);
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/IntermediateSortBuffers.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
-        //shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParticleDataToIntermediateData.comp");
-        //shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        //shaderStorageRef.LinkShader(shaderKey);
-        //_generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBoundingVolumes.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
         // TODO: create particle collision detection and resolution shader
 
         // generate the BVH that will used for all this collision detection
-        //_bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
+        _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
 
-        // test buffer
-        _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(16);
-        std::vector<BvhNode> testBvh;
-        GenerateTestBvh(testBvh);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo->BufferId());
-        glBufferData(GL_SHADER_STORAGE_BUFFER, testBvh.size() * sizeof(BvhNode), testBvh.data(), GL_DYNAMIC_DRAW);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+        //// test buffer
+        //_bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(16);
+        //std::vector<BvhNode> testBvh;
+        //GenerateTestBvh(testBvh);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo->BufferId());
+        //glBufferData(GL_SHADER_STORAGE_BUFFER, testBvh.size() * sizeof(BvhNode), testBvh.data(), GL_DYNAMIC_DRAW);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         // set buffer sizes for each of the programs
         particleSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
-        //particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
+        particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
-        //_bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
         // TODO: configure for particle detection and resolution
     }
 
@@ -199,10 +197,10 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //// merge the bounding boxes of individual leaves (particles) up to the root
-        //glUseProgram(_generateBoundingVolumesProgramId);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        // merge the bounding boxes of individual leaves (particles) up to the root
+        glUseProgram(_generateBoundingVolumesProgramId);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         //TODO: collision detection and resolution
 
@@ -248,16 +246,16 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationGenerateTree = (duration_cast<microseconds>(end - start).count());
 
-        ////// merge the bounding boxes of individual leaves (particles) up to the root
-        ////start = high_resolution_clock::now();
-        ////glUseProgram(_generateBoundingVolumesProgramId);
-        ////glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        ////glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        ////WaitForComputeToFinish();
-        ////end = high_resolution_clock::now();
-        ////durationMergeBoundingBoxes = (duration_cast<microseconds>(end - start).count());
+        // merge the bounding boxes of individual leaves (particles) up to the root
+        start = high_resolution_clock::now();
+        glUseProgram(_generateBoundingVolumesProgramId);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationMergeBoundingBoxes = (duration_cast<microseconds>(end - start).count());
 
-        //glUseProgram(0);
+        glUseProgram(0);
 
         // end 
         steady_clock::time_point generateBvhEnd = high_resolution_clock::now();
