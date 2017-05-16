@@ -38,6 +38,7 @@ struct BvhNode
         _parentIndex(-1),
         _leftChildIndex(-1),
         _rightChildIndex(-1),
+        _threadEntranceCounter(0),
         _data(0)
     {
     }
@@ -48,6 +49,7 @@ struct BvhNode
     int _parentIndex;
     int _leftChildIndex;
     int _rightChildIndex;
+    int _threadEntranceCounter;
     unsigned int _data;
 
     // Note: Lesson learned about buffer padding.  It is only necessary if the structure defines 

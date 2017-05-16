@@ -30,6 +30,7 @@ struct BvhNode
     int _parentIndex;
     int _leftChildIndex;
     int _rightChildIndex;
+    int _threadEntranceCounter;
     uint _data;
 
     // no padding needed as long as there are no vec* or mat* variables declared (yes, vec2's 

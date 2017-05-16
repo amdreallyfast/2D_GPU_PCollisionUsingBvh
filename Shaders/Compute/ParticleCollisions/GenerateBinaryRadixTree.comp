@@ -317,15 +317,40 @@ void main()
         return;
     }
 
-    // copy values from the particle and reset as necessary
+    // reset leaves 
     AllBvhNodes[threadIndex]._parentIndex = -1;
+
+    // set the data that will be be analyzed on tree construction
     AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
+
+//    // create the leaf's bounding box
+//    // Note: Do this here instead of in GenerateBoundingVolumes.comp because this shader is only 
+//    // called one, while that one must be called multiple times, once for each level of the 
+//    // tree, and the leaves' bounding boxes only need to be biult once
+//    vec4 pos = AllParticles[threadIndex]._pos;
+//    float r = AllParticles[threadIndex]._collisionRadius;
+//    
+//    //BoundingBox bb;
+//    //bb._left = pos.x - r;
+//    //bb._right = pos.x + r;
+//    //bb._bottom = pos.y - r;
+//    //bb._top = pos.y + r;
+//    //AllBvhNodes[threadIndex]._boundingBox = bb;
+//    AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
+//    AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
+//    AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
+//    AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
+
 
     // Note: There are n-1 internal nodes, so need to shave off one more thread.
     if (threadIndex >= uBvhNumberInternalNodes)
     {
         return;
     }
+
+    // reset internal nodes (??does anything else need to be reset??)
+    AllBvhNodes[uBvhNumberLeaves + threadIndex]._threadEntranceCounter = 0;
+
 
     // this algorithm invloves lots of index calculations that must be allowed to go negative, 
     // so make this cast up front
@@ -385,7 +410,8 @@ void main()
     // node does not have a parent.  Repeat all the way up to the root node, which should 
     // encompass all the bounding boxes of all collidable objects.  To prevent race conditions, 
     // only give the right child (and hence only one thread) a way to get the parent.
-    AllBvhNodes[leftChildIndex]._parentIndex = -1;
+    //AllBvhNodes[leftChildIndex]._parentIndex = -1;
+    AllBvhNodes[leftChildIndex]._parentIndex = numLeaves + thisNodeIndex;
     AllBvhNodes[rightChildIndex]._parentIndex = numLeaves + thisNodeIndex;
 }
 

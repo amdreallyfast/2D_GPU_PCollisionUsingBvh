@@ -29,6 +29,8 @@ namespace ShaderControllers
         unsigned int _numLeaves;
         unsigned int _generateBinaryRadixTreeProgramId;
         unsigned int _generateBoundingVolumesProgramId;
+        int _unifLocMaxTreeLevel;
+
         // TODO: collision detection and resolution program ID
 
         // kept around for the sake of the *WithProfiling these are unique to this class and are needed for sorting

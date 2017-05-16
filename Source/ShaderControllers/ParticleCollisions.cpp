@@ -96,7 +96,8 @@ namespace ShaderControllers
         _numLeaves(particleSsbo->NumParticles()),
         _generateBinaryRadixTreeProgramId(0),
         _generateBoundingVolumesProgramId(0),
-        _bvhNodeSsbo(nullptr)
+        _bvhNodeSsbo(nullptr),
+        _unifLocMaxTreeLevel(-1)
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
@@ -104,12 +105,6 @@ namespace ShaderControllers
         // copy the particle's Morton code and generate a bounding box for the leaf node, then 
         // generate all the tree's internal nodes
         shaderKey = "generate binary radix tree";
-        // REQUIRES Version.comp
-        // REQUIRES ComputeShaderWorkGroupSizes.comp
-        // REQUIRES SsboBufferBindings.comp
-        // REQUIRES CrossShaderUniformLocations.comp
-        // REQUIRES ParticleBuffer.comp
-        // REQUIRES BvhNodeBuffer.comp
 
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
@@ -137,6 +132,7 @@ namespace ShaderControllers
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        _unifLocMaxTreeLevel = shaderStorageRef.GetUniformLocation(shaderKey, "uMaxTreeLevel");
 
         // TODO: create particle collision detection and resolution shader
 
@@ -245,6 +241,12 @@ namespace ShaderControllers
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
         durationGenerateTree = (duration_cast<microseconds>(end - start).count());
+
+        //unsigned int treeDepth = static_cast<int>(std::ceil(std::log2f(_numLeaves)));
+        //for (unsigned int depth = 0; depth < treeDepth; depth++)
+        //{
+        //    gluinf
+        //}
 
         // merge the bounding boxes of individual leaves (particles) up to the root
         start = high_resolution_clock::now();
