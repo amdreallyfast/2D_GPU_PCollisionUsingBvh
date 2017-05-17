@@ -1,4 +1,4 @@
-total sort time: 3170	microseconds
-generate BVH tree: 2176	microseconds
-generate BVH bounding boxes: 985	microseconds
+total sort time: 298	microseconds
+generate BVH tree: 220	microseconds
+generate BVH bounding boxes: 72	microseconds
 

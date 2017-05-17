@@ -96,8 +96,8 @@ namespace ShaderControllers
         _numLeaves(particleSsbo->NumParticles()),
         _generateBinaryRadixTreeProgramId(0),
         _generateBoundingVolumesProgramId(0),
-        _bvhNodeSsbo(nullptr),
-        _unifLocMaxTreeLevel(-1)
+        _detectAndResolveCollisionsProgramId(0),
+        _bvhNodeSsbo(nullptr)
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
@@ -132,7 +132,21 @@ namespace ShaderControllers
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-        _unifLocMaxTreeLevel = shaderStorageRef.GetUniformLocation(shaderKey, "uMaxTreeLevel");
+
+        // have each leaf check through the tree for potential collisions and resolve them
+        shaderKey = "detect and resolve collisions";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectAndResolveCollisions.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _detectAndResolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
 
         // TODO: create particle collision detection and resolution shader
 
@@ -167,6 +181,7 @@ namespace ShaderControllers
     {
         glDeleteProgram(_generateBinaryRadixTreeProgramId);
         glDeleteProgram(_generateBoundingVolumesProgramId);
+        glDeleteProgram(_detectAndResolveCollisionsProgramId);
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -271,7 +286,27 @@ namespace ShaderControllers
         memcpy(checkOriginalData.data(), bufferPtr, bufferSizeBytes);
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
+        if (checkOriginalData[0]._parentIndex != -1)
+        {
+            printf("");
+            std::ofstream outfile("BvhDump.txt");
+            for (size_t i = 0; i < checkOriginalData.size(); i++)
+            {
+                outfile << "i = " << i
+                    << "\tisLeaf = " << checkOriginalData[i]._isLeaf
+                    << "\tparentIndex = " << checkOriginalData[i]._parentIndex
+                    << "\tstartIndex = " << checkOriginalData[i]._startIndex
+                    << "\tendIndex = " << checkOriginalData[i]._endIndex
+                    << "\tsplitIndex = " << checkOriginalData[i]._leafSplitIndex
+                    << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
+                    << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
+                    << "\tdata = " << checkOriginalData[i]._data
+                    << endl;
+            }
+            outfile.close();
 
+            return;
+        }
 
         // write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
         std::ofstream outFile("GenerateBvhDurations.txt");

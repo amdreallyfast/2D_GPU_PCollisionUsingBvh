@@ -376,12 +376,11 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(20);
     particleUpdater->Update(deltaTimeSec);
-    parallelSort->SortWithProfiling();
-    //parallelSort->SortWithoutProfiling();
+    //parallelSort->SortWithProfiling();
+    parallelSort->SortWithoutProfiling();
     particleCollisions->DetectAndResolveWithProfiling();
     //particleCollisions->DetectAndResolveWithoutProfiling();
-    //particleCollisions->DetectAndResolveCollisions();
-    //nearbyParticleCounter->Count();
+    nearbyParticleCounter->Count();
 
 
     ShaderControllers::WaitForComputeToFinish();
@@ -427,7 +426,7 @@ void Display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     particleRenderer->Render(particleBuffer);
-    geometryRenderer->Render(polygonBuffer);
+    //geometryRenderer->Render(polygonBuffer);
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));

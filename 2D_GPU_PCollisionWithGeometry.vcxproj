@@ -216,9 +216,9 @@
     <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\BvhNodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBoundingVolumes.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\ParticleCollisions.comp" />
     <None Include="Shaders\Compute\ParticleRegionBoundaries.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp" />

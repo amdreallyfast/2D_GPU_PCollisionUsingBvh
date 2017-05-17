@@ -36,6 +36,9 @@ struct BvhNode
     BvhNode() :
         _isLeaf(0),
         _parentIndex(-1),
+        _startIndex(-1),
+        _endIndex(-1),
+        _leafSplitIndex(-1),
         _leftChildIndex(-1),
         _rightChildIndex(-1),
         _threadEntranceCounter(0),
@@ -47,6 +50,9 @@ struct BvhNode
 
     int _isLeaf;
     int _parentIndex;
+    int _startIndex;        // TODO: remove
+    int _endIndex;          // TODO: remove
+    int _leafSplitIndex;    // TODO: remove
     int _leftChildIndex;
     int _rightChildIndex;
     int _threadEntranceCounter;

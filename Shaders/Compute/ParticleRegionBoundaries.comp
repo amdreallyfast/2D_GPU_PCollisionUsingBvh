@@ -12,16 +12,18 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 
 // starting to use a rectangular region instead of circular like in previous demos
-//#define PARTICLE_REGION_MIN_X (-1.0f)
-//#define PARTICLE_REGION_MIN_Y (-1.0f)
-//#define PARTICLE_REGION_MIN_Z (-1.0f)
-//#define PARTICLE_REGION_RANGE_X (+2.0f)
-//#define PARTICLE_REGION_RANGE_Y (+2.0f)
-//#define PARTICLE_REGION_RANGE_Z (+2.0f)
-#define PARTICLE_REGION_MIN_X (0.0f)
-#define PARTICLE_REGION_MIN_Y (0.0f)
-#define PARTICLE_REGION_MIN_Z (0.0f)
-#define PARTICLE_REGION_RANGE_X (+1.0f)
-#define PARTICLE_REGION_RANGE_Y (+1.0f)
-#define PARTICLE_REGION_RANGE_Z (+1.0f)
+#define PARTICLE_REGION_MIN_X (-1.0f)
+#define PARTICLE_REGION_MIN_Y (-1.0f)
+#define PARTICLE_REGION_MIN_Z (-1.0f)
+#define PARTICLE_REGION_RANGE_X (+2.0f)
+#define PARTICLE_REGION_RANGE_Y (+2.0f)
+#define PARTICLE_REGION_RANGE_Z (+2.0f)
+
+//// for use when testing my sample data, which was generated in a particle region with ranges [0,1] on both axes
+//#define PARTICLE_REGION_MIN_X (0.0f)
+//#define PARTICLE_REGION_MIN_Y (0.0f)
+//#define PARTICLE_REGION_MIN_Z (0.0f)
+//#define PARTICLE_REGION_RANGE_X (+1.0f)
+//#define PARTICLE_REGION_RANGE_Y (+1.0f)
+//#define PARTICLE_REGION_RANGE_Z (+1.0f)
 

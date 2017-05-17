@@ -166,10 +166,10 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     SsboBase()  // generate buffers
 {
     std::vector<Particle> v(numItems);
-    //InitializeWithRandomData(v);
+    InitializeWithRandomData(v);
 
-    // test buffer
-    GenerateTestParticlesForBvhGeneration(v);
+    //// test buffer
+    //GenerateTestParticlesForBvhGeneration(v);
 
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 

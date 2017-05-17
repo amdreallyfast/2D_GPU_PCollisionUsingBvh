@@ -1,0 +1,243 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES BvhNodeBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+
+
+//// TODO: header
+//float OverlappingArea(BoundingBox bb1, boundingBox bb2)
+//{
+//    float overlapBoxLeft = max(bb1._left, bb2._left);
+//    float overlapBoxRight = min(bb1._right, bb2._right);
+//    float overlapBoxBottom = max(bb1._bottom, bb2._bottom);
+//    float overlapBoxTop = min(bb1._top, bb2._top);
+//
+//    float width = overlapBoxRight - overlapBoxLeft;
+//    float height = overlapBoxTop - overlapBoxBottom;
+//    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
+//    return overlapArea;
+//}
+
+// TODO: header
+float OverlappingArea(int node1Index, int node2Index)
+{
+    float overlapBoxLeft = max(
+        AllBvhNodes[node1Index]._boundingBox._left, 
+        AllBvhNodes[node2Index]._boundingBox._left);
+    float overlapBoxRight = min(
+        AllBvhNodes[node1Index]._boundingBox._right, 
+        AllBvhNodes[node2Index]._boundingBox._right);
+    float overlapBoxBottom = max(
+        AllBvhNodes[node1Index]._boundingBox._bottom, 
+        AllBvhNodes[node2Index]._boundingBox._bottom);
+    float overlapBoxTop = min(
+        AllBvhNodes[node1Index]._boundingBox._top, 
+        AllBvhNodes[node2Index]._boundingBox._top);
+
+    float width = overlapBoxRight - overlapBoxLeft;
+    float height = overlapBoxTop - overlapBoxBottom;
+    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
+    return overlapArea;
+}
+
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Navigates the Bounding Volume Hierarchy (BVH) and finds overlapping collision boxes.  When there are thousands of particles on-screen at a time, there may be many bounding box overlaps for any one particle.  The priorty collision will be the bounding box with the greatest overlap.
+
+    Influence for the tree traversal comes from here, specifically the section entitled
+    "Minimizing Divergence":
+    https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-ii-tree-traversal-gpu/
+
+    For elastic collisions between two different masses (ignoring rotation because these 
+    particles are points), use the calculations from this article (I followed them on paper too 
+    and it seems legit)
+    http://www.gamasutra.com/view/feature/3015/pool_hall_lessons_fast_accurate_.php?page=3
+
+    Note: For an elastic collision between two particles of equal mass, the velocities of the 
+    two will be exchanged.  I could use this simplified idea for this demo, but I want to 
+    eventually have the option of different masses of particles, so I will use the general 
+    case elastic collision calculations (bottom of page at link).
+    http://hyperphysics.phy-astr.gsu.edu/hbase/colsta.html
+
+Parameters: None
+Returns:    None
+Creator:    John Cox, 4/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uBvhNumberLeaves)
+    {
+        return;
+    }
+
+    // no collisions for inactive particles (they were left out of the BVH anyway)
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+        return;
+    }
+
+//    // because OverlappingArea(...) takes signed integers for indices, which is because all the BVH's nodes use signed integers for indices
+//    //BoundingBox thisParticleBoundingBox = AllBvhNodes[threadIndex]._boundingBox;
+//    int thisLeafNodeIndex = int(threadIndex);
+//
+//    int numberPotentialCollisions = 0;
+//    //const int potentialCollisionIndices[64] = int[64](-1);
+//    float areaOfGreatestOverlap = 0.0f;
+//    int particleIndexWithGreatestOverlap = -1;
+//
+//    // iterative traversal of the tree requires keeping track of the depth yourself
+//    int topOfStackIndex = 0;
+//    int nodeStack[64] = int[64](0);
+//
+//    // push an "end of stack"
+//    nodeStack[topOfStackIndex++] = -1;
+//
+//    // starting at the root internal node
+//    // Note: By definition of the BVH's construction, all bounding boxes are contained within 
+//    // the root node's bounding box, so don't bother checking that.
+//    int currentNodeIndex = int(uBvhNumberLeaves);
+//    do
+//    {
+//        // by virtue of the BVH's construction, the only nodes with child indices of -1 will be 
+//        // leaf nodes, and for that, there is already an "is leaf" flag, so no need for 
+//        // "child index == -1" checks
+//
+//        // if the leaf node for this thread overlaps a leaf node -> potential collision
+//        int leftChildIndex = AllBvhNodes[currentNodeIndex]._leftChildIndex;
+//        bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
+//        float overlapAreaLeft = OverlappingArea(thisLeafNodeIndex, leftChildIndex);
+//        if (leftChildIsLeaf &&
+//            (overlapAreaLeft > 0.0f) && 
+//            (leftChildIndex != thisLeafNodeIndex))  // prevent collision with self
+//        {
+//            numberPotentialCollisions++;
+//            if (overlapAreaLeft > areaOfGreatestOverlap)
+//            {
+//                areaOfGreatestOverlap = overlapAreaLeft;
+//                particleIndexWithGreatestOverlap = leftChildIndex;
+//            }
+//        }
+//
+//        int rightChildIndex = AllBvhNodes[currentNodeIndex]._rightChildIndex;
+//        bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
+//        float overlapAreaRight = OverlappingArea(thisLeafNodeIndex, rightChildIndex);
+//        if (rightChildIsLeaf &&
+//            (overlapAreaRight > 0.0f) && 
+//            (rightChildIndex != thisLeafNodeIndex))     // prevent collision with self
+//        {
+//            numberPotentialCollisions++;
+//            if (overlapAreaRight > areaOfGreatestOverlap)
+//            {
+//                areaOfGreatestOverlap = overlapAreaRight;
+//                particleIndexWithGreatestOverlap = rightChildIndex;
+//            }
+//        }
+//
+//        // if the leaf node for this thread overlaps an internal node -> traverse the tree
+//        bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
+//        bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
+//        if (!traverseLeft && !traverseRight)
+//        {
+//            // must be at a leaf; pop the top of the stack
+//            currentNodeIndex = topOfStackIndex--;
+//        }
+//        else 
+//        {
+//            currentNodeIndex = traverseLeft ? leftChildIndex : rightChildIndex;
+//            if (traverseLeft && traverseRight)
+//            {
+//                // two children; already going left, so push the right index
+//                nodeStack[topOfStackIndex++] = rightChildIndex;
+//            }
+//        }
+//
+//    } while (currentNodeIndex != -1);    // "end of stack"
+//
+//
+//
+//    AllBvhNodes[threadIndex]._isLeaf = particleIndexWithGreatestOverlap;
+
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //
+    //if (particleIndexWithGreatestOverlap != -1)
+    //{
+    //
+    //}
+    //
+    //
+    //
+    //
+    //uint rightNeighborIndex = index + 1;
+    //
+    //if (index >= uParticleBufferSize || rightNeighborIndex >= uParticleBufferSize)
+    //{
+    //    return;
+    //}
+    //
+    //// local copies will be easier (and faster because it is shared memory instead of global?) 
+    //// to work with
+    //Particle p1 = AllParticles[index];
+    //Particle p2 = AllParticles[rightNeighborIndex];
+    //
+    //if (p1._isActive == 0 || p2._isActive == 0)
+    //{
+    //    return;
+    //}
+    //
+    //if (p1._hasCollidedAlreadyThisFrame != 0 || p2._hasCollidedAlreadyThisFrame != 0)
+    //{
+    //    // already collided this frame
+    //    return;
+    //}
+    //
+    //float minDistForCollision = p1._collisionRadius + p2._collisionRadius;
+    //float minDistForCollisionSqr = minDistForCollision * minDistForCollision;
+    //
+    //// partial pythagorean theorem so that I don't have to take the square root
+    //// Note: Only pluck out the positional information for these calculations.  Ignore the W 
+    //// component of the position.  It should end up as 0 after the subtraction, but force it to 
+    //// 0 just in case.
+    //vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
+    //float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+    //
+    //if (distP1ToP2Sqr > minDistForCollisionSqr)
+    //{
+    //    // no collision
+    //    return;
+    //}
+    //// have collision
+    //
+    //
+    //// Note: I don't have an intuitive understanding of these calculations, but they work.  If I 
+    //// understood it better, then I could write better comments and variable names, but I don't, 
+    //// so I'm keeping it the way that I found it in the gamasutra article, or at least as much 
+    //// as I can given that it is math and pseudocode.
+    //vec4 normalizedLineOfContact = inversesqrt(distP1ToP2Sqr) * p1ToP2;
+    //float a1 = dot(p1._vel, p1ToP2);
+    //float a2 = dot(p2._vel, p1ToP2);
+    //float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
+    //vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
+    //vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
+    //
+    //// write results back to global memory
+    //AllParticles[index]._vel = p1VelocityPrime;
+    //AllParticles[index]._hasCollidedAlreadyThisFrame = 1;
+    //AllParticles[rightNeighborIndex]._vel = p2VelocityPrime;
+    //AllParticles[rightNeighborIndex]._hasCollidedAlreadyThisFrame = 1;
+}
+

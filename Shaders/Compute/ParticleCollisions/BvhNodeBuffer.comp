@@ -28,6 +28,9 @@ struct BvhNode
 
     int _isLeaf;
     int _parentIndex;
+    int _startIndex;        // TODO: remove
+    int _endIndex;          // TODO: remove
+    int _leafSplitIndex;    // TODO: remove
     int _leftChildIndex;
     int _rightChildIndex;
     int _threadEntranceCounter;

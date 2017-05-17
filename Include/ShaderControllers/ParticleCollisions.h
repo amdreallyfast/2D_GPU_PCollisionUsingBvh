@@ -29,7 +29,7 @@ namespace ShaderControllers
         unsigned int _numLeaves;
         unsigned int _generateBinaryRadixTreeProgramId;
         unsigned int _generateBoundingVolumesProgramId;
-        int _unifLocMaxTreeLevel;
+        unsigned int _detectAndResolveCollisionsProgramId;
 
         // TODO: collision detection and resolution program ID
 

@@ -14,9 +14,7 @@ layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 // (...), which in turn is a key part of the binary radix tree construction.  Let it be a global 
 // in this shader, and make it shared to prevent copies from hogging more memory than necessary 
 // (it's honestly not much, but still).
-// Also Note: A shared array's initialization will be called once per thread.  These values are 
-// all constant, so it doesn't matter.
-//shared int[256] clz_lkup = int[256](0);
+// Also Note: ??why can't I make it shared? why is there an error about "might be used before it is initialized"??
 const int[] clz_lkup = 
 {
     32, 31, 30, 30, 29, 29, 29, 29,
@@ -96,9 +94,6 @@ int CLZ1(uint x) {
         }
     }
     return clz_lkup[x >> n] - n;
-    //return fastTempArr[x >> n] - n;
-    //fastTempArr[x >> n] = n;
-    //return n;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -164,10 +159,21 @@ int LengthOfCommonPrefix(int indexA, int indexB)
 
     // the XOR will highlight the bits that are different, thus leaving as 0s all the bits that 
     // are identical
-    int valueNumCommonBits = CLZ1(valueA ^ valueB);
-    int indexNumCommonBits = CLZ1(indexA ^ indexB);
+//    int valueNumCommonBits = CLZ1(valueA ^ valueB);
+//    int indexNumCommonBits = CLZ1(indexA ^ indexB);
+    //return (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
 
-    return (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
+    int commonPrefixLength = 0;
+    if ((valueA ^ valueB) == 0)
+    {
+        commonPrefixLength = 32;    // 2x identical integers
+        commonPrefixLength += (32 - int(floor(log2(indexA ^ indexB)) + 1));
+    }
+    else
+    {
+        commonPrefixLength = 32 - int(floor(log2(valueA ^ valueB)) + 1);
+    }
+    return commonPrefixLength;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -317,46 +323,24 @@ void main()
         return;
     }
 
-    // reset leaves 
-    AllBvhNodes[threadIndex]._parentIndex = -1;
-
     // set the data that will be be analyzed on tree construction
     AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
-
-//    // create the leaf's bounding box
-//    // Note: Do this here instead of in GenerateBoundingVolumes.comp because this shader is only 
-//    // called one, while that one must be called multiple times, once for each level of the 
-//    // tree, and the leaves' bounding boxes only need to be biult once
-//    vec4 pos = AllParticles[threadIndex]._pos;
-//    float r = AllParticles[threadIndex]._collisionRadius;
-//    
-//    //BoundingBox bb;
-//    //bb._left = pos.x - r;
-//    //bb._right = pos.x + r;
-//    //bb._bottom = pos.y - r;
-//    //bb._top = pos.y + r;
-//    //AllBvhNodes[threadIndex]._boundingBox = bb;
-//    AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
-//    AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
-//    AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
-//    AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
-
 
     // Note: There are n-1 internal nodes, so need to shave off one more thread.
     if (threadIndex >= uBvhNumberInternalNodes)
     {
         return;
     }
-
-    // reset internal nodes (??does anything else need to be reset??)
+    AllBvhNodes[uBvhNumberLeaves + threadIndex]._parentIndex = -1;
     AllBvhNodes[uBvhNumberLeaves + threadIndex]._threadEntranceCounter = 0;
 
 
-    // this algorithm invloves lots of index calculations that must be allowed to go negative, 
-    // so make this cast up front
-    // Note: The function LengthOfCommonPrefix(...) will return -1 if the second index is out of 
-    // range.  That is an important part of the range calculation.
+    // build the tree
+    // Note: This algorithm invloves lots of index calculations that must be allowed to go 
+    // negative.  For example, the function LengthOfCommonPrefix(...) will return -1 if the 
+    // second index is out of range.  That is an important part of the range calculation.
     int thisNodeIndex = int(threadIndex);
+    int numLeaves = int(uBvhNumberLeaves);
 
     int commonPrefixLengthBefore = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex - 1);
     int commonPrefixLengthAfter = LengthOfCommonPrefix(thisNodeIndex, thisNodeIndex + 1);
@@ -372,10 +356,9 @@ void main()
     // calculation is cheap and it's needed, so do it again
     int otherEndIndex = thisNodeIndex + (range * d);
 
-
-    // need a signed version of this for child index calculations so that GLSL doesn't complain 
-    // about int/uint mismatches
-    int numLeaves = int(uBvhNumberLeaves);
+    AllBvhNodes[numLeaves + thisNodeIndex]._startIndex = thisNodeIndex;
+    AllBvhNodes[numLeaves + thisNodeIndex]._endIndex = otherEndIndex;
+    AllBvhNodes[numLeaves + thisNodeIndex]._leafSplitIndex = splitIndex;
 
     int leftChildIndex = -1;
     if (min(thisNodeIndex, otherEndIndex) == splitIndex)
@@ -403,14 +386,9 @@ void main()
     }
     AllBvhNodes[numLeaves + thisNodeIndex]._rightChildIndex = rightChildIndex;
 
-    // give only the right child a parent
-    // Note: This is for the sake of the next stage, in which each each thread creates a 
-    // bounding box for a leaf, and if the node has a parent, then it proceeds to that internal 
-    // node and combines the bounding boxes of the two children.  The thread will abort if the 
-    // node does not have a parent.  Repeat all the way up to the root node, which should 
-    // encompass all the bounding boxes of all collidable objects.  To prevent race conditions, 
-    // only give the right child (and hence only one thread) a way to get the parent.
-    //AllBvhNodes[leftChildIndex]._parentIndex = -1;
+    // in the next stage (constructing the bounding volumes out of this new tree's hierarchy), 
+    // both nodes need the option of traversing up to their parent
+    // Note: This should set both leaf node and internal parent indices.
     AllBvhNodes[leftChildIndex]._parentIndex = numLeaves + thisNodeIndex;
     AllBvhNodes[rightChildIndex]._parentIndex = numLeaves + thisNodeIndex;
 }
