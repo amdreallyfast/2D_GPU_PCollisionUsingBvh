@@ -2,12 +2,12 @@
 
 #include <string>
 
+#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Shaders/ShaderStorage.h"
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 #include "ThirdParty/glm/gtc/type_ptr.hpp"
-
 
 
 namespace ShaderControllers
@@ -30,11 +30,9 @@ namespace ShaderControllers
         _totalParticleCount(0),
         _activeParticleCount(0),
         _computeProgramId(0),
-        _unifLocDeltaTimeSec(-1),
-        _activeParticlesAtomicCounter(nullptr)
+        _unifLocDeltaTimeSec(-1)
     {
         _totalParticleCount = ssboToUpdate->NumVertices();
-        _activeParticlesAtomicCounter = PersistentAtomicCounterBuffer::GetInstance();
 
         // construct the compute shader
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
@@ -72,6 +70,8 @@ namespace ShaderControllers
         glDeleteProgram(_computeProgramId);
     }
 
+#include "Include/Buffers/Particle.h"
+
     /*--------------------------------------------------------------------------------------------
     Description:
         Resets the "num active particles" atomic counter, dispatches the shader, and reads the 
@@ -96,7 +96,10 @@ namespace ShaderControllers
         glUseProgram(_computeProgramId);
 
         glUniform1f(_unifLocDeltaTimeSec, deltaTimeSec);
-        _activeParticlesAtomicCounter->ResetCounter();
+
+        // the atomic counter is used to count the total number of active particles after this 
+        // update
+        PersistentAtomicCounterBuffer::GetInstance().ResetCounter();
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
 
         // the results of the moved particles need to be visible to the next compute shader that 
@@ -109,7 +112,7 @@ namespace ShaderControllers
         glUseProgram(0);
 
         // now that all active particles have updated, check how many active particles exist 
-        _activeParticleCount = _activeParticlesAtomicCounter->GetCounterValue();
+        _activeParticleCount = PersistentAtomicCounterBuffer::GetInstance().GetCounterValue();
     }
 
     /*--------------------------------------------------------------------------------------------

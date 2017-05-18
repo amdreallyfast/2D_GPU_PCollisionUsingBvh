@@ -7,7 +7,6 @@
 #include "Include/Particles/IParticleEmitter.h"
 #include "Include/Particles/ParticleEmitterPoint.h"
 #include "Include/Particles/ParticleEmitterBar.h"
-#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 
 
 namespace ShaderControllers
@@ -51,10 +50,6 @@ namespace ShaderControllers
         unsigned int _totalParticleCount;
         unsigned int _computeProgramIdBarEmitters;
         unsigned int _computeProgramIdPointEmitters;
-
-        // this atomic counter is used to enforce the number of emitted particles per emitter 
-        // per frame 
-        PersistentAtomicCounterBuffer::CONST_SHARED_PTR _particleResetAtomicCounter;
 
         // some of these uniforms had to be split into two versions to accomodate both shaders
 

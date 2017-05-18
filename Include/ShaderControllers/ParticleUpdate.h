@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
-#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 
 #include "ThirdParty/glm/vec4.hpp"
 
@@ -37,9 +36,5 @@ namespace ShaderControllers
         
         // these uniforms are specific to this shader
         int _unifLocDeltaTimeSec;
-
-        // the atomic counter is used to count the total number of active particles after this 
-        // update
-        PersistentAtomicCounterBuffer::CONST_SHARED_PTR _activeParticlesAtomicCounter;
     };
 }

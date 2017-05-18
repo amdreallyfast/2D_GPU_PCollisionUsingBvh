@@ -113,20 +113,12 @@ Returns:
     A const reference to a const shared pointer of the class instance.  
 Creator:    John Cox, 4/2017
 ------------------------------------------------------------------------------------------------*/
-const PersistentAtomicCounterBuffer::CONST_SHARED_PTR &PersistentAtomicCounterBuffer::GetInstance()
+const PersistentAtomicCounterBuffer& PersistentAtomicCounterBuffer::GetInstance()
 {
     // it is okay to make this static initializer because the static value will not be 
     // initialized until the first call to this method (unlike static globals, which are 
     // initialized at program start), and by then the OpenGL context will be initialized
-    // Note: CANNOT use std::make_shared<...> when in a singleton because that is outside 
-    // code that will try to call the constructor, which is private as per the definition of 
-    // a singleton and the construction will fail.  Instead, use the std::shared_ptr<...> 
-    // constructor that takes a pointer to "new" memory.  If the class is constructed via 
-    // "new", then that constructor call has the access privileges of this method, which is 
-    // part of the singleton and therefore has access to the private constructor.  The 
-    // shared memory pointer will then manage the memory until program end, when it will 
-    // destruct and clean up the buffer.
-    static CONST_SHARED_PTR instance = CONST_SHARED_PTR(new PersistentAtomicCounterBuffer());
+    static PersistentAtomicCounterBuffer instance;
 
     return instance;
 }

@@ -22,7 +22,56 @@ struct BoundingBox
     float _bottom;
 };
 
-#include "ThirdParty/glm/vec2.hpp"
+
+struct CommonPrefixDebug
+{
+    CommonPrefixDebug() :
+        _indexA(-1), _valueA(0),
+        _indexB(-1), _valueB(0),
+        _commonPrefixLength(0)
+    {
+
+    }
+
+    int _indexA;
+    unsigned int _valueA;
+    int _indexB;
+    unsigned int _valueB;
+    int _commonPrefixLength;
+};
+
+struct DebugSignGeneration
+{
+    DebugSignGeneration() :
+        _d(0)
+    {
+
+    }
+
+    int _d;
+    CommonPrefixDebug _before;
+    CommonPrefixDebug _after;
+};
+
+struct DebugLength
+{
+    DebugLength() :
+        _lengthBefore(-1),
+        _lengthAfter(-1)
+    {
+    }
+
+    int _lengthBefore;
+    CommonPrefixDebug _prefixLength;
+    int _lengthAfter;
+};
+
+struct DebugFindLength
+{
+    CommonPrefixDebug _minPrefix;
+    DebugLength _iterations[25];
+};
+
 /*------------------------------------------------------------------------------------------------
 Description:   
     Must match the corresponding structure in BvhNodeBuffer.comp.
@@ -42,11 +91,18 @@ struct BvhNode
         _leftChildIndex(-1),
         _rightChildIndex(-1),
         _threadEntranceCounter(0),
-        _data(0)
+        _data(0),
+        _extraData1(-1),
+        _extraData2(-1)
     {
     }
     
     BoundingBox _boundingBox;
+    DebugSignGeneration _signDebug;
+    DebugFindLength _findMaxLengthDebug;
+    DebugFindLength _findOtherEndDebug;
+    int _extraData1;
+    int _extraData2;
 
     int _isLeaf;
     int _parentIndex;

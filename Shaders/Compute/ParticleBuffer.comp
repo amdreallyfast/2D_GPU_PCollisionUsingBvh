@@ -27,6 +27,9 @@ struct Particle
 // whatever size the user wants
 layout(location = UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE) uniform uint uParticleBufferSize;
 
+layout(location = UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES) uniform uint uNumActiveParticles;
+
+
 /*------------------------------------------------------------------------------------------------
 Description:
     This is the array of particles that the compute shader will be accessing.  It is set up on 

@@ -9,6 +9,7 @@
 layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 
 
+
 /*------------------------------------------------------------------------------------------------
 Description:
     This shader generates bounding boxes for each of the leaves, then works up the tree to the 
@@ -32,14 +33,10 @@ void main()
     // the particles, so this same index can be used for both ParticleBuffer access and 
     // BvhNodeBuffer access
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uBvhNumberLeaves)
+    if (threadIndex >= uParticleBufferSize ||
+        threadIndex >= uNumActiveParticles)
     {
-        return;
-    }
-
-    if (AllParticles[threadIndex]._isActive == 0)
-    {
-        // no leaf was made for this particle
+        // thread greater than data set size or no leaf was made for this particle
         return;
     }
 
@@ -57,7 +54,7 @@ void main()
     // now go up through the internal nodes and merge the bounding boxes until the root
     // Note: The parent index should only be -1 at the root node.
     int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
-    while(nodeIndex != -1 && ohCrapOhCrapCounter < 20)
+    while(nodeIndex != -1 && ohCrapOhCrapCounter < 25)
     {
         ohCrapOhCrapCounter++;
 
@@ -67,11 +64,11 @@ void main()
         // first thread that enters it, while letting the second one through. This ensures that 
         // every node gets processed only once, and not before both of its children are 
         // processed."
-//        atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1);
-//        if (AllBvhNodes[nodeIndex]._threadEntranceCounter == 1)
-//        {
-//            return;
-//        }
+        atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1);
+        if (AllBvhNodes[nodeIndex]._threadEntranceCounter == 1)
+        {
+            return;
+        }
         
         int leftChildIndex = AllBvhNodes[nodeIndex]._leftChildIndex;
         int rightChildIndex = AllBvhNodes[nodeIndex]._rightChildIndex;
@@ -86,7 +83,14 @@ void main()
         nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
     }
 
-    AllBvhNodes[0]._parentIndex = nodeIndex;
+
+    // TODO: remove this
+    if (nodeIndex != -1)
+    {
+        AllBvhNodes[0]._extraData1 = nodeIndex;
+        AllBvhNodes[0]._extraData2 = ohCrapOhCrapCounter;
+    }
+    
 }
 
 

@@ -2,6 +2,7 @@
 
 #include <string>
 
+#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Shaders/ShaderStorage.h"
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 
@@ -28,7 +29,6 @@ namespace ShaderControllers
         _totalParticleCount(0),
         _computeProgramIdBarEmitters(0),
         _computeProgramIdPointEmitters(0),
-        _particleResetAtomicCounter(nullptr),
         _unifLocPointEmitterCenter(-1),
         _unifLocPointMaxParticleEmitCount(-1),
         _unifLocPointMinParticleVelocity(-1),
@@ -41,7 +41,6 @@ namespace ShaderControllers
         _unifLocBarMaxParticleVelocity(-1)
     {
         _totalParticleCount = ssboToReset->NumVertices();
-        _particleResetAtomicCounter = PersistentAtomicCounterBuffer::GetInstance();
 
         // construct the compute shader
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
@@ -179,8 +178,9 @@ namespace ShaderControllers
         for (size_t pointEmitterCount = 0; pointEmitterCount < _pointEmitters.size(); pointEmitterCount++)
         {
             // reset everything necessary to control the emission parameters for this emitter
-            _particleResetAtomicCounter->ResetCounter();
-
+            // Note: This atomic counter is used to enforce the number of emitted particles per 
+            // emitter per frame 
+            PersistentAtomicCounterBuffer::GetInstance().ResetCounter();
             ParticleEmitterPoint::CONST_SHARED_PTR &emitter = _pointEmitters[pointEmitterCount];
 
             glUniform1f(_unifLocPointMinParticleVelocity, emitter->GetMinVelocity());
@@ -198,8 +198,7 @@ namespace ShaderControllers
         glUniform1ui(_unifLocBarMaxParticleEmitCount, particlesPerEmitterPerFrame);
         for (size_t barEmitterCount = 0; barEmitterCount < _barEmitters.size(); barEmitterCount++)
         {
-            _particleResetAtomicCounter->ResetCounter();
-
+            PersistentAtomicCounterBuffer::GetInstance().ResetCounter();
             ParticleEmitterBar::CONST_SHARED_PTR &emitter = _barEmitters[barEmitterCount];
 
             glUniform1f(_unifLocBarMinParticleVelocity, emitter->GetMinVelocity());

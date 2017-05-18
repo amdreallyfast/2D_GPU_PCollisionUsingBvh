@@ -15,6 +15,35 @@ struct BoundingBox
     float _bottom;
 };
 
+struct CommonPrefixDebug
+{
+    int _indexA;
+    unsigned int _valueA;
+    int _indexB;
+    unsigned int _valueB;
+    int _commonPrefixLength;
+};
+
+struct DebugSignGeneration
+{
+    int _d;
+    CommonPrefixDebug _before;
+    CommonPrefixDebug _after;
+};
+
+struct DebugLength
+{
+    int _lengthBefore;
+    CommonPrefixDebug _prefixLength;
+    int _lengthAfter;
+};
+
+struct DebugFindLength
+{
+    CommonPrefixDebug _minPrefix;
+    DebugLength _iterations[25];
+};
+
 /*------------------------------------------------------------------------------------------------
 Description:   
     Stores info about a single node in the BVH.  Can be either an internal node or a leaf node.  
@@ -25,6 +54,11 @@ Creator:    John Cox, 5/2017
 struct BvhNode
 {
     BoundingBox _boundingBox;
+    DebugSignGeneration _signDebug;
+    DebugFindLength _findMaxLengthDebug;
+    DebugFindLength _findOtherEndDebug;
+    int _extraData1;
+    int _extraData2;
 
     int _isLeaf;
     int _parentIndex;
