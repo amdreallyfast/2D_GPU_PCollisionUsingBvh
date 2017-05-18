@@ -20,16 +20,8 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void WaitForComputeToFinish()
+    void WaitOnQueuedSynchronization()
     {
-        //GLsync waitSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-        //GLenum waitReturn = GL_UNSIGNALED;
-        //while (waitReturn != GL_ALREADY_SIGNALED && waitReturn != GL_CONDITION_SATISFIED)
-        //{
-        //    waitReturn = glClientWaitSync(waitSync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-        //}
-        //glDeleteSync(waitSync);
-
         // okay to declare static; they won't be initialized until the first call to this 
         // function, before which Init() was already called, so the OpenGL context will be 
         // initialized by the time that the code gets here
@@ -46,7 +38,20 @@ namespace ShaderControllers
         updateSyncFences[waitSyncFenceIndex] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
         waitSyncFenceIndex++;
         if (waitSyncFenceIndex >= 3) waitSyncFenceIndex = 0;
+    }
 
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        This function is used for agressive synchronization.  It is only useful when profiling.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void WaitForComputeToFinish()
+    {
+        GLsync waitSync = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+        glClientWaitSync(waitSync, GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
+        glDeleteSync(waitSync);
     }
 }
 

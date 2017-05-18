@@ -382,7 +382,7 @@ int FindSplitPosition(int startNodeIndex, int length, int direction)
 }
 
 
-
+// TODO: remove this
 void ResetDebugStructures(uint nodeIndex)
 {
 //    AllBvhNodes[nodeIndex]._signDebug._d = 0;
@@ -430,6 +430,10 @@ void ResetDebugStructures(uint nodeIndex)
     AllBvhNodes[nodeIndex]._extraData2 = -1;
 }
 
+
+
+
+
 /*------------------------------------------------------------------------------------------------
 Description:
     Performs a parallel construction of a binary radix tree.
@@ -446,28 +450,15 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // all the leaf nodes are at the front of the BvhNodeBuffer, sharing the same indices with 
-    // the particles, so this same index can be used for both ParticleBuffer access and 
-    // BvhNodeBuffer access
+    // Note: For N leaves there are n-1 internal nodes, hence the -1.
     uint threadIndex = gl_GlobalInvocationID.x;
     if (threadIndex >= uParticleBufferSize ||
-        threadIndex >= uNumActiveParticles)
+        threadIndex >= (uNumActiveParticles - 1))
     {
         // all inactive particles are sorted to the back of the particle buffer, so returning 
         // now won't leave a gap in the tree
         return;
     }
-
-//    if (threadIndex >= uParticleBufferSize)
-//    {
-//        return;
-//    }
-//    else if (uNumActiveParticles == 0)
-//    {
-//        AllBvhNodes[threadIndex]._extraData1 = 37;
-//        return;
-//    }
-
 
     // Note: This algorithm invloves lots of index calculations that must be allowed to go 
     // negative.  For example, the function LengthOfCommonPrefix(...) will return -1 if the 
@@ -476,19 +467,13 @@ void main()
     int thisInternalNodeIndex = int(uBvhNumberLeaves + threadIndex);
     int rootInternalNodeIndex = int(uBvhNumberLeaves);
 
-    // set the data that will be be analyzed on tree construction
-    AllBvhNodes[thisLeafIndex]._data = AllParticles[thisLeafIndex]._mortonCode;
-    memoryBarrier();
-
-    // Note: For N leaves there are n-1 internal nodes.  Shave off one more thread.
-    if (thisLeafIndex >= (uNumActiveParticles - 1))
-    {
-        return;
-    }
     AllBvhNodes[thisInternalNodeIndex]._parentIndex = -1;
     AllBvhNodes[thisInternalNodeIndex]._threadEntranceCounter = 0;
 
+
+    // TODO: remove this
     ResetDebugStructures(uBvhNumberLeaves + threadIndex);
+
 
 
     // build the tree

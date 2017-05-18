@@ -94,6 +94,7 @@ namespace ShaderControllers
     --------------------------------------------------------------------------------------------*/
     ParticleCollisions::ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo) :
         _numLeaves(particleSsbo->NumParticles()),
+        _populateLeavesWithDataProgramId(0),
         _generateBinaryRadixTreeProgramId(0),
         _generateBoundingVolumesProgramId(0),
         _detectAndResolveCollisionsProgramId(0),
@@ -102,10 +103,22 @@ namespace ShaderControllers
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
 
-        // copy the particle's Morton code and generate a bounding box for the leaf node, then 
+        // populate leaf nodes with the particles' Morton Codes
+        shaderKey = "populate leaf nodes with data";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/PopulateLeafNodesWithData.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _populateLeavesWithDataProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
         // generate all the tree's internal nodes
         shaderKey = "generate binary radix tree";
-
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
@@ -118,8 +131,8 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _generateBinaryRadixTreeProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
-        // take the generated tree and merge the bounding boxes from the leaves up to the root, 
-        // thus finishing the hierarchy of bounding volumes
+        // generate bounding boxes for the leaves, then merge them from the leaves up to the 
+        // root, thus finishing the hierarchy of bounding volumes
         shaderKey = "generate bounding volumes";
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
@@ -147,10 +160,7 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _detectAndResolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
-
-        // TODO: create particle collision detection and resolution shader
-
-        // generate the BVH that will used for all this collision detection
+        // generate the BVH that will be used for all this collision detection
         _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
 
         //// test buffer
@@ -162,11 +172,14 @@ namespace ShaderControllers
         //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
         // set buffer sizes for each of the programs
+        particleSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
+        particleSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
-        // TODO: configure for particle detection and resolution
+        _bvhNodeSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -179,6 +192,7 @@ namespace ShaderControllers
     --------------------------------------------------------------------------------------------*/
     ParticleCollisions::~ParticleCollisions()
     {
+        glDeleteProgram(_populateLeavesWithDataProgramId);
         glDeleteProgram(_generateBinaryRadixTreeProgramId);
         glDeleteProgram(_generateBoundingVolumesProgramId);
         glDeleteProgram(_detectAndResolveCollisionsProgramId);
@@ -203,15 +217,15 @@ namespace ShaderControllers
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
 
-        // construct the hierarchy
-        glUseProgram(_generateBinaryRadixTreeProgramId);
-        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        //// construct the hierarchy
+        //glUseProgram(_generateBinaryRadixTreeProgramId);
+        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        // merge the bounding boxes of individual leaves (particles) up to the root
-        glUseProgram(_generateBoundingVolumesProgramId);
-        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        //// merge the bounding boxes of individual leaves (particles) up to the root
+        //glUseProgram(_generateBoundingVolumesProgramId);
+        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         //TODO: collision detection and resolution
 
@@ -238,6 +252,7 @@ namespace ShaderControllers
         steady_clock::time_point generateBvhStart;
         steady_clock::time_point start;
         steady_clock::time_point end;
+        long long durationPopulateTreeWithData = 0;
         long long durationGenerateTree = 0;
         long long durationMergeBoundingBoxes = 0;
 
@@ -248,6 +263,16 @@ namespace ShaderControllers
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
 
+        // populate leaves with the particles' Morton Codes
+        start = high_resolution_clock::now();
+        glUseProgram(_populateLeavesWithDataProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationPopulateTreeWithData = (duration_cast<microseconds>(end - start).count());
+
         // construct the hierarchy
         start = high_resolution_clock::now();
         glUseProgram(_generateBinaryRadixTreeProgramId);
@@ -257,12 +282,6 @@ namespace ShaderControllers
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
         durationGenerateTree = (duration_cast<microseconds>(end - start).count());
-
-        //unsigned int treeDepth = static_cast<int>(std::ceil(std::log2f(_numLeaves)));
-        //for (unsigned int depth = 0; depth < treeDepth; depth++)
-        //{
-        //    gluinf
-        //}
 
         // merge the bounding boxes of individual leaves (particles) up to the root
         start = high_resolution_clock::now();
@@ -317,6 +336,9 @@ namespace ShaderControllers
             long long totalParallelSortTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
             cout << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
             outFile << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
+
+            cout << "populate leaves with particles' Morton Codes" << durationPopulateTreeWithData << "\tmicroseconds" << endl;
+            outFile << "populate leaves with particles' Morton Codes" << durationPopulateTreeWithData << "\tmicroseconds" << endl;
 
             cout << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
             outFile << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;

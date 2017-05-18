@@ -1,0 +1,36 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES BvhNodeBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    The binary radix tree (framework of the BVH) is created by analyzing the data over which the 
+    leaf notes were sorted.  In this demo, leaves are equivalent to particles.  They are 
+    different structures to make bounding box overlaps easier, but being different structures 
+    means that they need to be initialized prior to construction of the tree.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    // all the leaf nodes are at the front of the BvhNodeBuffer, sharing the same indices with 
+    // the particles, so this same index can be used for both ParticleBuffer access and 
+    // BvhNodeBuffer access
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uParticleBufferSize ||
+        threadIndex >= uNumActiveParticles)
+    {
+        // all inactive particles are sorted to the back of the particle buffer, so returning 
+        // now won't leave a gap in the tree
+        return;
+    }
+
+    // set the data that will be be analyzed on tree construction
+    AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
+}
+    

@@ -27,6 +27,7 @@ namespace ShaderControllers
 
     private:
         unsigned int _numLeaves;
+        unsigned int _populateLeavesWithDataProgramId;
         unsigned int _generateBinaryRadixTreeProgramId;
         unsigned int _generateBoundingVolumesProgramId;
         unsigned int _detectAndResolveCollisionsProgramId;

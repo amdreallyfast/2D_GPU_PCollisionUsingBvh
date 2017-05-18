@@ -383,7 +383,7 @@ void UpdateAllTheThings()
     nearbyParticleCounter->Count();
 
 
-    ShaderControllers::WaitForComputeToFinish();
+    ShaderControllers::WaitOnQueuedSynchronization();
 
 
 
