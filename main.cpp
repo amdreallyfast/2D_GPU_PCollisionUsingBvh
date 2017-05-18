@@ -75,7 +75,7 @@ std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter =
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 5000;
+const unsigned int MAX_PARTICLE_COUNT = 50000;
 
 
 
@@ -380,7 +380,7 @@ void UpdateAllTheThings()
     parallelSort->SortWithoutProfiling();
     particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
     //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
-    nearbyParticleCounter->Count();
+    //nearbyParticleCounter->Count();
 
 
     ShaderControllers::WaitOnQueuedSynchronization();
@@ -588,7 +588,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif

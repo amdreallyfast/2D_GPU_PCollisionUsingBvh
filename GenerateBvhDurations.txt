@@ -1,5 +1,5 @@
-total sort time: 8238	microseconds
-populate leaves with particles' Morton Codes4121	microseconds
-generate BVH tree: 3136	microseconds
-generate BVH bounding boxes: 973	microseconds
+total collision detection time: 3351	microseconds
+populate leaves with particles' Morton Codes: 241	microseconds
+generate BVH tree: 2849	microseconds
+generate BVH bounding boxes: 252	microseconds
 

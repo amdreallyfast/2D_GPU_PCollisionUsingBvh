@@ -100,9 +100,9 @@ struct BvhNode
     }
     
     BoundingBox _boundingBox;
-    DebugSignGeneration _signDebug;
-    DebugFindLength _findMaxLengthDebug;
-    DebugFindLength _findOtherEndDebug;
+//    DebugSignGeneration _signDebug;
+//    DebugFindLength _findMaxLengthDebug;
+//    DebugFindLength _findOtherEndDebug;
     int _extraData1;
     int _extraData2;
 

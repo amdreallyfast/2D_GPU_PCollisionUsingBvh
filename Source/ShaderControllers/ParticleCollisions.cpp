@@ -217,15 +217,23 @@ namespace ShaderControllers
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
 
-        //// construct the hierarchy
-        //glUseProgram(_generateBinaryRadixTreeProgramId);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        // populate leaves with the particles' Morton Codes
+        glUseProgram(_populateLeavesWithDataProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //// merge the bounding boxes of individual leaves (particles) up to the root
-        //glUseProgram(_generateBoundingVolumesProgramId);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        // construct the hierarchy
+        glUseProgram(_generateBinaryRadixTreeProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        // merge the bounding boxes of individual leaves (particles) up to the root
+        glUseProgram(_generateBoundingVolumesProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         //TODO: collision detection and resolution
 
@@ -245,7 +253,7 @@ namespace ShaderControllers
     --------------------------------------------------------------------------------------------*/
     void ParticleCollisions::DetectAndResolveWithProfiling(unsigned int numActiveParticles) const
     {
-        cout << "Generating BVH for " << _numLeaves << " particle leaves" << endl;
+        cout << "Generating BVH for " << numActiveParticles << " particle leaves" << endl;
 
         // for profiling
         using namespace std::chrono;
@@ -255,6 +263,9 @@ namespace ShaderControllers
         long long durationPopulateTreeWithData = 0;
         long long durationGenerateTree = 0;
         long long durationMergeBoundingBoxes = 0;
+
+        // wait for previous instructions to finish
+        WaitForComputeToFinish();
 
         // begin
         generateBvhStart = high_resolution_clock::now();
@@ -310,35 +321,55 @@ namespace ShaderControllers
         if (checkOriginalData[0]._extraData1 != -1)
         {
             printf("");
+            //std::ofstream outfile("BvhDump.txt");
+            //for (size_t i = 0; i < checkOriginalData.size(); i++)
+            //{
+            //    outfile << "i = " << i
+            //        << "\tisLeaf = " << checkOriginalData[i]._isLeaf
+            //        << "\tparentIndex = " << checkOriginalData[i]._parentIndex
+            //        << "\tstartIndex = " << checkOriginalData[i]._startIndex
+            //        << "\tendIndex = " << checkOriginalData[i]._endIndex
+            //        << "\tsplitIndex = " << checkOriginalData[i]._leafSplitIndex
+            //        << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
+            //        << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
+            //        << "\tdata = " << checkOriginalData[i]._data
+            //        << endl;
+            //}
+            //outfile.close();
+
+            return;
+        }
+
+        if (numActiveParticles > 7000)
+        {
             std::ofstream outfile("BvhDump.txt");
             for (size_t i = 0; i < checkOriginalData.size(); i++)
             {
                 outfile << "i = " << i
                     << "\tisLeaf = " << checkOriginalData[i]._isLeaf
-                    << "\tparentIndex = " << checkOriginalData[i]._parentIndex
-                    << "\tstartIndex = " << checkOriginalData[i]._startIndex
-                    << "\tendIndex = " << checkOriginalData[i]._endIndex
-                    << "\tsplitIndex = " << checkOriginalData[i]._leafSplitIndex
-                    << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
-                    << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
+                    << "\tparent = " << checkOriginalData[i]._parentIndex
+                    << "\tstart = " << checkOriginalData[i]._startIndex
+                    << "\tend = " << checkOriginalData[i]._endIndex
+                    << "\tsplit = " << checkOriginalData[i]._leafSplitIndex
+                    << "\tleftChild = " << checkOriginalData[i]._leftChildIndex
+                    << "\trightChild = " << checkOriginalData[i]._rightChildIndex
                     << "\tdata = " << checkOriginalData[i]._data
+                    << "\tthreadEntranceCounter = " << checkOriginalData[i]._threadEntranceCounter
                     << endl;
             }
             outfile.close();
-
-            return;
         }
 
         // write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
         std::ofstream outFile("GenerateBvhDurations.txt");
         if (outFile.is_open())
         {
-            long long totalParallelSortTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
-            cout << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
-            outFile << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
+            long long totalCollisionDetectionTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
+            cout << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
+            outFile << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
 
-            cout << "populate leaves with particles' Morton Codes" << durationPopulateTreeWithData << "\tmicroseconds" << endl;
-            outFile << "populate leaves with particles' Morton Codes" << durationPopulateTreeWithData << "\tmicroseconds" << endl;
+            cout << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
+            outFile << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
 
             cout << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
             outFile << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
