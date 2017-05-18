@@ -27,6 +27,8 @@ struct Particle
 // whatever size the user wants
 layout(location = UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE) uniform uint uParticleBufferSize;
 
+// this is used during construction of the BVH tree to make sure that leaf node analysis doesn't 
+// take into account leaf nodes that don't correspond to any particle data
 layout(location = UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES) uniform uint uNumActiveParticles;
 
 

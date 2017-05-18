@@ -22,8 +22,8 @@ namespace ShaderControllers
         ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo);
         ~ParticleCollisions();
 
-        void DetectAndResolveWithoutProfiling() const;
-        void DetectAndResolveWithProfiling() const;
+        void DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const;
+        void DetectAndResolveWithProfiling(unsigned int numActiveParticles) const;
 
     private:
         unsigned int _numLeaves;

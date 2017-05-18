@@ -177,21 +177,12 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     _numVertices = v.size();
     _numParticles = v.size();
 
-    // there is a single integer at the start of the buffer
-    //size_t bufferSizeBytes = sizeof(int) + (v.size() * sizeof(Particle));
-    //size_t bufferSizeBytes = (v.size() * sizeof(Particle));
-
     // now bind this new buffer to the dedicated buffer binding location
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_BUFFER_BINDING, _bufferId);
 
     // and fill it with the new data
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
     glBufferData(GL_SHADER_STORAGE_BUFFER, v.size() * sizeof(Particle), v.data(), GL_DYNAMIC_DRAW);
-
-    //int zero = 0;
-    //glBufferSubData(GL_SHADER_STORAGE_BUFFER, 0, sizeof(int), &zero);
-    //glBufferSubData(GL_SHADER_STORAGE_BUFFER, sizeof(int), v.size() * sizeof(Particle), v.data());
-
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -243,7 +234,7 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
     // - int _isActive;
 
     unsigned int vertexArrayIndex = 0;
-    unsigned int bufferStartOffset = 0;// sizeof(int);   // _numActiveParticles at the beginning of the buffer
+    unsigned int bufferStartOffset = 0;
     unsigned int bytesPerStep = sizeof(Particle);
     unsigned int sizeOfItem = 0;
     unsigned int numItems = 0;

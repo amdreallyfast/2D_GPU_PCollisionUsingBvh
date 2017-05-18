@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
+#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 
 #include "ThirdParty/glm/vec4.hpp"
 

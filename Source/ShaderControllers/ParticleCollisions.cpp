@@ -6,7 +6,6 @@
 // for profiling and checking results
 #include "Include/ShaderControllers/ProfilingWaitToFinish.h"
 #include "Include/Buffers/BvhNode.h"
-#include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
@@ -198,7 +197,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::DetectAndResolveWithoutProfiling() const
+    void ParticleCollisions::DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const
     {
         int numWorkGroupsX = (_numLeaves / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
         int numWorkGroupsY = 1;
@@ -230,7 +229,7 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::DetectAndResolveWithProfiling() const
+    void ParticleCollisions::DetectAndResolveWithProfiling(unsigned int numActiveParticles) const
     {
         cout << "Generating BVH for " << _numLeaves << " particle leaves" << endl;
 
@@ -249,16 +248,10 @@ namespace ShaderControllers
         int numWorkGroupsY = 1;
         int numWorkGroupsZ = 1;
 
-
-        // should have the number of active particles right now (this is very dirty and I don't like it)
-        const PersistentAtomicCounterBuffer &activeParticleCounter = PersistentAtomicCounterBuffer::GetInstance();
-
-        
-
         // construct the hierarchy
         start = high_resolution_clock::now();
         glUseProgram(_generateBinaryRadixTreeProgramId);
-        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, activeParticleCounter.GetCounterValue());
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();
@@ -274,7 +267,7 @@ namespace ShaderControllers
         // merge the bounding boxes of individual leaves (particles) up to the root
         start = high_resolution_clock::now();
         glUseProgram(_generateBoundingVolumesProgramId);
-        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, activeParticleCounter.GetCounterValue());
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();

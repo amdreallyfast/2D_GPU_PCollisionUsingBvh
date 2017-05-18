@@ -70,8 +70,6 @@ namespace ShaderControllers
         glDeleteProgram(_computeProgramId);
     }
 
-#include "Include/Buffers/Particle.h"
-
     /*--------------------------------------------------------------------------------------------
     Description:
         Resets the "num active particles" atomic counter, dispatches the shader, and reads the 

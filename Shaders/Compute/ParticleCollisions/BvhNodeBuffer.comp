@@ -21,6 +21,7 @@ struct CommonPrefixDebug
     unsigned int _valueA;
     int _indexB;
     unsigned int _valueB;
+    unsigned int _xor;
     int _commonPrefixLength;
 };
 
