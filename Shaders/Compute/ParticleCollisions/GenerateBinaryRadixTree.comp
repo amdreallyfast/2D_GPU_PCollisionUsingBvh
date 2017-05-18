@@ -428,6 +428,14 @@ void ResetDebugStructures(uint nodeIndex)
 //        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._lengthAfter = 0;
 //    }
 
+//    for (int i = 0; i < AllBvhNodes[nodeIndex]._threadEntranceCounter; i++)
+//    {
+//        AllBvhNodes[nodeIndex]._threadAccessors[i]._threadId = -1;
+//        AllBvhNodes[nodeIndex]._threadAccessors[i]._previousNodeIndex = -1;
+//    }
+
+
+
     AllBvhNodes[nodeIndex]._extraData1 = -1;
     AllBvhNodes[nodeIndex]._extraData2 = -1;
 }
@@ -481,7 +489,7 @@ void main()
 
 
     // TODO: remove this
-    //ResetDebugStructures(uBvhNumberLeaves + threadIndex);
+    ResetDebugStructures(uBvhNumberLeaves + threadIndex);
 
 
 

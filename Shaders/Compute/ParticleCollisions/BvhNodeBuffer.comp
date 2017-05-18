@@ -45,6 +45,12 @@ struct DebugFindLength
     DebugLength _iterations[25];
 };
 
+struct ThreadAccessor
+{
+    int _threadId;
+    int _previousNodeIndex;
+};
+
 /*------------------------------------------------------------------------------------------------
 Description:   
     Stores info about a single node in the BVH.  Can be either an internal node or a leaf node.  
@@ -58,6 +64,7 @@ struct BvhNode
 //    DebugSignGeneration _signDebug;
 //    DebugFindLength _findMaxLengthDebug;
 //    DebugFindLength _findOtherEndDebug;
+    ThreadAccessor _threadAccessors[25];
     int _extraData1;
     int _extraData2;
 

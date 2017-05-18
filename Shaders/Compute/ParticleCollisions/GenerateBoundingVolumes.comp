@@ -53,8 +53,10 @@ void main()
 
     // now go up through the internal nodes and merge the bounding boxes until the root
     // Note: The parent index should only be -1 at the root node.
+    int prevNodeIndex = -1;     // TODO: remove
     int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
     while(nodeIndex != -1 && ohCrapOhCrapCounter < 25)
+    //if (nodeIndex != -1)
     {
         ohCrapOhCrapCounter++;
 
@@ -64,11 +66,31 @@ void main()
         // first thread that enters it, while letting the second one through. This ensures that 
         // every node gets processed only once, and not before both of its children are 
         // processed."
-        atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1);
-        if (AllBvhNodes[nodeIndex]._threadEntranceCounter != 2)
+        int priorCounterValue = atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1);
+        int currCounterValue = AllBvhNodes[nodeIndex]._threadEntranceCounter;
+
+
+//        AllBvhNodes[nodeIndex]._threadAccessors[priorCounterValue]._threadId = int(threadIndex);
+//        AllBvhNodes[nodeIndex]._threadAccessors[priorCounterValue]._previousNodeIndex = prevNodeIndex;
+        if (priorCounterValue == 0)
         {
             return;
         }
+
+
+//        //if (AllBvhNodes[nodeIndex]._threadEntranceCounter != 2)
+//        //{
+//        //    return;
+//        //}
+//        if (priorCounterValue == 0)
+//        {
+//            return;
+//        }
+//        if (priorCounterValue != currCounterValue)
+//        {
+//            AllBvhNodes[nodeIndex]._extraData1 = priorCounterValue;
+//            AllBvhNodes[nodeIndex]._extraData2 = currCounterValue;
+//        }
         
         int leftChildIndex = AllBvhNodes[nodeIndex]._leftChildIndex;
         int rightChildIndex = AllBvhNodes[nodeIndex]._rightChildIndex;
@@ -80,6 +102,7 @@ void main()
         AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
         AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
 
+        prevNodeIndex = nodeIndex;
         nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
     }
 
