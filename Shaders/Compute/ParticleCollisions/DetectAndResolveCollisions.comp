@@ -115,8 +115,8 @@ void main()
 
     do
     {
-        AllBvhNodes[threadIndex]._extraDataArr1[loopCounter] = currentNodeIndex;
-        AllBvhNodes[threadIndex]._extraDataArr2[loopCounter] = nodeStack[topOfStackIndex - 1];
+        //AllBvhNodes[threadIndex]._extraDataArr1[loopCounter] = currentNodeIndex;
+        //AllBvhNodes[threadIndex]._extraDataArr2[loopCounter] = nodeStack[topOfStackIndex - 1];
         loopCounter++;
 
 
@@ -162,7 +162,7 @@ void main()
         if (!traverseLeft && !traverseRight)
         {
             // children must be leaves, non-overlapping, or both; pop the top of the stack
-            currentNodeIndex = nodeStack[topOfStackIndex--];
+            currentNodeIndex = nodeStack[--topOfStackIndex];
         }
         else 
         {
@@ -176,7 +176,8 @@ void main()
         }
 
     //} while (currentNodeIndex != -1);    // "end of stack"
-    } while (currentNodeIndex != -1 && loopCounter < 25);    // "end of stack"
+    //} while (currentNodeIndex != -1 && loopCounter < 25);    // "end of stack"
+    } while (currentNodeIndex != -1 && topOfStackIndex < 64);    // "end of stack"
 
 
     //AllBvhNodes[threadIndex]._extraData2 = particleIndexWithGreatestOverlap;
