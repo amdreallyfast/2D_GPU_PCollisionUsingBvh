@@ -235,7 +235,11 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //TODO: collision detection and resolution
+        // traverse the tree, detect collisions, and resolve them
+        glUseProgram(_detectAndResolveCollisionsProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
         // end collision detection and resolution
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);

@@ -44,8 +44,10 @@ void main()
 
         // min/mid/max possible nearby particles
         float min = 0;
-        float mid = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE;
-        float max = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE * 2;
+//        float mid = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE;
+//        float max = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE * 2;
+        float mid = 30;
+        float max = 60;
 
         float blendValue = float(numberOfNearbyParticles);
         float fractionLowToMid = (blendValue - min) / (mid - min);

@@ -374,12 +374,12 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(20);
+    particleResetter->ResetParticles(1);
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();
-    particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
-    //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
+    //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
+    particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
     //nearbyParticleCounter->Count();
 
 
