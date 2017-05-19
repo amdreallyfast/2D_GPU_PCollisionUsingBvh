@@ -55,9 +55,9 @@ void main()
     // Note: The parent index should only be -1 at the root node.
     int prevNodeIndex = -1;     // TODO: remove
     int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
-    //while(nodeIndex != -1)
+    while(nodeIndex != -1)
     //while(nodeIndex != -1 && ohCrapOhCrapCounter < 25)
-    while(nodeIndex != -1 && ohCrapOhCrapCounter < 35)
+    //while(nodeIndex != -1 && ohCrapOhCrapCounter < 35)
     //if (nodeIndex != -1)
     {
         ohCrapOhCrapCounter++;
