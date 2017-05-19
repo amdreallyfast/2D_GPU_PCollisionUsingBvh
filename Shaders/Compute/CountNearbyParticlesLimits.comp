@@ -5,4 +5,6 @@ Description:
 Creator:    John Cox, 4/2017
 ------------------------------------------------------------------------------------------------*/
 
-#define NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE 10
+// TODO: remove this file
+
+#define NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE 2

@@ -263,6 +263,7 @@ namespace ShaderControllers
         long long durationPopulateTreeWithData = 0;
         long long durationGenerateTree = 0;
         long long durationMergeBoundingBoxes = 0;
+        long long durationDetectAndResolveCollisions = 0;
 
         // wait for previous instructions to finish
         WaitForComputeToFinish();
@@ -282,7 +283,7 @@ namespace ShaderControllers
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
-        durationPopulateTreeWithData = (duration_cast<microseconds>(end - start).count());
+        durationPopulateTreeWithData = duration_cast<microseconds>(end - start).count();
 
         // construct the hierarchy
         start = high_resolution_clock::now();
@@ -292,7 +293,7 @@ namespace ShaderControllers
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
-        durationGenerateTree = (duration_cast<microseconds>(end - start).count());
+        durationGenerateTree = duration_cast<microseconds>(end - start).count();
 
         // merge the bounding boxes of individual leaves (particles) up to the root
         start = high_resolution_clock::now();
@@ -302,7 +303,18 @@ namespace ShaderControllers
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
-        durationMergeBoundingBoxes = (duration_cast<microseconds>(end - start).count());
+        durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
+
+        // traverse the tree, detect collisions, and resolve them
+        start = high_resolution_clock::now();
+        glUseProgram(_detectAndResolveCollisionsProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationDetectAndResolveCollisions = duration_cast<microseconds>(end - start).count();
+
 
         glUseProgram(0);
 
@@ -336,7 +348,23 @@ namespace ShaderControllers
                     << "\tdata = " << checkOriginalData[i]._data
                     << "\textraData1 = " << checkOriginalData[i]._extraData1
                     << "\textraData2 = " << checkOriginalData[i]._extraData2
+                    //<< "\tleft = " << checkOriginalData[i]._boundingBox._left
+                    //<< "\tright = " << checkOriginalData[i]._boundingBox._right
+                    //<< "\tbottom = " << checkOriginalData[i]._boundingBox._bottom
+                    //<< "\ttop = " << checkOriginalData[i]._boundingBox._top
                     << endl;
+                outfile << "\t";
+                for (size_t j = 0; j < 25; j++)
+                {
+                    outfile << checkOriginalData[i]._extraDataArr1[j] << "->";
+                }
+                outfile << endl;
+                outfile << "\t";
+                for (size_t j = 0; j < 25; j++)
+                {
+                    outfile << checkOriginalData[i]._extraDataArr2[j] << "->";
+                }
+                outfile << endl;
             }
             outfile.close();
 
@@ -400,6 +428,9 @@ namespace ShaderControllers
 
             cout << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
             outFile << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
+
+            cout << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
+            outFile << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
 
             cout << endl;
             outFile << endl;

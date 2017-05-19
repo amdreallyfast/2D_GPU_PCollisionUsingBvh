@@ -85,86 +85,111 @@ void main()
         return;
     }
 
-//    // because OverlappingArea(...) takes signed integers for indices, which is because all the BVH's nodes use signed integers for indices
-//    //BoundingBox thisParticleBoundingBox = AllBvhNodes[threadIndex]._boundingBox;
-//    int thisLeafNodeIndex = int(threadIndex);
-//
-//    int numberPotentialCollisions = 0;
-//    //const int potentialCollisionIndices[64] = int[64](-1);
-//    float areaOfGreatestOverlap = 0.0f;
-//    int particleIndexWithGreatestOverlap = -1;
-//
-//    // iterative traversal of the tree requires keeping track of the depth yourself
-//    int topOfStackIndex = 0;
-//    int nodeStack[64] = int[64](0);
-//
-//    // push an "end of stack"
-//    nodeStack[topOfStackIndex++] = -1;
-//
-//    // starting at the root internal node
-//    // Note: By definition of the BVH's construction, all bounding boxes are contained within 
-//    // the root node's bounding box, so don't bother checking that.
-//    int currentNodeIndex = int(uBvhNumberLeaves);
-//    do
-//    {
-//        // by virtue of the BVH's construction, the only nodes with child indices of -1 will be 
-//        // leaf nodes, and for that, there is already an "is leaf" flag, so no need for 
-//        // "child index == -1" checks
-//
-//        // if the leaf node for this thread overlaps a leaf node -> potential collision
-//        int leftChildIndex = AllBvhNodes[currentNodeIndex]._leftChildIndex;
-//        bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
-//        float overlapAreaLeft = OverlappingArea(thisLeafNodeIndex, leftChildIndex);
-//        if (leftChildIsLeaf &&
-//            (overlapAreaLeft > 0.0f) && 
-//            (leftChildIndex != thisLeafNodeIndex))  // prevent collision with self
-//        {
-//            numberPotentialCollisions++;
-//            if (overlapAreaLeft > areaOfGreatestOverlap)
-//            {
-//                areaOfGreatestOverlap = overlapAreaLeft;
-//                particleIndexWithGreatestOverlap = leftChildIndex;
-//            }
-//        }
-//
-//        int rightChildIndex = AllBvhNodes[currentNodeIndex]._rightChildIndex;
-//        bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
-//        float overlapAreaRight = OverlappingArea(thisLeafNodeIndex, rightChildIndex);
-//        if (rightChildIsLeaf &&
-//            (overlapAreaRight > 0.0f) && 
-//            (rightChildIndex != thisLeafNodeIndex))     // prevent collision with self
-//        {
-//            numberPotentialCollisions++;
-//            if (overlapAreaRight > areaOfGreatestOverlap)
-//            {
-//                areaOfGreatestOverlap = overlapAreaRight;
-//                particleIndexWithGreatestOverlap = rightChildIndex;
-//            }
-//        }
-//
-//        // if the leaf node for this thread overlaps an internal node -> traverse the tree
-//        bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
-//        bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
-//        if (!traverseLeft && !traverseRight)
-//        {
-//            // must be at a leaf; pop the top of the stack
-//            currentNodeIndex = topOfStackIndex--;
-//        }
-//        else 
-//        {
-//            currentNodeIndex = traverseLeft ? leftChildIndex : rightChildIndex;
-//            if (traverseLeft && traverseRight)
-//            {
-//                // two children; already going left, so push the right index
-//                nodeStack[topOfStackIndex++] = rightChildIndex;
-//            }
-//        }
-//
-//    } while (currentNodeIndex != -1);    // "end of stack"
-//
-//
-//
-//    AllBvhNodes[threadIndex]._isLeaf = particleIndexWithGreatestOverlap;
+    // because OverlappingArea(...) takes signed integers for indices, which is because all the BVH's nodes use signed integers for indices
+    //BoundingBox thisParticleBoundingBox = AllBvhNodes[threadIndex]._boundingBox;
+    int thisLeafNodeIndex = int(threadIndex);
+
+    int numberPotentialCollisions = 0;
+    //const int potentialCollisionIndices[64] = int[64](-1);
+    float areaOfGreatestOverlap = 0.0f;
+    int particleIndexWithGreatestOverlap = -1;
+
+    // iterative traversal of the tree requires keeping track of the depth yourself
+    int topOfStackIndex = 0;
+    int nodeStack[64] = int[64](0);
+
+    // push an "end of stack" and start at the root internal node
+    // Note: By definition of the BVH's construction, all bounding boxes are contained within 
+    // the root node's bounding box, so don't bother checking for overlap before the loop.
+    // Also Note: Also by virtue of the BVH's construction, the only nodes with child indices of 
+    // -1 will be leaf nodes, and for that, there is already an "is leaf" flag, so no need for 
+    // "child index == -1" checks.
+    nodeStack[topOfStackIndex++] = -1;
+    int currentNodeIndex = int(uBvhNumberLeaves);//nodeStack[topOfStackIndex - 1];
+
+
+    //TODO: remove
+    int loopCounter = 0;
+    
+
+
+    do
+    {
+        AllBvhNodes[threadIndex]._extraDataArr1[loopCounter] = currentNodeIndex;
+        AllBvhNodes[threadIndex]._extraDataArr2[loopCounter] = nodeStack[topOfStackIndex - 1];
+        loopCounter++;
+
+
+
+        // check for leaf node on the left
+        int leftChildIndex = AllBvhNodes[currentNodeIndex]._leftChildIndex;
+        bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
+        float overlapAreaLeft = OverlappingArea(thisLeafNodeIndex, leftChildIndex);
+        if (leftChildIsLeaf &&
+            (overlapAreaLeft > 0.0f) && 
+            (leftChildIndex != thisLeafNodeIndex))  // prevent collision with self
+        {
+            numberPotentialCollisions++;
+            if (overlapAreaLeft > areaOfGreatestOverlap)
+            {
+                areaOfGreatestOverlap = overlapAreaLeft;
+                particleIndexWithGreatestOverlap = leftChildIndex;
+            }
+        }
+
+        // check for leaf node on the right
+        int rightChildIndex = AllBvhNodes[currentNodeIndex]._rightChildIndex;
+        bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
+        float overlapAreaRight = OverlappingArea(thisLeafNodeIndex, rightChildIndex);
+        if (rightChildIsLeaf &&
+            (overlapAreaRight > 0.0f) && 
+            (rightChildIndex != thisLeafNodeIndex))     // prevent collision with self
+        {
+            numberPotentialCollisions++;
+            if (overlapAreaRight > areaOfGreatestOverlap)
+            {
+                areaOfGreatestOverlap = overlapAreaRight;
+                particleIndexWithGreatestOverlap = rightChildIndex;
+            }
+        }
+
+
+
+        // traverse the tree if the this particle's bounding box overlaps an internal node's 
+        // bounding box
+        bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
+        bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
+        if (!traverseLeft && !traverseRight)
+        {
+            // children must be leaves, non-overlapping, or both; pop the top of the stack
+            currentNodeIndex = nodeStack[topOfStackIndex--];
+        }
+        else 
+        {
+            // at least one of the nodes is not a leaf
+            currentNodeIndex = traverseLeft ? leftChildIndex : rightChildIndex;
+            if (traverseLeft && traverseRight)
+            {
+                // two children; already going left, so push the right index
+                nodeStack[topOfStackIndex++] = rightChildIndex;
+            }
+        }
+
+    //} while (currentNodeIndex != -1);    // "end of stack"
+    } while (currentNodeIndex != -1 && loopCounter < 25);    // "end of stack"
+
+
+    //AllBvhNodes[threadIndex]._extraData2 = particleIndexWithGreatestOverlap;
+    AllParticles[threadIndex]._numberOfNearbyParticles = numberPotentialCollisions;
+
+
+    if (currentNodeIndex != -1)
+    {
+        AllBvhNodes[0]._extraData1 = int(threadIndex);
+        //AllBvhNodes[0]._extraData2 = nodeStack[topOfStackIndex - 1];
+        AllBvhNodes[0]._extraData2 = topOfStackIndex;
+    }
+
 
     //
     //

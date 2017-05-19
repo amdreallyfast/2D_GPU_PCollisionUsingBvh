@@ -104,6 +104,11 @@ struct BvhNode
         _extraData1(-1),
         _extraData2(-1)
     {
+        for (size_t i = 0; i < 25; i++)
+        {
+            _extraDataArr1[i] = -1;
+            _extraDataArr2[i] = -1;
+        }
     }
     
     BoundingBox _boundingBox;
@@ -113,6 +118,8 @@ struct BvhNode
 //    ThreadAccessor _threadAccessors[25];
     int _extraData1;
     int _extraData2;
+    int _extraDataArr1[25];
+    int _extraDataArr2[25];
 
     int _isLeaf;
     int _parentIndex;
