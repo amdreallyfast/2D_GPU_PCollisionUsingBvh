@@ -378,8 +378,8 @@ void UpdateAllTheThings()
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();
-    particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
-    //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
+    //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
+    particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
     //nearbyParticleCounter->Count();
 
 

@@ -32,5 +32,14 @@ void main()
 
     // set the data that will be be analyzed on tree construction
     AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
+
+    
+    // TODO: remove
+    AllBvhNodes[threadIndex]._extraData2 = AllParticles[threadIndex]._isActive;
+    if (AllParticles[threadIndex]._isActive != 1)
+    {
+        AllBvhNodes[threadIndex]._extraData2 = 37;
+    }
+    
 }
     

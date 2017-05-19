@@ -489,8 +489,8 @@ void main()
 
 
     // TODO: remove this
-    ResetDebugStructures(uBvhNumberLeaves + threadIndex);
-
+    //ResetDebugStructures(uBvhNumberLeaves + threadIndex);
+    
 
 
     // build the tree

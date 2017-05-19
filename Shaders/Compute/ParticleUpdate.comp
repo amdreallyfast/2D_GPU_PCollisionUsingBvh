@@ -38,23 +38,34 @@ void main()
 
     Particle pCopy = AllParticles[index];
 
-    // only update active particles 
-    if (pCopy._isActive == 0)
-    {
-        return;
-    }
-
-    // when the compute shader is summoned to update active particles, this counter will 
-    // give a count of how many active particles exist
-    atomicCounterIncrement(acActiveParticleCounter);
-
     pCopy._pos += (pCopy._vel * uDeltaTimeSec);
 
     // if it went out of bounds, turn it off
     bool outOfBoundsX = pCopy._pos.x < PARTICLE_REGION_MIN_X || pCopy._pos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
     bool outOfBoundsY = pCopy._pos.y < PARTICLE_REGION_MIN_Y || pCopy._pos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
     bool outOfBoundsZ = pCopy._pos.z < PARTICLE_REGION_MIN_Z || pCopy._pos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
-    pCopy._isActive = (outOfBoundsX || outOfBoundsY || outOfBoundsZ) ? 0 : 1;
+    if (outOfBoundsX || outOfBoundsY || outOfBoundsZ)
+    {
+        pCopy._isActive = 0;
+    }
+
+    // only update active particles 
+    if (pCopy._isActive == 0)
+    {
+        return;
+    }
+
+//    pCopy._pos += (pCopy._vel * uDeltaTimeSec);
+//
+//    // if it went out of bounds, turn it off
+//    bool outOfBoundsX = pCopy._pos.x < PARTICLE_REGION_MIN_X || pCopy._pos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
+//    bool outOfBoundsY = pCopy._pos.y < PARTICLE_REGION_MIN_Y || pCopy._pos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
+//    bool outOfBoundsZ = pCopy._pos.z < PARTICLE_REGION_MIN_Z || pCopy._pos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
+//    pCopy._isActive = (outOfBoundsX || outOfBoundsY || outOfBoundsZ) ? 0 : 1;
+
+    // when the compute shader is summoned to update active particles, this counter will 
+    // give a count of how many active particles exist
+    atomicCounterIncrement(acActiveParticleCounter);
 
     // the particle moved, so let it have a chance to collide again
     pCopy._hasCollidedAlreadyThisFrame = 0;

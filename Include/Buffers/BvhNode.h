@@ -104,18 +104,13 @@ struct BvhNode
         _extraData1(-1),
         _extraData2(-1)
     {
-        for (size_t i = 0; i < 25; i++)
-        {
-            _threadAccessors[i]._threadId = -1;
-            _threadAccessors[i]._previousNodeIndex = -1;
-        }
     }
     
     BoundingBox _boundingBox;
 //    DebugSignGeneration _signDebug;
 //    DebugFindLength _findMaxLengthDebug;
 //    DebugFindLength _findOtherEndDebug;
-    ThreadAccessor _threadAccessors[25];
+//    ThreadAccessor _threadAccessors[25];
     int _extraData1;
     int _extraData2;
 
