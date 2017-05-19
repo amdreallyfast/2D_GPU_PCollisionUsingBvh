@@ -37,23 +37,29 @@ void main()
     }
 
     Particle pCopy = AllParticles[index];
-
     pCopy._pos += (pCopy._vel * uDeltaTimeSec);
 
-    // if it went out of bounds, turn it off
+    // if it went out of bounds, turn it off and don't record the updated particle
     bool outOfBoundsX = pCopy._pos.x < PARTICLE_REGION_MIN_X || pCopy._pos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
     bool outOfBoundsY = pCopy._pos.y < PARTICLE_REGION_MIN_Y || pCopy._pos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
     bool outOfBoundsZ = pCopy._pos.z < PARTICLE_REGION_MIN_Z || pCopy._pos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
-    if (outOfBoundsX || outOfBoundsY || outOfBoundsZ)
+    //if (outOfBoundsX || outOfBoundsY || outOfBoundsZ)
+    //{
+    //    //pCopy._isActive = 0;
+    //
+    //}
+
+    bool doNotUpdate = (pCopy._isActive == 0) || outOfBoundsX || outOfBoundsY || outOfBoundsZ;
+    //if (pCopy._isActive == 0)
+    //if (pCopy._isActive == 0 || deactivateParticle)
+    if (doNotUpdate)
     {
-        pCopy._isActive = 0;
+        // make sure it's off (ex: just went out of bounds)
+        AllParticles[index]._isActive = 0;
+        return;
     }
 
     // only update active particles 
-    if (pCopy._isActive == 0)
-    {
-        return;
-    }
 
 //    pCopy._pos += (pCopy._vel * uDeltaTimeSec);
 //
