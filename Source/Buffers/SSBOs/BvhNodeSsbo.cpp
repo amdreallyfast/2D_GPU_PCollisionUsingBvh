@@ -27,7 +27,7 @@ BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles)
     _numTotalNodes = _numLeaves + _numInternalNodes;
     std::vector<BvhNode> v(_numTotalNodes);
 
-    for (int leafNodeIndex = 0; leafNodeIndex < _numLeaves; leafNodeIndex++)
+    for (unsigned int leafNodeIndex = 0; leafNodeIndex < _numLeaves; leafNodeIndex++)
     {
         v[leafNodeIndex]._isLeaf = true;
     }

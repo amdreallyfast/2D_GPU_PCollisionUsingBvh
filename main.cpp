@@ -430,7 +430,8 @@ void Display()
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));
 
     GLfloat color[4] = { 0.5f, 0.5f, 0.0f, 1.0f };
-    char str[32];
+    static const int FRAMERATE_STRING_SIZE = 32;
+    char str[FRAMERATE_STRING_SIZE];
     static int elapsedFramesPerSecond = 0;
     static double elapsedTime = 0.0;
     static double frameRate = 0.0;
@@ -442,7 +443,7 @@ void Display()
         elapsedFramesPerSecond = 0;
         elapsedTime -= 1.0f;
     }
-    sprintf(str, "%.2lf", frameRate);
+    snprintf(str, FRAMERATE_STRING_SIZE, "%.2lf", frameRate);
 
     // Note: The font textures' orgin is their lower left corner, so the "lower left" in screen 
     // space is just above [-1.0f, -1.0f].
@@ -454,7 +455,7 @@ void Display()
 
     // now show number of active particles
     // Note: For some reason, lower case "i" seems to appear too close to the other letters.
-    sprintf(str, "active: %d", particleUpdater->NumActiveParticles());
+    snprintf(str, FRAMERATE_STRING_SIZE, "active: %d", particleUpdater->NumActiveParticles());
     float numActiveParticlesXY[2] = { -0.99f, +0.7f };
     gTextAtlases.GetAtlas(48)->RenderText(str, numActiveParticlesXY, scaleXY, color);
 

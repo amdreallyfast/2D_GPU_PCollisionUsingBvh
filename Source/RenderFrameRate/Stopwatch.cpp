@@ -44,11 +44,11 @@ double Stopwatch::Lap()
     // steady_clock) it always reads the CPU's clock counter and then converts that into 
     // whatever time span the user wants 
     steady_clock::time_point currentTime = high_resolution_clock::now();
-    unsigned int deltaTime = duration_cast<microseconds>(currentTime - _lastLapTime).count();
+    long long deltaTime = duration_cast<microseconds>(currentTime - _lastLapTime).count();
     _lastLapTime = currentTime;
 
     // time is in microseconds, so divide by 1 million to get fraction of a second
-    double secondFraction = (double)deltaTime / 1000000.0;
+    double secondFraction = static_cast<double>(deltaTime) / 1000000.0;
     return secondFraction;
 }
 
@@ -66,10 +66,10 @@ double Stopwatch::TotalTime()
 {
     using namespace std::chrono;
     steady_clock::time_point currentTime = high_resolution_clock::now();
-    unsigned int microsecondsPassed =
+    long long microsecondsPassed =
         duration_cast<microseconds>(currentTime - _startTime).count();
 
-    double secondFraction = (double)microsecondsPassed / 1000000.0;
+    double secondFraction = static_cast<double>(microsecondsPassed) / 1000000.0;
     return secondFraction;
 }
 
