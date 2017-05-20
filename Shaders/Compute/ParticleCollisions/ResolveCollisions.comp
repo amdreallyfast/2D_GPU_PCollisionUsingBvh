@@ -64,10 +64,10 @@ void main()
     float a2 = dot(p2._vel, p1ToP2);
     float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
     vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
-    //vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
+    vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
     
     // write results back to global memory
     //??how to only have one thread handle both conditions without a race condition? atomicAdd(...) on a dedicated member? should I even other? what if the other particle had a better collision with someone else??
     AllParticles[threadIndex]._vel = p1VelocityPrime;
-    //AllParticles[otherGuyIndex]._vel = p2VelocityPrime;
+    AllParticles[otherGuyIndex]._vel = p2VelocityPrime;
 }

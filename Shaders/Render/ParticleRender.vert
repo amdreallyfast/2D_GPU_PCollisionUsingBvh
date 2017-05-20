@@ -19,6 +19,12 @@ smooth out vec4 particleColor;
 
 void main()
 {
+    const vec4 black = vec4(0.0f, 0.0f, 0.0f, 1.0f);
+    const vec4 white = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    const vec4 red = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+    const vec4 green = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+    const vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+
     if (isActive == 0)
     {
         // the Z buffer in this 2D demo is of depth 1, so putting the innactive particle out of 
@@ -37,23 +43,22 @@ void main()
         // - Red -> high pressure
         // - Green -> medium pressure
         // - Blue -> low pressure
-        vec4 red = vec4(1.0f, 0.0f, 0.0f, 1.0f);
-        vec4 green = vec4(0.0f, 1.0f, 0.0f, 1.0f);
-        vec4 blue = vec4(0.0f, 0.0f, 1.0f, 1.0f);
 
         // min/mid/max possible nearby particles
         float min = 0;
-        float mid = 20;
-        float max = 40;
+        float mid = 10;
+        float max = 20;
 
 
-        if (collideWithThisParticleIndex == -1)
-        //if (numberOfNearbyParticles == -1)
+//        if (collideWithThisParticleIndex == -1)
+//        //if (numberOfNearbyParticles == -1)
+//        {
+//            //particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+//            particleColor = white;
+//        }
+//        else
         {
-            particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-        }
-        else
-        {
+//            particleColor  = red;
             float blendValue = float(numberOfNearbyParticles);
             float fractionLowToMid = (blendValue - min) / (mid - min);
             fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
@@ -66,7 +71,7 @@ void main()
             // blending is not like blending three points on a triangle, but it is three points on a 
             // 1-dimensional number line, so need to differentiate between two linear blends.
             float pressureIsLow = float(blendValue < mid);
-            vec4 lowToMidPressureColor = mix(blue, green, fractionLowToMid);
+            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
             vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
             particleColor = 
                 (pressureIsLow * lowToMidPressureColor) + 
