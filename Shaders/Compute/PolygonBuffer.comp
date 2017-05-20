@@ -25,6 +25,8 @@ struct PolygonFace
 {
     MyVertex _start;
     MyVertex _end;
+
+    // just using vec4's so everything is already aligned to 16bytes and no padding necessary
 };
 
 // whatever size the user wants
@@ -36,7 +38,7 @@ Description:
     is only 2D, so each face only contains two vertexes;
 Creator: John Cox (9-25-2016)
 -----------------------------------------------------------------------------------------------*/
-layout (std430, binding = POLYGON_SSBO_BUFFER_BINDING) buffer PolygonBuffer
+layout (std430, binding = POLYGON_BUFFER_BINDING) buffer PolygonBuffer
 {
     PolygonFace AllPolygons[];
 };

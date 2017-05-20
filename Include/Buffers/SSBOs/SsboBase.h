@@ -21,6 +21,8 @@ public:
     virtual void ConfigureConstantUniforms(unsigned int computeProgramId) const;
     virtual void ConfigureRender(unsigned int drawStyle);
 
+    // TODO: ConfigureRender(...) should be doable in the constructor; ParticleSsbo doesn't need to be told that it is GL_POINTS, and likewise PolygonSsbo doesn't need to be told that it is GL_LINES
+
     unsigned int VaoId() const;
     unsigned int BufferId() const;
     unsigned int DrawStyle() const;

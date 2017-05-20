@@ -6,6 +6,7 @@
 #include "Include/Buffers/SSBOs/SsboBase.h"
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
 #include "Include/Buffers/SSBOs/BvhNodeSsbo.h"
+#include "Include/Buffers/SSBOs/PolygonSsbo.h"
 
 namespace ShaderControllers
 {
@@ -24,17 +25,19 @@ namespace ShaderControllers
 
         void DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const;
         void DetectAndResolveWithProfiling(unsigned int numActiveParticles) const;
+        const PolygonSsbo::SharedConstPtr BvhVerticesSsbo() const;
 
     private:
         unsigned int _numLeaves;
         unsigned int _populateLeavesWithDataProgramId;
         unsigned int _generateBinaryRadixTreeProgramId;
         unsigned int _generateBoundingVolumesProgramId;
+        unsigned int _generateVerticesProgramId;
         unsigned int _detectAndResolveCollisionsProgramId;
 
-        // TODO: collision detection and resolution program ID
-
-        // kept around for the sake of the *WithProfiling these are unique to this class and are needed for sorting
         BvhNodeSsbo::SharedPtr _bvhNodeSsbo;
+        PolygonSsbo::SharedPtr _bvhGeometrySsbo;
+
+
     };
 }

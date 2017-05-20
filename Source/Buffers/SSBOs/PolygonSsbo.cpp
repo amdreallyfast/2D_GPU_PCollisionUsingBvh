@@ -7,11 +7,35 @@
 #include "Include/Geometry/PolygonFace.h"
 
 
+
 /*-----------------------------------------------------------------------------------------------
 Description:
     Calls the base class to give members initial values (zeros).
 
     Allocates space for the SSBO and dumps the given collection of polygon faces into it.
+Parameters: 
+    numPolygons     Self-explanatory
+Returns:    None
+Creator: John Cox, 5/2017
+-----------------------------------------------------------------------------------------------*/
+PolygonSsbo::PolygonSsbo(int numPolygons) :
+    SsboBase()  // generate buffers
+{
+    _numItems = numPolygons;
+    _numVertices = numPolygons * PolygonFace::NumVerticesPerFace();
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGON_BUFFER_BINDING, _bufferId);
+
+    // and fill it with the new data
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
+    GLuint bufferSizeBytes = sizeof(PolygonFace) * numPolygons;
+    glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSizeBytes, nullptr, GL_DYNAMIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+/*-----------------------------------------------------------------------------------------------
+Description:
+    Convenience constructor.
 Parameters: 
     faceCollection  Self-explanatory
 Returns:    None
@@ -21,11 +45,10 @@ PolygonSsbo::PolygonSsbo(const std::vector<PolygonFace> &faceCollection) :
     SsboBase()  // generate buffers
 {
     _numItems = faceCollection.size();
-
-    // two vertices per face (used with glDrawArrays(...))
-    _numVertices = faceCollection.size() * 2;
+    _numVertices = faceCollection.size() * PolygonFace::NumVerticesPerFace();
 
     // now bind this new buffer to the dedicated buffer binding location
+    // Note: This only ??applies to the compute shader SSBO and not to the one that is set up for the Z-order curve? is this binding problemmatic and will it create conflicts??
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGON_BUFFER_BINDING, _bufferId);
 
     // and fill it with the new data
@@ -33,6 +56,27 @@ PolygonSsbo::PolygonSsbo(const std::vector<PolygonFace> &faceCollection) :
     GLuint bufferSizeBytes = sizeof(PolygonFace) * faceCollection.size();
     glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSizeBytes, faceCollection.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+}
+
+// TODO: header
+void PolygonSsbo::ConfigureComputeBindingPoint(unsigned int computeProgramId) const
+{
+
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGON_BUFFER_BINDING, _bufferId);
+
+    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
+
+    //// see the corresponding area in ParticleSsbo::Init(...) for explanation
+    //// Note: MUST use the same binding point 
+
+    ////GLuint ssboBindingPointIndex = 13;   // or 1, or 5, or 17, or wherever IS UNUSED
+    //GLuint storageBlockIndex = glGetProgramResourceIndex(computeProgramId, GL_SHADER_STORAGE_BLOCK, bufferNameInShader.c_str());
+    //glShaderStorageBlockBinding(computeProgramId, storageBlockIndex, _ssboBindingPointIndex);
+    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, _ssboBindingPointIndex, _bufferId);
+
+
+    //// cleanup
+    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 /*------------------------------------------------------------------------------------------------

@@ -30,56 +30,48 @@ Creator:    John Cox (9-25-2016)
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    uint index = gl_GlobalInvocationID.x;
-    if (index >= uParticleBufferSize)
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uParticleBufferSize)
     {
         return;
     }
 
-    Particle pCopy = AllParticles[index];
-    pCopy._pos += (pCopy._vel * uDeltaTimeSec);
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+        // don't update
+        return;
+    }
+
+
+    vec4 particlePosition = AllParticles[threadIndex]._pos;
+    vec4 particleVelocity = AllParticles[threadIndex]._vel;
+    vec4 newPos = particlePosition + (particleVelocity * uDeltaTimeSec);
 
     // if it went out of bounds, turn it off and don't record the updated particle
-    bool outOfBoundsX = pCopy._pos.x < PARTICLE_REGION_MIN_X || pCopy._pos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
-    bool outOfBoundsY = pCopy._pos.y < PARTICLE_REGION_MIN_Y || pCopy._pos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
-    bool outOfBoundsZ = pCopy._pos.z < PARTICLE_REGION_MIN_Z || pCopy._pos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
-    //if (outOfBoundsX || outOfBoundsY || outOfBoundsZ)
-    //{
-    //    //pCopy._isActive = 0;
-    //
-    //}
+    bool outOfBoundsX = newPos.x < PARTICLE_REGION_MIN_X || newPos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
+    bool outOfBoundsY = newPos.y < PARTICLE_REGION_MIN_Y || newPos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
+    bool outOfBoundsZ = newPos.z < PARTICLE_REGION_MIN_Z || newPos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
 
-    bool doNotUpdate = (pCopy._isActive == 0) || outOfBoundsX || outOfBoundsY || outOfBoundsZ;
-    //if (pCopy._isActive == 0)
-    //if (pCopy._isActive == 0 || deactivateParticle)
-    if (doNotUpdate)
+    if (outOfBoundsX || outOfBoundsY || outOfBoundsZ)
     {
-        // make sure it's off (ex: just went out of bounds)
-        AllParticles[index]._isActive = 0;
+        // just went out of bounds
+        AllParticles[threadIndex]._isActive = 0;
         return;
     }
 
-    // only update active particles 
-
-//    pCopy._pos += (pCopy._vel * uDeltaTimeSec);
-//
-//    // if it went out of bounds, turn it off
-//    bool outOfBoundsX = pCopy._pos.x < PARTICLE_REGION_MIN_X || pCopy._pos.x > (PARTICLE_REGION_MIN_X + PARTICLE_REGION_RANGE_X);
-//    bool outOfBoundsY = pCopy._pos.y < PARTICLE_REGION_MIN_Y || pCopy._pos.y > (PARTICLE_REGION_MIN_Y + PARTICLE_REGION_RANGE_Y);
-//    bool outOfBoundsZ = pCopy._pos.z < PARTICLE_REGION_MIN_Z || pCopy._pos.z > (PARTICLE_REGION_MIN_Z + PARTICLE_REGION_RANGE_Z);
-//    pCopy._isActive = (outOfBoundsX || outOfBoundsY || outOfBoundsZ) ? 0 : 1;
-
-    // when the compute shader is summoned to update active particles, this counter will 
-    // give a count of how many active particles exist
+    // still active
+    // Note: The "active particles" counter is useful for
+    // (1) printing how many particles are active and 
+    // (2) reducing workload for other compute shaders so that they only have to work on the 
+    // active particles
     atomicCounterIncrement(acActiveParticleCounter);
 
-    // the particle moved, so let it have a chance to collide again
-    pCopy._hasCollidedAlreadyThisFrame = 0;
+    AllParticles[threadIndex]._pos = newPos;
 
     //// and re-count the number of nearby particles
-    pCopy._numberOfNearbyParticles = 0;
+    //pCopy._numberOfNearbyParticles = 0;
 
-    // copy the particle back into global memory
-    AllParticles[index] = pCopy;
+    //// copy the particle back into global memory
+    //AllParticles[index] = pCopy;
 }
 

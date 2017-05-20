@@ -1,0 +1,124 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticleBuffer.comp
+// REQUIRES PolygonBuffer.comp
+// REQUIRES BvhNodeBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    This shader creates lines for each side of the bounding boxes for leaves and for internal 
+    nodes.  This creates an outline visualization fo the BVH (and hopefully help me to figure out why some particles are flickering like they were unable to traverse the tree all of a sudden and for 1 frame only).
+Parameters: None
+Returns:    None
+Creator:    John Cox, 4/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    // all the leaf nodes are at the front of the BvhNodeBuffer, sharing the same indices with 
+    // the particles, so this same index can be used for both ParticleBuffer access and 
+    // BvhNodeBuffer access
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uParticleBufferSize)
+    {
+        // thread greater than data set size or no leaf was made for this particle
+        return;
+    }
+    
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+        return;
+    }
+
+
+    BoundingBox bb;
+    PolygonFace leftFace;
+    PolygonFace rightFace;
+    PolygonFace topFace;
+    PolygonFace bottomFace;
+
+//    if (AllParticles[threadIndex]._isActive == 1)
+//    {
+////        float left = -0.2f;
+////        float right = +0.2f;
+////        float top = +0.2f;
+////        float bottom = -0.2f;
+//
+//        vec4 pos = AllParticles[threadIndex]._pos;
+//        float r = AllParticles[threadIndex]._collisionRadius;
+//        float left = pos.x - r;
+//        float right = pos.x + r;
+//        float bottom = pos.y - r;
+//        float top = pos.y + r;
+//
+//        leftFace._start._pos = vec4(left, bottom, 0.0f, 1.0f);
+//        leftFace._end._pos = vec4(left, top, 0.0f, 1.0f);
+//        rightFace._start._pos = vec4(right, bottom, 0.0f, 1.0f);
+//        rightFace._end._pos = vec4(right, top, 0.0f, 1.0f);
+//        topFace._start._pos = vec4(left, top, 0.0f, 1.0f);
+//        topFace._end._pos = vec4(right, top, 0.0f, 1.0f);
+//        bottomFace._start._pos = vec4(left, bottom, 0.0f, 1.0f);
+//        bottomFace._end._pos = vec4(right, bottom, 0.0f, 1.0f);
+//        AllPolygons[leafVerticesStartIndex + 0] = leftFace;
+//        AllPolygons[leafVerticesStartIndex + 1] = rightFace;
+//        AllPolygons[leafVerticesStartIndex + 2] = topFace;
+//        AllPolygons[leafVerticesStartIndex + 3] = bottomFace;
+//    
+//        //if (threadIndex < (uParticleBufferSize - 1))
+//        {
+//            AllPolygons[internalNodeVerticesStartIndex + 0] = leftFace;
+//            AllPolygons[internalNodeVerticesStartIndex + 1] = rightFace;
+//            AllPolygons[internalNodeVerticesStartIndex + 2] = topFace;
+//            AllPolygons[internalNodeVerticesStartIndex + 3] = bottomFace;
+//        }
+//
+//        return;
+//    }
+
+
+    uint leafNodeIndex = threadIndex;
+    bb = AllBvhNodes[leafNodeIndex]._boundingBox;
+    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+
+    // 4 faces per bounding box
+    AllPolygons[(leafNodeIndex * 4) + 0] = leftFace;
+    AllPolygons[(leafNodeIndex * 4) + 1] = rightFace;
+    AllPolygons[(leafNodeIndex * 4) + 2] = topFace;
+    AllPolygons[(leafNodeIndex * 4) + 3] = bottomFace;
+
+    if (leafNodeIndex == (uNumActiveParticles - 1))
+    {
+        // 1 fewer internal nodes than leaves, so no internal node for this thread 
+        return;
+    }
+
+    uint internalNodeIndex = uBvhNumberLeaves + threadIndex;
+    bb = AllBvhNodes[internalNodeIndex]._boundingBox;
+    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+
+    // 4 faces per bounding box
+    AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
+    AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
+    AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
+    AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
+
+}

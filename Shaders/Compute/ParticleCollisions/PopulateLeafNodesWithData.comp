@@ -22,11 +22,21 @@ void main()
     // the particles, so this same index can be used for both ParticleBuffer access and 
     // BvhNodeBuffer access
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize ||
-        threadIndex >= uNumActiveParticles)
+    if (threadIndex >= uParticleBufferSize)
     {
-        // all inactive particles are sorted to the back of the particle buffer, so returning 
-        // now won't leave a gap in the tree
+        return;
+    }
+    
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+//        AllBvhNodes[threadIndex]._boundingBox._left = -0.15f;
+//        AllBvhNodes[threadIndex]._boundingBox._right = +0.15f;
+//        AllBvhNodes[threadIndex]._boundingBox._bottom = -0.12f;
+//        AllBvhNodes[threadIndex]._boundingBox._top = +0.12f;
+        AllBvhNodes[threadIndex]._boundingBox._left = 0.0f;
+        AllBvhNodes[threadIndex]._boundingBox._right = 0.0f;
+        AllBvhNodes[threadIndex]._boundingBox._bottom = 0.0f;
+        AllBvhNodes[threadIndex]._boundingBox._top = 0.0f;
         return;
     }
 
@@ -35,20 +45,25 @@ void main()
 
     // and create the bounding box for the bounding volume hierarchy
     vec4 pos = AllParticles[threadIndex]._pos;
+    //pos.x = pos.x + (0.01f * threadIndex);
     float r = AllParticles[threadIndex]._collisionRadius;
-    
+
     AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
     AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
     AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
     AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
+//    AllBvhNodes[threadIndex]._boundingBox._left = -0.03f;
+//    AllBvhNodes[threadIndex]._boundingBox._right = +0.03f;
+//    AllBvhNodes[threadIndex]._boundingBox._bottom = -0.03f;
+//    AllBvhNodes[threadIndex]._boundingBox._top = +0.03f;
 
     
-    // TODO: remove
-    AllBvhNodes[threadIndex]._extraData2 = AllParticles[threadIndex]._isActive;
-    if (AllParticles[threadIndex]._isActive != 1)
-    {
-        AllBvhNodes[threadIndex]._extraData2 = 37;
-    }
+    //// TODO: remove
+    //AllBvhNodes[threadIndex]._extraData2 = AllParticles[threadIndex]._isActive;
+    //if (AllParticles[threadIndex]._isActive != 1)
+    //{
+    //    AllBvhNodes[threadIndex]._extraData2 = 37;
+    //}
     
 }
     

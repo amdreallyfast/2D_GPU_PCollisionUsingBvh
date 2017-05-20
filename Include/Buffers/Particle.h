@@ -59,6 +59,9 @@ struct Particle
     // they were 1-dimensional coordinates.  Particles are sorted over this value.
     unsigned int _mortonCode;
 
+
+    // TODO: ??change to "collide with this guy"? just remove??
+
     // collision detection in the current demo (4-15-2017) runs twice:
     // (1) Each thread checks two particles: i against i + 1.
     // (2) Each thread checks two particles: i + 1 against i + 2.

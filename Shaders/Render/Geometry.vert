@@ -1,6 +1,6 @@
 #version 440
 
-// this should already be transformed because it is pre-transformed for the compute shader 
+// this should already be transformed because movements are performed in the compute shader 
 layout (location = 0) in vec2 pos;
 
 // keep this around in case it's needed later

@@ -106,8 +106,8 @@ struct BvhNode
     {
         for (size_t i = 0; i < 25; i++)
         {
-            _extraDataArrI[i] = -1;
-            _extraDataArrF[i] = -1;
+            _extraDataArr1[i] = -1;
+            _extraDataArr2[i] = -1;
         }
     }
     
@@ -118,8 +118,8 @@ struct BvhNode
 //    ThreadAccessor _threadAccessors[25];
     int _extraData1;
     int _extraData2;
-    int _extraDataArrI[25];
-    float _extraDataArrF[25];
+    int _extraDataArr1[25];
+    int _extraDataArr2[25];
 
     int _isLeaf;
     int _parentIndex;

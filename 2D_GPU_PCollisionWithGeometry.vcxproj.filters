@@ -299,9 +299,6 @@
     <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp">
       <Filter>Shaders\Compute\ParallelSort</Filter>
     </None>
-    <None Include="Shaders\Compute\PolygonBuffer.comp">
-      <Filter>Shaders</Filter>
-    </None>
     <None Include="Shaders\ShaderHeaders\ComputeShaderWorkGroupSizes.comp">
       <Filter>Shaders\ShaderHeaders</Filter>
     </None>
@@ -328,6 +325,12 @@
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodesWithData.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\PolygonBuffer.comp">
+      <Filter>Shaders\Compute</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

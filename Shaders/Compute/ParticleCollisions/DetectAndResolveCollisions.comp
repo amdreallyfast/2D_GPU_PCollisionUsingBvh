@@ -97,6 +97,9 @@ void main()
         return;
     }
 
+    AllParticles[threadIndex]._numberOfNearbyParticles = 0;
+
+
     // because OverlappingArea(...) takes signed integers for indices, which is because all the BVH's nodes use signed integers for indices
     //BoundingBox thisParticleBoundingBox = AllBvhNodes[threadIndex]._boundingBox;
     int thisLeafNodeIndex = int(threadIndex);
@@ -380,7 +383,17 @@ void main()
     //}
 
     //AllParticles[threadIndex]._numberOfNearbyParticles = numberPotentialCollisions;
-    AllParticles[threadIndex]._numberOfNearbyParticles = maxDepth;
+    //AllParticles[threadIndex]._numberOfNearbyParticles = maxDepth;
+
+    if (maxDepth == 0)
+    {
+        AllParticles[threadIndex]._numberOfNearbyParticles = 1977;
+    }
+    else
+    {
+        AllParticles[threadIndex]._numberOfNearbyParticles = maxDepth;
+    }
+    
 
     
 //    // TODO: remove

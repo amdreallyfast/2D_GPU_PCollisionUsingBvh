@@ -49,6 +49,19 @@ struct PolygonFace
     {
     }
 
+    /*-------------------------------------------------------------------------------------------
+    Description:
+        So that PolygonSsbo doesn't have to hardcode a multiplyer for the number of vertices per 
+        polygon.
+    Parameters: None
+    Returns:    None
+    Creator: John Cox, 5/2017
+    -------------------------------------------------------------------------------------------*/
+    static int NumVerticesPerFace() 
+    {
+        return 2;
+    }
+
     MyVertex _start;
     MyVertex _end;
 };

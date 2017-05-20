@@ -451,95 +451,97 @@ namespace ShaderControllers
         memcpy(checkOriginalData.data(), bufferPtr, bufferSizeBytes);
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-        // check
-        for (unsigned int i = 1; i < checkOriginalData.size(); i++)
-        {
-            unsigned int thisIndex = i;
-            unsigned int prevIndex = i - 1;
-            unsigned int val = checkOriginalData[thisIndex]._mortonCode;
-            unsigned int prevVal = checkOriginalData[prevIndex]._mortonCode;
+        printf("");
 
-            if (checkOriginalData[thisIndex]._isActive == 0)
-            {
-                continue;
-            }
-            else if (val == 0xffffffff)
-            {
-                // this was extra data that was padded on
-                continue;
-            }
+        //// check
+        //for (unsigned int i = 1; i < checkOriginalData.size(); i++)
+        //{
+        //    unsigned int thisIndex = i;
+        //    unsigned int prevIndex = i - 1;
+        //    unsigned int val = checkOriginalData[thisIndex]._mortonCode;
+        //    unsigned int prevVal = checkOriginalData[prevIndex]._mortonCode;
 
-            // the original data is 0 - N-1, 1 value at a time, so it's ok to hard code 
-            if (val < prevVal)
-            {
-                printf("value %u at index %u is >= previous value %u and index %u\n", val, i, prevVal, i - 1);
-            }
-        }
+        //    if (checkOriginalData[thisIndex]._isActive == 0)
+        //    {
+        //        continue;
+        //    }
+        //    else if (val == 0xffffffff)
+        //    {
+        //        // this was extra data that was padded on
+        //        continue;
+        //    }
 
-        end = high_resolution_clock::now();
-        durationDataVerification = duration_cast<microseconds>(end - start).count();
+        //    // the original data is 0 - N-1, 1 value at a time, so it's ok to hard code 
+        //    if (val < prevVal)
+        //    {
+        //        printf("value %u at index %u is >= previous value %u and index %u\n", val, i, prevVal, i - 1);
+        //    }
+        //}
 
-        // write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
-        std::ofstream outFile("ParallelSortDurations.txt");
-        if (outFile.is_open())
-        {
-            long long totalParallelSortTime = duration_cast<microseconds>(parallelSortEnd - parallelSortStart).count();
-            cout << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
-            outFile << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
+        //end = high_resolution_clock::now();
+        //durationDataVerification = duration_cast<microseconds>(end - start).count();
 
-            cout << "original data to intermediate data: " << durationOriginalDataToIntermediateData << "\tmicroseconds" << endl;
-            outFile << "original data to intermediate data: " << durationOriginalDataToIntermediateData << "\tmicroseconds" << endl;
-        
-            cout << "duration sort original data into copy buffer: " << durationSortParticleData << "\tmicroseconds" << endl;
-            outFile << "duration sort original data into copy buffer: " << durationSortParticleData << "\tmicroseconds" << endl;
+        //// write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
+        //std::ofstream outFile("ParallelSortDurations.txt");
+        //if (outFile.is_open())
+        //{
+        //    long long totalParallelSortTime = duration_cast<microseconds>(parallelSortEnd - parallelSortStart).count();
+        //    cout << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
+        //    outFile << "total sort time: " << totalParallelSortTime << "\tmicroseconds" << endl;
 
-            cout << "duration copy sorted original data: " << durationCopySortedOriginalData << "\tmicroseconds" << endl;
-            outFile << "duration copy sorted original data: " << durationCopySortedOriginalData << "\tmicroseconds" << endl;
+        //    cout << "original data to intermediate data: " << durationOriginalDataToIntermediateData << "\tmicroseconds" << endl;
+        //    outFile << "original data to intermediate data: " << durationOriginalDataToIntermediateData << "\tmicroseconds" << endl;
+        //
+        //    cout << "duration sort original data into copy buffer: " << durationSortParticleData << "\tmicroseconds" << endl;
+        //    outFile << "duration sort original data into copy buffer: " << durationSortParticleData << "\tmicroseconds" << endl;
 
-            cout << "verifying data: " << durationDataVerification << "\tmicroseconds" << endl;
-            outFile << "verifying data: " << durationDataVerification << "\tmicroseconds" << endl;
+        //    cout << "duration copy sorted original data: " << durationCopySortedOriginalData << "\tmicroseconds" << endl;
+        //    outFile << "duration copy sorted original data: " << durationCopySortedOriginalData << "\tmicroseconds" << endl;
 
-            cout << "getting bits for prefix scan:" << endl;
-            outFile << "getting bits for prefix scan:" << endl;
-            for (size_t i = 0; i < durationsGetBitForPrefixScan.size(); i++)
-            {
-                cout << i << "\t" << durationsGetBitForPrefixScan[i] << "\tmicroseconds" << endl;
-                outFile << i << "\t" << durationsGetBitForPrefixScan[i] << "\tmicroseconds" << endl;
-            }
-            cout << endl;
-            outFile << endl;
+        //    cout << "verifying data: " << durationDataVerification << "\tmicroseconds" << endl;
+        //    outFile << "verifying data: " << durationDataVerification << "\tmicroseconds" << endl;
 
-            cout << "times for prefix scan over all data:" << endl;
-            outFile << "times for prefix scan over all data:" << endl;
-            for (size_t i = 0; i < durationsPrefixScanAll.size(); i++)
-            {
-                cout << i << "\t" << durationsPrefixScanAll[i] << "\tmicroseconds" << endl;
-                outFile << i << "\t" << durationsPrefixScanAll[i] << "\tmicroseconds" << endl;
-            }
-            cout << endl;
-            outFile << endl;
+        //    cout << "getting bits for prefix scan:" << endl;
+        //    outFile << "getting bits for prefix scan:" << endl;
+        //    for (size_t i = 0; i < durationsGetBitForPrefixScan.size(); i++)
+        //    {
+        //        cout << i << "\t" << durationsGetBitForPrefixScan[i] << "\tmicroseconds" << endl;
+        //        outFile << i << "\t" << durationsGetBitForPrefixScan[i] << "\tmicroseconds" << endl;
+        //    }
+        //    cout << endl;
+        //    outFile << endl;
 
-            cout << "times for prefix scan over work group sums:" << endl;
-            outFile << "times for prefix scan over work group sums:" << endl;
-            for (size_t i = 0; i < durationsPrefixScanWorkGroupSums.size(); i++)
-            {
-                cout << i << "\t" << durationsPrefixScanWorkGroupSums[i] << "\tmicroseconds" << endl;
-                outFile << i << "\t" << durationsPrefixScanWorkGroupSums[i] << "\tmicroseconds" << endl;
-            }
-            cout << endl;
-            outFile << endl;
+        //    cout << "times for prefix scan over all data:" << endl;
+        //    outFile << "times for prefix scan over all data:" << endl;
+        //    for (size_t i = 0; i < durationsPrefixScanAll.size(); i++)
+        //    {
+        //        cout << i << "\t" << durationsPrefixScanAll[i] << "\tmicroseconds" << endl;
+        //        outFile << i << "\t" << durationsPrefixScanAll[i] << "\tmicroseconds" << endl;
+        //    }
+        //    cout << endl;
+        //    outFile << endl;
 
-            cout << "times for sorting intermediate data:" << endl;
-            outFile << "times for sorting intermediate data:" << endl;
-            for (size_t i = 0; i < durationsSortIntermediateData.size(); i++)
-            {
-                cout << i << "\t" << durationsSortIntermediateData[i] << "\tmicroseconds" << endl;
-                outFile << i << "\t" << durationsSortIntermediateData[i] << "\tmicroseconds" << endl;
-            }
-            cout << endl;
-            outFile << endl;
-        }
-        outFile.close();
+        //    cout << "times for prefix scan over work group sums:" << endl;
+        //    outFile << "times for prefix scan over work group sums:" << endl;
+        //    for (size_t i = 0; i < durationsPrefixScanWorkGroupSums.size(); i++)
+        //    {
+        //        cout << i << "\t" << durationsPrefixScanWorkGroupSums[i] << "\tmicroseconds" << endl;
+        //        outFile << i << "\t" << durationsPrefixScanWorkGroupSums[i] << "\tmicroseconds" << endl;
+        //    }
+        //    cout << endl;
+        //    outFile << endl;
+
+        //    cout << "times for sorting intermediate data:" << endl;
+        //    outFile << "times for sorting intermediate data:" << endl;
+        //    for (size_t i = 0; i < durationsSortIntermediateData.size(); i++)
+        //    {
+        //        cout << i << "\t" << durationsSortIntermediateData[i] << "\tmicroseconds" << endl;
+        //        outFile << i << "\t" << durationsSortIntermediateData[i] << "\tmicroseconds" << endl;
+        //    }
+        //    cout << endl;
+        //    outFile << endl;
+        //}
+        //outFile.close();
 
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         glUseProgram(0);

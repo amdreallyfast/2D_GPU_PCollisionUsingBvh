@@ -53,6 +53,10 @@ void main()
         {
             particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
         }
+        else if (numberOfNearbyParticles == 1977)
+        {   
+            particleColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+        }
         else
         {
             float blendValue = float(numberOfNearbyParticles);

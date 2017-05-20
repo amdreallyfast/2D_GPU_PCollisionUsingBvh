@@ -13,11 +13,13 @@ Creator: John Cox, 9-8-2016
 class PolygonSsbo : public SsboBase
 {
 public:
+    PolygonSsbo(int numPolygons);
     PolygonSsbo(const std::vector<PolygonFace> &faceCollection);
     virtual ~PolygonSsbo() = default;
     using SharedPtr = std::shared_ptr<PolygonSsbo>;
     using SharedConstPtr = std::shared_ptr<const PolygonSsbo>;
 
+    void ConfigureComputeBindingPoint(unsigned int computeProgramId) const;
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     void ConfigureRender(unsigned int drawStyle) override;
 

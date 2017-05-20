@@ -97,8 +97,10 @@ namespace ShaderControllers
         _populateLeavesWithDataProgramId(0),
         _generateBinaryRadixTreeProgramId(0),
         _generateBoundingVolumesProgramId(0),
+        _generateVerticesProgramId(0),
         _detectAndResolveCollisionsProgramId(0),
-        _bvhNodeSsbo(nullptr)
+        _bvhNodeSsbo(nullptr),
+        _bvhGeometrySsbo(nullptr)
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
@@ -146,6 +148,21 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
+        // generate vertices out of the BVH
+        shaderKey = "generate vertices";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PolygonBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBvhVertices.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _generateVerticesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
         // have each leaf check through the tree for potential collisions and resolve them
         shaderKey = "detect and resolve collisions";
         shaderStorageRef.NewCompositeShader(shaderKey);
@@ -160,6 +177,7 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _detectAndResolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
+
         // generate the BVH that will be used for all this collision detection
         _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
 
@@ -171,15 +189,25 @@ namespace ShaderControllers
         //glBufferData(GL_SHADER_STORAGE_BUFFER, testBvh.size() * sizeof(BvhNode), testBvh.data(), GL_DYNAMIC_DRAW);
         //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
+        // and generate the BVH geometry for the visualization
+        // Note: For N particles there are N leaves and N-1 internal nodes in the tree, and each 
+        // node's bounding box has 4 faces.  
+        unsigned int maxPolygonsInBvh = (_numLeaves + (_numLeaves - 1)) * 4;
+        _bvhGeometrySsbo = std::make_shared<PolygonSsbo>(maxPolygonsInBvh);
+
         // set buffer sizes for each of the programs
         particleSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
         particleSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
+        particleSsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
+        _bvhGeometrySsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
+        _bvhGeometrySsbo->ConfigureRender(GL_LINES);
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -235,6 +263,12 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+        // generate BVH vertices (optional)
+        glUseProgram(_generateVerticesProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
         // traverse the tree, detect collisions, and resolve them
         glUseProgram(_detectAndResolveCollisionsProgramId);
         glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
@@ -248,7 +282,7 @@ namespace ShaderControllers
 
     /*--------------------------------------------------------------------------------------------
     Description:
-        The same sorting algorithm, but with:
+        The same BVH generation and traversal algorithms, but with:
         (1) std::chrono calls scattered everywhere
         (2) writing the profiled duration results to stdout and to a tab-delimited text file
     Parameters: None
@@ -267,10 +301,12 @@ namespace ShaderControllers
         long long durationPopulateTreeWithData = 0;
         long long durationGenerateTree = 0;
         long long durationMergeBoundingBoxes = 0;
+        long long durationGenerateBvhVertices = 0;
         long long durationDetectAndResolveCollisions = 0;
 
         // wait for previous instructions to finish
         WaitForComputeToFinish();
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
         // begin
         generateBvhStart = high_resolution_clock::now();
@@ -309,15 +345,25 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
 
-        // traverse the tree, detect collisions, and resolve them
+        // generate BVH vertices (optional)
         start = high_resolution_clock::now();
-        glUseProgram(_detectAndResolveCollisionsProgramId);
+        glUseProgram(_generateVerticesProgramId);
         glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
-        durationDetectAndResolveCollisions = duration_cast<microseconds>(end - start).count();
+        durationGenerateBvhVertices = duration_cast<microseconds>(end - start).count();
+
+//        // traverse the tree, detect collisions, and resolve them
+//        start = high_resolution_clock::now();
+//        glUseProgram(_detectAndResolveCollisionsProgramId);
+//        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+//        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+//        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+//        WaitForComputeToFinish();
+//        end = high_resolution_clock::now();
+//        durationDetectAndResolveCollisions = duration_cast<microseconds>(end - start).count();
 
 
         glUseProgram(0);
@@ -334,6 +380,15 @@ namespace ShaderControllers
         memcpy(checkOriginalData.data(), bufferPtr, bufferSizeBytes);
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
+        startingIndex = 0;
+        std::vector<PolygonFace> checkOriginalPolygonData(_bvhGeometrySsbo->NumItems());
+        bufferSizeBytes = checkOriginalPolygonData.size() * sizeof(PolygonFace);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhGeometrySsbo->BufferId());
+        bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkOriginalPolygonData.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+        printf("");
 
         //int currentParticleCountIndex = checkOriginalData[0]._extraData1 - 1;
         //int prevParticleCountIndex = checkOriginalData[0]._extraData1 - 2;
@@ -351,49 +406,50 @@ namespace ShaderControllers
         //    printf("");
         //}
 
-        if (checkOriginalData[0]._extraData1 != -1)
-        //if (checkOriginalData[0]._extraData2 == 1977)
-        //if (numActiveParticles > 2000)
-        {
-            printf("");
-            std::ofstream outfile("BvhDump.txt");
-            for (size_t i = 0; i < checkOriginalData.size(); i++)
-            {
-                outfile << "i = " << i
-                    << "\tisLeaf = " << checkOriginalData[i]._isLeaf
-                    << "\tparentIndex = " << checkOriginalData[i]._parentIndex
-                    << "\tstartIndex = " << checkOriginalData[i]._startIndex
-                    << "\tendIndex = " << checkOriginalData[i]._endIndex
-                    << "\tsplitIndex = " << checkOriginalData[i]._leafSplitIndex
-                    << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
-                    << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
-                    << "\tdata = " << checkOriginalData[i]._data
+        //if (checkOriginalData[0]._extraData1 != -1)
+        ////if (checkOriginalData[0]._extraData2 == 1977)
+        ////if (numActiveParticles > 2000)
+        //{
+        //    printf("");
+        //    std::ofstream outfile("BvhDump.txt");
+        //    for (size_t i = 0; i < checkOriginalData.size(); i++)
+        //    {
+        //        outfile << "i = " << i
+        //            << "\tisLeaf = " << checkOriginalData[i]._isLeaf
+        //            << "\tparentIndex = " << checkOriginalData[i]._parentIndex
+        //            << "\tstartIndex = " << checkOriginalData[i]._startIndex
+        //            << "\tendIndex = " << checkOriginalData[i]._endIndex
+        //            << "\tsplitIndex = " << checkOriginalData[i]._leafSplitIndex
+        //            << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
+        //            << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
+        //            << "\tdata = " << checkOriginalData[i]._data
 
-                    << "\textraData1 = " << checkOriginalData[i]._extraData1
-                    << "\textraData2 = " << checkOriginalData[i]._extraData2
-                    //<< "\tleft = " << checkOriginalData[i]._boundingBox._left
-                    //<< "\tright = " << checkOriginalData[i]._boundingBox._right
-                    //<< "\tbottom = " << checkOriginalData[i]._boundingBox._bottom
-                    //<< "\ttop = " << checkOriginalData[i]._boundingBox._top
-                    << endl;
-                outfile << "\t";
-                for (size_t j = 0; j < 25; j++)
-                {
-                    outfile << checkOriginalData[i]._extraDataArrI[j] << "->";
-                }
-                outfile << endl;
-                outfile << "\t";
-                for (size_t j = 0; j < 25; j++)
-                {
-                    outfile << checkOriginalData[i]._extraDataArrF[j] << "->";
-                }
-                outfile << endl;
-            }
-            outfile.close();
+        //            << "\textraData1 = " << checkOriginalData[i]._extraData1
+        //            << "\textraData2 = " << checkOriginalData[i]._extraData2
+        //            //<< "\tleft = " << checkOriginalData[i]._boundingBox._left
+        //            //<< "\tright = " << checkOriginalData[i]._boundingBox._right
+        //            //<< "\tbottom = " << checkOriginalData[i]._boundingBox._bottom
+        //            //<< "\ttop = " << checkOriginalData[i]._boundingBox._top
+        //            << endl;
+        //        outfile << "\t";
+        //        for (size_t j = 0; j < 25; j++)
+        //        {
+        //            outfile << checkOriginalData[i]._extraDataArrI[j] << "->";
+        //        }
+        //        outfile << endl;
+        //        outfile << "\t";
+        //        for (size_t j = 0; j < 25; j++)
+        //        {
+        //            outfile << checkOriginalData[i]._extraDataArrF[j] << "->";
+        //        }
+        //        outfile << endl;
+        //    }
+        //    outfile.close();
 
-            return;
-        }
+        //    return;
+        //}
 
+        // TODO: remove
         //if (numActiveParticles > 7000)
         //{
         //    std::ofstream outfile("BvhDump.txt");
@@ -435,31 +491,52 @@ namespace ShaderControllers
         //    outfile.close();
         //}
 
-        // write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
-        std::ofstream outFile("GenerateBvhDurations.txt");
-        if (outFile.is_open())
-        {
-            long long totalCollisionDetectionTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
-            cout << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
-            outFile << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
 
-            cout << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
-            outFile << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
 
-            cout << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
-            outFile << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
 
-            cout << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
-            outFile << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
 
-            cout << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
-            outFile << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
+        //// write the results to stdout and to a text file so that I can dump them into an Excel spreadsheet
+        //std::ofstream outFile("GenerateBvhDurations.txt");
+        //if (outFile.is_open())
+        //{
+        //    long long totalCollisionDetectionTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
+        //    cout << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
+        //    outFile << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
 
-            cout << endl;
-            outFile << endl;
+        //    cout << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
+        //    outFile << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
 
-        }
-        outFile.close();
+        //    cout << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
+        //    outFile << "generate BVH tree: " << durationGenerateTree << "\tmicroseconds" << endl;
+
+        //    cout << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
+        //    outFile << "generate BVH bounding boxes: " << durationMergeBoundingBoxes << "\tmicroseconds" << endl;
+
+        //    cout << "generate BVH vertices: " << durationGenerateBvhVertices << "\tmicroseconds" << endl;
+        //    outFile << "generate BVH vertices: " << durationGenerateBvhVertices << "\tmicroseconds" << endl;
+
+        //    cout << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
+        //    outFile << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
+
+        //    cout << endl;
+        //    outFile << endl;
+
+        //}
+        //outFile.close();
     }
-    
+
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        used so that the RenderGeometry shader controller can draw this.
+    Parameters: None
+    Returns:    
+        A const copy of a const shared pointer to the SSBO that contains the BVH's vertices.
+        That's a mouthful.  ??should this SSBO be a member instead of a pointer to member??
+    Creator:    John Cox, 3/2017
+    --------------------------------------------------------------------------------------------*/
+    const PolygonSsbo::SharedConstPtr ParticleCollisions::BvhVerticesSsbo() const
+    {
+        return _bvhGeometrySsbo;
+    }
 }

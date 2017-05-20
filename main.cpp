@@ -306,13 +306,13 @@ void Init()
     barEmitter1->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter1);
 
-    // bar on the right and emitting up and left
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
-    glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
-    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
-    barEmitter2->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter2);
+    //// bar on the right and emitting up and left
+    //glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
+    //glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
+    //glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
+    //ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
+    //barEmitter2->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(barEmitter2);
 
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
@@ -332,11 +332,11 @@ void Init()
     // for drawing non-particle things
     geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
 
-    std::vector<PolygonFace> zOrderCurvePolygonFaces;
-    //zOrderCurvePolygonFaces.clear();
-    GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
-    polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
-    polygonBuffer->ConfigureRender(GL_LINES);
+    //std::vector<PolygonFace> zOrderCurvePolygonFaces;
+    ////zOrderCurvePolygonFaces.clear();
+    //GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
+    //polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
+    //polygonBuffer->ConfigureRender(GL_LINES);
 
 
 
@@ -375,8 +375,8 @@ void UpdateAllTheThings()
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();
-    particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
-    //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
+    //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
+    particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
     //nearbyParticleCounter->Count();
 
 
@@ -424,6 +424,7 @@ void Display()
 
     particleRenderer->Render(particleBuffer);
     //geometryRenderer->Render(polygonBuffer);
+    geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));
@@ -585,7 +586,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif
