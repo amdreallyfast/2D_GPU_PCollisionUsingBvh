@@ -297,8 +297,8 @@ void Init()
     particleResetter = std::make_unique<ShaderControllers::ParticleReset>(particleBuffer);
 
     // bar on the left and emitting up and right
-    glm::vec2 bar1P1(-0.8f, +0.2f);
-    glm::vec2 bar1P2(-0.8f, -0.2f);
+    glm::vec2 bar1P1(-0.8f, +0.5f);
+    glm::vec2 bar1P2(-0.8f, -0.1f);
     glm::vec2 emitDir1(+1.0f, 0.0f);
     float minVel = 0.1f;
     float maxVel = 0.5f;
@@ -307,9 +307,9 @@ void Init()
     particleResetter->AddEmitter(barEmitter1);
 
     // bar on the right and emitting up and left
-    glm::vec2 bar2P1 = glm::vec2(-0.5f, -0.8f);
-    glm::vec2 bar2P2 = glm::vec2(-0.1f, -0.8f);
-    glm::vec2 emitDir2 = glm::vec2(0.0f, +1.0f);
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
+    glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
     barEmitter2->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter2);
@@ -371,7 +371,7 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(5);
+    particleResetter->ResetParticles(1);
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();

@@ -351,8 +351,8 @@ namespace ShaderControllers
         //    printf("");
         //}
 
-        //if (checkOriginalData[0]._extraData1 != -1)
-        if (checkOriginalData[0]._extraData2 == 1977)
+        if (checkOriginalData[0]._extraData1 != -1)
+        //if (checkOriginalData[0]._extraData2 == 1977)
         //if (numActiveParticles > 2000)
         {
             printf("");

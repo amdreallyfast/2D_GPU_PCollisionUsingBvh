@@ -40,14 +40,14 @@ void main()
         return;
     }
 
-    // create the leaf's bounding box
-    vec4 pos = AllParticles[threadIndex]._pos;
-    float r = AllParticles[threadIndex]._collisionRadius;
-    
-    AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
-    AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
-    AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
-    AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
+    //// create the leaf's bounding box
+    //vec4 pos = AllParticles[threadIndex]._pos;
+    //float r = AllParticles[threadIndex]._collisionRadius;
+    //
+    //AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
+    //AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
+    //AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
+    //AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
 
     int ohCrapOhCrapCounter = 0;
 
@@ -105,30 +105,33 @@ void main()
         AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
 
 
-        //// TODO: remove
-        //BoundingBox result;
+        // TODO: remove
+        BoundingBox result;
+        if (isnan(leftBb._left) || isnan(leftBb._right) || isnan(leftBb._bottom) || isnan(leftBb._top) ||
+            isnan(rightBb._left) || isnan(rightBb._right) || isnan(rightBb._bottom) || isnan(rightBb._top))
         //result._left = min(leftBb._left, rightBb._left);
         //result._right = max(leftBb._right, rightBb._right);
         //result._bottom = min(leftBb._bottom, rightBb._bottom);
         //result._top = max(leftBb._top, rightBb._top);
         //if ((result._right < result._left) || (result._top < result._bottom))
-        //{
-        //    AllBvhNodes[nodeIndex]._extraData1 = int(threadIndex);
-        //
-        //    AllBvhNodes[nodeIndex]._extraDataArrI[0] = nodeIndex;
-        //    AllBvhNodes[nodeIndex]._extraDataArrI[1] = leftChildIndex;
-        //    AllBvhNodes[nodeIndex]._extraDataArrI[2] = rightChildIndex;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[0] = leftBb._left;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[1] = leftBb._right;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[2] = leftBb._top;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[3] = leftBb._bottom;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[4] = rightBb._left;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[5] = rightBb._right;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[6] = rightBb._top;
-        //    AllBvhNodes[nodeIndex]._extraDataArrF[7] = rightBb._bottom;
-        //
-        //    return;
-        //}
+        {
+            AllBvhNodes[nodeIndex]._extraData1 = int(threadIndex);
+            AllBvhNodes[nodeIndex]._extraData2 = 1977;
+        
+            AllBvhNodes[nodeIndex]._extraDataArrI[0] = nodeIndex;
+            AllBvhNodes[nodeIndex]._extraDataArrI[1] = leftChildIndex;
+            AllBvhNodes[nodeIndex]._extraDataArrI[2] = rightChildIndex;
+            AllBvhNodes[nodeIndex]._extraDataArrF[0] = leftBb._left;
+            AllBvhNodes[nodeIndex]._extraDataArrF[1] = leftBb._right;
+            AllBvhNodes[nodeIndex]._extraDataArrF[2] = leftBb._top;
+            AllBvhNodes[nodeIndex]._extraDataArrF[3] = leftBb._bottom;
+            AllBvhNodes[nodeIndex]._extraDataArrF[4] = rightBb._left;
+            AllBvhNodes[nodeIndex]._extraDataArrF[5] = rightBb._right;
+            AllBvhNodes[nodeIndex]._extraDataArrF[6] = rightBb._top;
+            AllBvhNodes[nodeIndex]._extraDataArrF[7] = rightBb._bottom;
+        
+            return;
+        }
 
 
 

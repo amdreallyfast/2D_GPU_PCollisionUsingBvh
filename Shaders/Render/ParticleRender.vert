@@ -23,12 +23,12 @@ void main()
     {
         // the Z buffer in this 2D demo is of depth 1, so putting the innactive particle out of 
         // range should make it disappear entirely
-//        particleColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);   // black
-//        gl_Position = vec4(pos.xy, -1.1f, 1.0f);
+        particleColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);   // black
+        gl_Position = vec4(pos.xy, -1.1f, 1.0f);
 
-        // for debugging
-        particleColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
-        gl_Position = vec4(pos.xy, -0.9f, 1.0f);
+//        // for debugging
+//        particleColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+//        gl_Position = vec4(pos.xy, -0.9f, 1.0f);
     }
     else
     {
@@ -48,24 +48,72 @@ void main()
         float mid = 10;
         float max = 20;
 
-        float blendValue = float(numberOfNearbyParticles);
-        float fractionLowToMid = (blendValue - min) / (mid - min);
-        fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
 
-        float fractionMidToHigh = (blendValue - mid) / (max - mid);
-        fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
+        if (numberOfNearbyParticles == 0)
+        {
+            particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+        }
+        else
+        {
+            float blendValue = float(numberOfNearbyParticles);
+            float fractionLowToMid = (blendValue - min) / (mid - min);
+            fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
+    
+            float fractionMidToHigh = (blendValue - mid) / (max - mid);
+            fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
+    
+            // cast boolean to float (1.0f == true, 0.0f == false)
+            // Note: There are two possible linear blends: blue->green and green->red.  This color 
+            // blending is not like blending three points on a triangle, but it is three points on a 
+            // 1-dimensional number line, so need to differentiate between two linear blends.
+            float pressureIsLow = float(blendValue < mid);
+            vec4 lowToMidPressureColor = mix(blue, green, fractionLowToMid);
+            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
+            particleColor = 
+                (pressureIsLow * lowToMidPressureColor) + 
+                ((1 - pressureIsLow) * midToHighPressureColor);
+        }
 
-        // cast boolean to float (1.0f == true, 0.0f == false)
-        // Note: There are two possible linear blends: blue->green and green->red.  This color 
-        // blending is not like blending three points on a triangle, but it is three points on a 
-        // 1-dimensional number line, so need to differentiate between two linear blends.
-        float pressureIsLow = float(blendValue < mid);
-        vec4 lowToMidPressureColor = mix(blue, green, fractionLowToMid);
-        vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
-        particleColor = 
-            (pressureIsLow * lowToMidPressureColor) + 
-            ((1 - pressureIsLow) * midToHighPressureColor);
-        
+
+//        float blendValue = float(numberOfNearbyParticles);
+//        float fractionLowToMid = (blendValue - min) / (mid - min);
+//        fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
+//
+//        float fractionMidToHigh = (blendValue - mid) / (max - mid);
+//        fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
+//
+//        // cast boolean to float (1.0f == true, 0.0f == false)
+//        // Note: There are two possible linear blends: blue->green and green->red.  This color 
+//        // blending is not like blending three points on a triangle, but it is three points on a 
+//        // 1-dimensional number line, so need to differentiate between two linear blends.
+//        float pressureIsLow = float(blendValue < mid);
+//        vec4 lowToMidPressureColor = mix(blue, green, fractionLowToMid);
+//        vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
+//        particleColor = 
+//            (pressureIsLow * lowToMidPressureColor) + 
+//            ((1 - pressureIsLow) * midToHighPressureColor);
+
+
+//        if (numberOfNearbyParticles == 0)
+//        {
+//            particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+//        }
+//        else if (numberOfNearbyParticles < 20)
+//        {
+//            particleColor = vec4(0.0f, 0.0f, 1.0f, 1.0f);
+//        }
+//        else if (numberOfNearbyParticles < 40)
+//        {
+//            particleColor = vec4(0.0f, 1.0f, 0.0f, 1.0f);
+//        }
+//        else
+//        {
+//            particleColor = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+//        } 
+
+
+
+
         // Note: The W position seems to be used as a scaling factor (I must have forgotten this 
         // from the graphical math; it's been awhile since I examined it in detail).  If I do any 
         // position normalization, I should make sure that gl_Position's W value is always 1.

@@ -33,6 +33,15 @@ void main()
     // set the data that will be be analyzed on tree construction
     AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
 
+    // and create the bounding box for the bounding volume hierarchy
+    vec4 pos = AllParticles[threadIndex]._pos;
+    float r = AllParticles[threadIndex]._collisionRadius;
+    
+    AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
+    AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
+    AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
+    AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
+
     
     // TODO: remove
     AllBvhNodes[threadIndex]._extraData2 = AllParticles[threadIndex]._isActive;

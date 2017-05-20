@@ -42,6 +42,18 @@ float OverlappingArea(int node1Index, int node2Index)
 
     float width = overlapBoxRight - overlapBoxLeft;
     float height = overlapBoxTop - overlapBoxBottom;
+//    if (isnan(width))
+//    {
+//        return 128.0f;
+//    }
+//    else if (isnan(height))
+//    {
+//        return 256.0f;
+//    }
+//    else if (isnan(width*height))
+//    {
+//        return 512.0f;
+//    }
     float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
     return overlapArea;
 }
@@ -111,7 +123,7 @@ void main()
 
     //TODO: remove
     int loopCounter = 0;
-    
+    int maxDepth = 0;
 
 
     do
@@ -122,45 +134,184 @@ void main()
 
 
 
+
         // check for leaf node on the left
+        bool traverseLeft = false;
         int leftChildIndex = AllBvhNodes[currentNodeIndex]._leftChildIndex;
-        bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
+        //bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
         float overlapAreaLeft = OverlappingArea(thisLeafNodeIndex, leftChildIndex);
-        if (leftChildIsLeaf &&
-            (overlapAreaLeft > 0.0f) && 
-            (leftChildIndex != thisLeafNodeIndex))  // prevent collision with self
+        if (overlapAreaLeft > 0.0f)
         {
-            numberPotentialCollisions++;
-            if (overlapAreaLeft > areaOfGreatestOverlap)
+            if (AllBvhNodes[leftChildIndex]._isLeaf == 1)
             {
-                areaOfGreatestOverlap = overlapAreaLeft;
-                particleIndexWithGreatestOverlap = leftChildIndex;
+                // prevent collision with self
+                if (leftChildIndex != thisLeafNodeIndex)
+                {
+                    numberPotentialCollisions++;
+
+                    // TODO: remove
+                    int tempNodeIndex = currentNodeIndex;
+                    int depthFromRoot = 1;  // there is 1 leaf below this node
+                    while(AllBvhNodes[tempNodeIndex]._parentIndex != -1)
+                    {
+                        tempNodeIndex = AllBvhNodes[tempNodeIndex]._parentIndex;
+                        depthFromRoot++;
+                    }
+                    maxDepth = (depthFromRoot > maxDepth) ? depthFromRoot : maxDepth;
+
+
+                    if (overlapAreaLeft > areaOfGreatestOverlap)
+                    {
+                        areaOfGreatestOverlap = overlapAreaLeft;
+                        particleIndexWithGreatestOverlap = leftChildIndex;
+                    }
+                }
+            }
+            else
+            {
+                // overlap with internal node
+                traverseLeft = true;
             }
         }
+
+//        if (leftChildIsLeaf &&
+//            (overlapAreaLeft > 0.0f) && 
+//            (leftChildIndex != thisLeafNodeIndex))  // prevent collision with self
+//        {
+//            numberPotentialCollisions++;
+//            if (overlapAreaLeft > areaOfGreatestOverlap)
+//            {
+//                areaOfGreatestOverlap = overlapAreaLeft;
+//                particleIndexWithGreatestOverlap = leftChildIndex;
+//            }
+//        }
 
         // check for leaf node on the right
+        bool traverseRight = false;
         int rightChildIndex = AllBvhNodes[currentNodeIndex]._rightChildIndex;
-        bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
+        //bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
         float overlapAreaRight = OverlappingArea(thisLeafNodeIndex, rightChildIndex);
-        if (rightChildIsLeaf &&
-            (overlapAreaRight > 0.0f) && 
-            (rightChildIndex != thisLeafNodeIndex))     // prevent collision with self
+        if (overlapAreaRight > 0.0f)
         {
-            numberPotentialCollisions++;
-            if (overlapAreaRight > areaOfGreatestOverlap)
+            if (AllBvhNodes[rightChildIndex]._isLeaf == 1)
             {
-                areaOfGreatestOverlap = overlapAreaRight;
-                particleIndexWithGreatestOverlap = rightChildIndex;
+                // prevent collision with self
+                if (rightChildIndex != thisLeafNodeIndex)
+                {
+                    numberPotentialCollisions++;
+
+                    // TODO: remove
+                    int tempNodeIndex = currentNodeIndex;
+                    int depthFromRoot = 1;  // there is 1 leaf below this node
+                    while(AllBvhNodes[tempNodeIndex]._parentIndex != -1)
+                    {
+                        tempNodeIndex = AllBvhNodes[tempNodeIndex]._parentIndex;
+                        depthFromRoot++;
+                    }
+                    maxDepth = (depthFromRoot > maxDepth) ? depthFromRoot : maxDepth;
+
+
+                    if (overlapAreaRight > areaOfGreatestOverlap)
+                    {
+                        areaOfGreatestOverlap = overlapAreaRight;
+                        particleIndexWithGreatestOverlap = rightChildIndex;
+                    }
+                }
+            }
+            else 
+            {
+                // overlap with internal node
+                traverseRight = true;
             }
         }
 
+//        if (rightChildIsLeaf &&
+//            (overlapAreaRight > 0.0f) && 
+//            (rightChildIndex != thisLeafNodeIndex))     // prevent collision with self
+//        {
+//            numberPotentialCollisions++;
+//            if (overlapAreaRight > areaOfGreatestOverlap)
+//            {
+//                areaOfGreatestOverlap = overlapAreaRight;
+//                particleIndexWithGreatestOverlap = rightChildIndex;
+//            }
+//        }
 
 
 
-        // traverse the tree if the this particle's bounding box overlaps an internal node's 
-        // bounding box
-        bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
-        bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
+
+//        // traverse the tree if the this particle's bounding box overlaps an internal node's 
+//        // bounding box
+//        bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
+//        bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
+
+
+
+//        if (overlapAreaLeft == 128.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = leftChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+//        else if (overlapAreaLeft == 256.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = leftChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+//        else if (overlapAreaLeft == 512.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = leftChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+//        else if (overlapAreaRight == 128.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = rightChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+//        else if (overlapAreaRight == 256.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = rightChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+//        else if (overlapAreaRight == 512.0f)
+//        {
+//            AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+//            AllBvhNodes[threadIndex]._extraData2 = rightChildIndex;
+//            AllBvhNodes[0]._extraData1 = int(threadIndex);
+//            AllBvhNodes[0]._extraDataArrF[0] = overlapAreaLeft;
+//            return;
+//        }
+
+
+
+        //if (isnan(overlapAreaLeft))
+        //{
+        //    AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+        //    AllBvhNodes[threadIndex]._extraData2 = leftChildIndex;
+        //    AllBvhNodes[0]._extraData1 = int(threadIndex);
+        //    return;
+        //}
+        //else if (isnan(overlapAreaRight))
+        //{
+        //    AllBvhNodes[threadIndex]._extraData1 = currentNodeIndex;
+        //    AllBvhNodes[threadIndex]._extraData2 = rightChildIndex;
+        //    AllBvhNodes[0]._extraData1 = int(threadIndex);
+        //    return;
+        //}
 
 
 //        // TODO: remove
@@ -218,17 +369,18 @@ void main()
     } while (currentNodeIndex != -1 && topOfStackIndex < 64);    // "end of stack"
 
 
-    int currentPotentialCollisionCount = numberPotentialCollisions;
-    int previousPotentialCollisionCount = AllBvhNodes[threadIndex]._extraData1;
-    AllBvhNodes[threadIndex]._extraData1 = currentPotentialCollisionCount;
-    AllBvhNodes[threadIndex]._extraData2 = previousPotentialCollisionCount;
-    if (currentPotentialCollisionCount == 0 && previousPotentialCollisionCount >= 10)
-    {
-        AllBvhNodes[0]._extraData1 = thisLeafNodeIndex;
-        AllBvhNodes[0]._extraData2 = 1977;
-    }
+    //int currentPotentialCollisionCount = numberPotentialCollisions;
+    //int previousPotentialCollisionCount = AllBvhNodes[threadIndex]._extraData1;
+    //AllBvhNodes[threadIndex]._extraData1 = currentPotentialCollisionCount;
+    //AllBvhNodes[threadIndex]._extraData2 = previousPotentialCollisionCount;
+    //if (currentPotentialCollisionCount == 0 && previousPotentialCollisionCount >= 10)
+    //{
+    //    AllBvhNodes[0]._extraData1 = thisLeafNodeIndex;
+    //    AllBvhNodes[0]._extraData2 = 1977;
+    //}
 
-    AllParticles[threadIndex]._numberOfNearbyParticles = numberPotentialCollisions;
+    //AllParticles[threadIndex]._numberOfNearbyParticles = numberPotentialCollisions;
+    AllParticles[threadIndex]._numberOfNearbyParticles = maxDepth;
 
     
 //    // TODO: remove
