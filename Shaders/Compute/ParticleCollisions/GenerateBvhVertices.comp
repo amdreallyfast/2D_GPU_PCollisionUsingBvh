@@ -13,7 +13,12 @@ layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 /*------------------------------------------------------------------------------------------------
 Description:
     This shader creates lines for each side of the bounding boxes for leaves and for internal 
-    nodes.  This creates an outline visualization fo the BVH (and hopefully help me to figure out why some particles are flickering like they were unable to traverse the tree all of a sudden and for 1 frame only).
+    nodes.  This creates an outline visualization for the BVH.
+    
+    Note: Hopefully help me to figure out why some particles are flickering like they were 
+    unable to traverse the tree all of a sudden and for 1 frame only.  
+    
+    But as of Sat, 5/20-2017, at 11:49AM, it hasn't helped. - John Cox
 Parameters: None
 Returns:    None
 Creator:    John Cox, 4/2017
@@ -30,11 +35,6 @@ void main()
         return;
     }
     
-    if (AllParticles[threadIndex]._isActive == 0)
-    {
-        return;
-    }
-
     BoundingBox bb;
     PolygonFace leftFace;
     PolygonFace rightFace;
@@ -42,6 +42,32 @@ void main()
     PolygonFace bottomFace;
 
     uint leafNodeIndex = threadIndex;
+    uint internalNodeIndex = uBvhNumberLeaves + threadIndex;
+
+    // clear out the polygons for the nodes of inactive particles
+    // Note: The geometry rendering will draw all possible vertices, so make sure that leaf 
+    // nodes that don't correspond to active particles are given null data.
+    if (AllParticles[leafNodeIndex]._isActive == 0)
+    {
+        return; 
+        AllPolygons[(leafNodeIndex * 4) + 0] = leftFace;
+        AllPolygons[(leafNodeIndex * 4) + 1] = rightFace;
+        AllPolygons[(leafNodeIndex * 4) + 2] = topFace;
+        AllPolygons[(leafNodeIndex * 4) + 3] = bottomFace;
+
+        // recall that, for a maximum N leaves, there are a maximum N-1 internal nodes
+        if (leafNodeIndex < (uBvhNumberLeaves - 1))
+        {
+            AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
+            AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
+            AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
+            AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
+        }
+
+        return;
+    }
+
+    // the particle for this node is active, so make the 4 faces of the bounding box
     bb = AllBvhNodes[leafNodeIndex]._boundingBox;
     leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
     leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
@@ -58,160 +84,23 @@ void main()
     AllPolygons[(leafNodeIndex * 4) + 2] = topFace;
     AllPolygons[(leafNodeIndex * 4) + 3] = bottomFace;
 
-    if (leafNodeIndex == (uNumActiveParticles - 1))
+    // do the same for the internal node with this index
+    if (leafNodeIndex < (uNumActiveParticles - 1))
     {
-        // 1 fewer internal nodes than leaves, so no internal node for this thread 
-        return;
+        bb = AllBvhNodes[internalNodeIndex]._boundingBox;
+        leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+        leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+        rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+        rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+        topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+        topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+        bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+        bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+
+        // 4 faces per bounding box
+        AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
+        AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
+        AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
+        AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
     }
-
-    uint internalNodeIndex = uBvhNumberLeaves + threadIndex;
-    bb = AllBvhNodes[internalNodeIndex]._boundingBox;
-    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-
-    // 4 faces per bounding box
-    AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
-    AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
-    AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
-    AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
-
-
-
-//// TODO: remove all of this
-//
-//
-//    uint leafNodeIndex = threadIndex;
-//    AllPolygons[(leafNodeIndex * 4) + 0] = leftFace;
-//    AllPolygons[(leafNodeIndex * 4) + 1] = rightFace;
-//    AllPolygons[(leafNodeIndex * 4) + 2] = topFace;
-//    AllPolygons[(leafNodeIndex * 4) + 3] = bottomFace;
-//
-//    uint internalNodeIndex = uBvhNumberLeaves + threadIndex;
-//    AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
-//
-//
-//
-//    uint rootNodeIndex = uBvhNumberLeaves;
-//    bb = AllBvhNodes[rootNodeIndex]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//
-//    // 4 faces per bounding box
-//    AllPolygons[(rootNodeIndex * 4) + 0] = leftFace;
-//    AllPolygons[(rootNodeIndex * 4) + 1] = rightFace;
-//    AllPolygons[(rootNodeIndex * 4) + 2] = topFace;
-//    AllPolygons[(rootNodeIndex * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexLeft = AllBvhNodes[rootNodeIndex]._leftChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexLeft]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexLeft * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexLeft * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexLeft * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexLeft * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexLeftLeft = AllBvhNodes[internalNodeIndexLeft]._leftChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexLeftLeft]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexLeftLeft * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexLeftLeft * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexLeftLeft * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexLeftLeft * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexLeftRight = AllBvhNodes[internalNodeIndexLeft]._rightChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexLeftRight]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexLeftRight * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexLeftRight * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexLeftRight * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexLeftRight * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexRight = AllBvhNodes[rootNodeIndex]._rightChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexRight]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexRight * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexRight * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexRight * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexRight * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexRightLeft = AllBvhNodes[internalNodeIndexRight]._leftChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexRightLeft]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexRightLeft * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexRightLeft * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexRightLeft * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexRightLeft * 4) + 3] = bottomFace;
-//
-//
-//    uint internalNodeIndexRightRight = AllBvhNodes[internalNodeIndexRight]._leftChildIndex;
-//    bb = AllBvhNodes[internalNodeIndexRightRight]._boundingBox;
-//    leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-//    topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-//    bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-//    bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-//    AllPolygons[(internalNodeIndexRightRight * 4) + 0] = leftFace;
-//    AllPolygons[(internalNodeIndexRightRight * 4) + 1] = rightFace;
-//    AllPolygons[(internalNodeIndexRightRight * 4) + 2] = topFace;
-//    AllPolygons[(internalNodeIndexRightRight * 4) + 3] = bottomFace;
-
-
 }

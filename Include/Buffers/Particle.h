@@ -23,10 +23,9 @@ struct Particle
     -------------------------------------------------------------------------------------------*/
     Particle() :
         // glm structures already have "set to 0" constructors
-        //_collisionCountThisFrame(0),
         _numberOfNearbyParticles(0),
         _mass(0.3f),
-        _collisionRadius(0.06f),
+        _collisionRadius(0.01f),
         _mortonCode(0),
         _hasCollidedAlreadyThisFrame(0),
         _isActive(0)
@@ -74,7 +73,7 @@ struct Particle
     // if there is another that is very close by on that same frame, ignore it.  The particles 
     // should be so small that no two should collide anyway.  
     // Also Note: If they do, decrease the radius of influence.
-    unsigned int _hasCollidedAlreadyThisFrame;
+    int _hasCollidedAlreadyThisFrame;
 
     // Note: Booleans cannot be uploaded to the shader 
     // (https://www.opengl.org/sdk/docs/man/html/glVertexAttribPointer.xhtml), so send the 

@@ -40,59 +40,21 @@ void main()
         return;
     }
 
-    //// create the leaf's bounding box
-    //vec4 pos = AllParticles[threadIndex]._pos;
-    //float r = AllParticles[threadIndex]._collisionRadius;
-    //
-    //AllBvhNodes[threadIndex]._boundingBox._left = pos.x - r;
-    //AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
-    //AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
-    //AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
-
-    int ohCrapOhCrapCounter = 0;
-
     // now go up through the internal nodes and merge the bounding boxes until the root
     // Note: The parent index should only be -1 at the root node.
-    int prevNodeIndex = -1;     // TODO: remove
     int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
     while(nodeIndex != -1)
-    //while(nodeIndex != -1 && ohCrapOhCrapCounter < 25)
-    //while(nodeIndex != -1 && ohCrapOhCrapCounter < 35)
-    //if (nodeIndex != -1)
     {
-        ohCrapOhCrapCounter++;
-
         // prevent race conditions to the parent node
         // Note: This suggestion comes the source material given in main()'s comment block.  
         // "To avoid duplicate work, the idea is to use an atomic flag per node to terminate the 
         // first thread that enters it, while letting the second one through. This ensures that 
         // every node gets processed only once, and not before both of its children are 
         // processed."
-        int priorCounterValue = atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1);
-        int currCounterValue = AllBvhNodes[nodeIndex]._threadEntranceCounter;
-
-
-//        AllBvhNodes[nodeIndex]._threadAccessors[priorCounterValue]._threadId = int(threadIndex);
-//        AllBvhNodes[nodeIndex]._threadAccessors[priorCounterValue]._previousNodeIndex = prevNodeIndex;
-        if (priorCounterValue == 0)
+        if (atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1) == 0)
         {
             return;
         }
-
-
-//        //if (AllBvhNodes[nodeIndex]._threadEntranceCounter != 2)
-//        //{
-//        //    return;
-//        //}
-//        if (priorCounterValue == 0)
-//        {
-//            return;
-//        }
-//        if (priorCounterValue != currCounterValue)
-//        {
-//            AllBvhNodes[nodeIndex]._extraData1 = priorCounterValue;
-//            AllBvhNodes[nodeIndex]._extraData2 = currCounterValue;
-//        }
         
         int leftChildIndex = AllBvhNodes[nodeIndex]._leftChildIndex;
         int rightChildIndex = AllBvhNodes[nodeIndex]._rightChildIndex;
@@ -104,53 +66,8 @@ void main()
         AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
         AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
 
-
-        // TODO: remove
-        BoundingBox result;
-        if (isnan(leftBb._left) || isnan(leftBb._right) || isnan(leftBb._bottom) || isnan(leftBb._top) ||
-            isnan(rightBb._left) || isnan(rightBb._right) || isnan(rightBb._bottom) || isnan(rightBb._top))
-        //result._left = min(leftBb._left, rightBb._left);
-        //result._right = max(leftBb._right, rightBb._right);
-        //result._bottom = min(leftBb._bottom, rightBb._bottom);
-        //result._top = max(leftBb._top, rightBb._top);
-        //if ((result._right < result._left) || (result._top < result._bottom))
-        {
-            AllBvhNodes[nodeIndex]._extraData1 = int(threadIndex);
-            AllBvhNodes[nodeIndex]._extraData2 = 1977;
-        
-            AllBvhNodes[nodeIndex]._extraDataArrI[0] = nodeIndex;
-            AllBvhNodes[nodeIndex]._extraDataArrI[1] = leftChildIndex;
-            AllBvhNodes[nodeIndex]._extraDataArrI[2] = rightChildIndex;
-            AllBvhNodes[nodeIndex]._extraDataArrF[0] = leftBb._left;
-            AllBvhNodes[nodeIndex]._extraDataArrF[1] = leftBb._right;
-            AllBvhNodes[nodeIndex]._extraDataArrF[2] = leftBb._top;
-            AllBvhNodes[nodeIndex]._extraDataArrF[3] = leftBb._bottom;
-            AllBvhNodes[nodeIndex]._extraDataArrF[4] = rightBb._left;
-            AllBvhNodes[nodeIndex]._extraDataArrF[5] = rightBb._right;
-            AllBvhNodes[nodeIndex]._extraDataArrF[6] = rightBb._top;
-            AllBvhNodes[nodeIndex]._extraDataArrF[7] = rightBb._bottom;
-        
-            return;
-        }
-
-
-
-        prevNodeIndex = nodeIndex;
         nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
     }
-
-
-    // TODO: infite loop avoidance on BVH traversal
-
-
-    //// TODO: remove this
-    //if (nodeIndex != -1)
-    //{
-    //    AllBvhNodes[0]._extraData1 = int(threadIndex);
-    //    //AllBvhNodes[0]._extraData2 = int(uNumActiveParticles);ohCrapOhCrapCounter
-    //    AllBvhNodes[0]._extraData2 = prevNodeIndex;
-    //}
-    
 }
 
 

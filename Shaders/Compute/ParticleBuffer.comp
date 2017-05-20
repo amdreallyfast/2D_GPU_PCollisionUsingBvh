@@ -18,7 +18,7 @@ struct Particle
     float _mass;
     float _collisionRadius;
     uint _mortonCode;
-    uint _hasCollidedAlreadyThisFrame;
+    int _hasCollidedAlreadyThisFrame;
     int _isActive;
 
     // vec4s are 16 bytes, +6 individual 4-byte items, so needs 2 bytes padding on the CPU side

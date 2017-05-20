@@ -144,7 +144,6 @@ static void InitializeWithRandomData(std::vector<Particle> &initThese)
         initThese[particleIndex]._velocity.x = static_cast<float>(rand()) * inverseRandMax;
         initThese[particleIndex]._velocity.y = static_cast<float>(rand()) * inverseRandMax;
 
-        
         // TODO: remove
         // give each particle a unique original ID
         initThese[particleIndex]._hasCollidedAlreadyThisFrame = particleIndex;

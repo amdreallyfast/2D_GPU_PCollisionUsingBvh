@@ -371,7 +371,7 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(1);
+    particleResetter->ResetParticles(5);
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif

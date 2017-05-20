@@ -17,8 +17,6 @@ layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 layout (binding = ATOMIC_COUNTER_BUFFER_BINDING, offset = 0) uniform atomic_uint acActiveParticleCounter;
 
 
-//uniform vec4 uParticleRegionCenter;
-//uniform float uParticleRegionRadiusSqr;
 uniform float uDeltaTimeSec;
 
 /*------------------------------------------------------------------------------------------------
@@ -35,13 +33,11 @@ void main()
     {
         return;
     }
-
-    if (AllParticles[threadIndex]._isActive == 0)
+    else if (AllParticles[threadIndex]._isActive == 0)
     {
         // don't update
         return;
     }
-
 
     vec4 particlePosition = AllParticles[threadIndex]._pos;
     vec4 particleVelocity = AllParticles[threadIndex]._vel;
@@ -60,18 +56,12 @@ void main()
     }
 
     // still active
+    AllParticles[threadIndex]._pos = newPos;
+
     // Note: The "active particles" counter is useful for
     // (1) printing how many particles are active and 
     // (2) reducing workload for other compute shaders so that they only have to work on the 
     // active particles
     atomicCounterIncrement(acActiveParticleCounter);
-
-    AllParticles[threadIndex]._pos = newPos;
-
-    //// and re-count the number of nearby particles
-    //pCopy._numberOfNearbyParticles = 0;
-
-    //// copy the particle back into global memory
-    //AllParticles[index] = pCopy;
 }
 

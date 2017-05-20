@@ -22,24 +22,12 @@ void main()
     // the particles, so this same index can be used for both ParticleBuffer access and 
     // BvhNodeBuffer access
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize)
+    if (threadIndex >= uParticleBufferSize ||
+        threadIndex >= uNumActiveParticles)
     {
         return;
     }
     
-    if (AllParticles[threadIndex]._isActive == 0)
-    {
-//        AllBvhNodes[threadIndex]._boundingBox._left = -0.15f;
-//        AllBvhNodes[threadIndex]._boundingBox._right = +0.15f;
-//        AllBvhNodes[threadIndex]._boundingBox._bottom = -0.12f;
-//        AllBvhNodes[threadIndex]._boundingBox._top = +0.12f;
-        AllBvhNodes[threadIndex]._boundingBox._left = 0.0f;
-        AllBvhNodes[threadIndex]._boundingBox._right = 0.0f;
-        AllBvhNodes[threadIndex]._boundingBox._bottom = 0.0f;
-        AllBvhNodes[threadIndex]._boundingBox._top = 0.0f;
-        return;
-    }
-
     // set the data that will be be analyzed on tree construction
     AllBvhNodes[threadIndex]._data = AllParticles[threadIndex]._mortonCode;
 
@@ -52,18 +40,5 @@ void main()
     AllBvhNodes[threadIndex]._boundingBox._right = pos.x + r;
     AllBvhNodes[threadIndex]._boundingBox._bottom = pos.y - r;
     AllBvhNodes[threadIndex]._boundingBox._top = pos.y + r;
-//    AllBvhNodes[threadIndex]._boundingBox._left = -0.03f;
-//    AllBvhNodes[threadIndex]._boundingBox._right = +0.03f;
-//    AllBvhNodes[threadIndex]._boundingBox._bottom = -0.03f;
-//    AllBvhNodes[threadIndex]._boundingBox._top = +0.03f;
-
-    
-    //// TODO: remove
-    //AllBvhNodes[threadIndex]._extraData2 = AllParticles[threadIndex]._isActive;
-    //if (AllParticles[threadIndex]._isActive != 1)
-    //{
-    //    AllBvhNodes[threadIndex]._extraData2 = 37;
-    //}
-    
 }
     

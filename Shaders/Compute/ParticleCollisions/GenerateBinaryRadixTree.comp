@@ -163,18 +163,6 @@ int LengthOfCommonPrefix(int indexA, int indexB)
     int indexNumCommonBits = CLZ1(indexA ^ indexB);
     //return (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
     return (valueA == valueB) ? 32 + indexNumCommonBits : valueNumCommonBits;
-
-//    int commonPrefixLength = 0;
-//    if ((valueA ^ valueB) == 0)
-//    {
-//        commonPrefixLength = 32;    // 2x identical integers
-//        commonPrefixLength += (32 - int(floor(log2(indexA ^ indexB)) + 1));
-//    }
-//    else
-//    {
-//        commonPrefixLength = 32 - int(floor(log2(valueA ^ valueB)) + 1);
-//    }
-//    return commonPrefixLength;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -226,95 +214,6 @@ int DetermineRange(int startNodeIndex, int direction)
     }
 
     return actualLengthSans1;
-
-
-//    int internalNodeIndex = int(uBvhNumberLeaves) + startNodeIndex;
-//
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._indexA = startNodeIndex;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._indexB = startNodeIndex - direction;
-//    uint val1 = AllBvhNodes[startNodeIndex]._data;
-//    uint val2 = AllBvhNodes[startNodeIndex - direction]._data;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._valueA = val1;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._valueB = val2;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._xor = val1 ^ val2;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._minPrefix._commonPrefixLength = minimumCommonPrefixLength;
-//
-//    int maxPossibleLength = 2;
-//    int secondNodeIndex = startNodeIndex + (maxPossibleLength * direction);
-//    int commonPrefixLength = LengthOfCommonPrefix(startNodeIndex, secondNodeIndex);
-//    int loopCounter = 0;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._lengthBefore = maxPossibleLength;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._indexA = startNodeIndex;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._indexB = secondNodeIndex;
-//    val1 = AllBvhNodes[startNodeIndex]._data;
-//    val2 = AllBvhNodes[secondNodeIndex]._data;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._valueA = val1;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._valueB = val2;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._xor = val1 ^ val2;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._commonPrefixLength = commonPrefixLength;
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._lengthAfter = maxPossibleLength;
-//
-//    while (commonPrefixLength > minimumCommonPrefixLength)
-//    {
-//        maxPossibleLength *= 2;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._lengthAfter = maxPossibleLength;
-//
-//        secondNodeIndex = startNodeIndex + (maxPossibleLength * direction);
-//        commonPrefixLength = LengthOfCommonPrefix(startNodeIndex, secondNodeIndex);
-//        loopCounter++;
-//
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._lengthBefore = maxPossibleLength;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._indexA = startNodeIndex;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._indexB = secondNodeIndex;
-//        val1 = AllBvhNodes[startNodeIndex]._data;
-//        val2 = AllBvhNodes[secondNodeIndex]._data;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._valueA = val1;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._valueB = val2;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._xor = val1 ^ val2;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._prefixLength._commonPrefixLength = commonPrefixLength;
-//        AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter]._lengthAfter = maxPossibleLength;
-//    }
-//    AllBvhNodes[internalNodeIndex]._findMaxLengthDebug._iterations[loopCounter+1]._lengthBefore = 37;
-//
-//
-//
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._indexA = startNodeIndex;
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._indexB = startNodeIndex - direction;
-//    val1 = AllBvhNodes[startNodeIndex]._data;
-//    val2 = AllBvhNodes[startNodeIndex - direction]._data;
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._valueA = val1;
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._valueB = val2;
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._xor = val1 ^ val2;
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._minPrefix._commonPrefixLength = minimumCommonPrefixLength;
-//    loopCounter = 0;
-//
-//    // find actual length using a binary search on the max possible length
-//    int actualLengthSans1 = 0;
-//    for (int rangeIncrement = maxPossibleLength >> 1; rangeIncrement >= 1; rangeIncrement >>= 1)
-//    {
-//        secondNodeIndex = startNodeIndex + ((actualLengthSans1 + rangeIncrement) * direction);
-//        int commonPrefixLength = LengthOfCommonPrefix(startNodeIndex, secondNodeIndex);
-//
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._lengthBefore = actualLengthSans1;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._indexA = startNodeIndex;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._indexB = secondNodeIndex;
-//        val1 = AllBvhNodes[startNodeIndex]._data;
-//        val2 = AllBvhNodes[secondNodeIndex]._data;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._valueA = val1;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._valueB = val2;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._xor = val1 ^ val2;
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._prefixLength._commonPrefixLength = commonPrefixLength;
-//        if (commonPrefixLength > minimumCommonPrefixLength)
-//        {
-//            actualLengthSans1 += rangeIncrement;
-//        }
-//        AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter]._lengthAfter = actualLengthSans1;
-//
-//        loopCounter++;
-//    }
-//    AllBvhNodes[internalNodeIndex]._findOtherEndDebug._iterations[loopCounter+1]._lengthBefore = 37;
-//
-//    return actualLengthSans1;
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -384,66 +283,6 @@ int FindSplitPosition(int startNodeIndex, int length, int direction)
 }
 
 
-// TODO: remove this
-void ResetDebugStructures(uint nodeIndex)
-{
-//    AllBvhNodes[nodeIndex]._signDebug._d = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._before._indexA = -1;
-//    AllBvhNodes[nodeIndex]._signDebug._before._valueA = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._before._indexB = -1;
-//    AllBvhNodes[nodeIndex]._signDebug._before._valueB = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._before._commonPrefixLength = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._after._indexA = -1;
-//    AllBvhNodes[nodeIndex]._signDebug._after._valueA = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._after._indexB = -1;
-//    AllBvhNodes[nodeIndex]._signDebug._after._valueB = 0;
-//    AllBvhNodes[nodeIndex]._signDebug._after._commonPrefixLength = 0;
-
-//    for (int i = 0; i < 25; i++)
-//    {
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._minPrefix._indexA = -1;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._minPrefix._valueA = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._minPrefix._indexB = -1;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._minPrefix._valueB = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._minPrefix._commonPrefixLength = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._lengthBefore = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._prefixLength._indexA = -1;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._prefixLength._valueA = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._prefixLength._indexB = -1;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._prefixLength._valueB = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._prefixLength._commonPrefixLength = 0;
-//        AllBvhNodes[nodeIndex]._findMaxLengthDebug._iterations[i]._lengthAfter = 0;
-//        
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._minPrefix._indexA = -1;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._minPrefix._valueA = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._minPrefix._indexB = -1;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._minPrefix._valueB = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._minPrefix._commonPrefixLength = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._lengthBefore = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._prefixLength._indexA = -1;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._prefixLength._valueA = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._prefixLength._indexB = -1;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._prefixLength._valueB = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._prefixLength._commonPrefixLength = 0;
-//        AllBvhNodes[nodeIndex]._findOtherEndDebug._iterations[i]._lengthAfter = 0;
-//    }
-
-//    for (int i = 0; i < AllBvhNodes[nodeIndex]._threadEntranceCounter; i++)
-//    {
-//        AllBvhNodes[nodeIndex]._threadAccessors[i]._threadId = -1;
-//        AllBvhNodes[nodeIndex]._threadAccessors[i]._previousNodeIndex = -1;
-//    }
-
-
-
-    //AllBvhNodes[nodeIndex]._extraData1 = -1;
-    //AllBvhNodes[nodeIndex]._extraData2 = -1;
-}
-
-
-
-
-
 /*------------------------------------------------------------------------------------------------
 Description:
     Performs a parallel construction of a binary radix tree.
@@ -477,21 +316,7 @@ void main()
     int thisInternalNodeIndex = int(uBvhNumberLeaves + threadIndex);
     int rootInternalNodeIndex = int(uBvhNumberLeaves);
 
-    //AllBvhNodes[thisLeafIndex]._threadEntranceCounter = 13;
-
-    //AllBvhNodes[thisInternalNodeIndex]._parentIndex = -1;
     AllBvhNodes[thisInternalNodeIndex]._threadEntranceCounter = 0;
-    
-    
-    //// TODO: remove this
-    //atomicAdd(AllBvhNodes[thisInternalNodeIndex]._extraData1, 1);
-
-
-
-    // TODO: remove this
-    //ResetDebugStructures(uBvhNumberLeaves + threadIndex);
-    
-
 
     // build the tree
     int commonPrefixLengthBefore = LengthOfCommonPrefix(thisLeafIndex, thisLeafIndex - 1);
@@ -500,28 +325,6 @@ void main()
     // if I made LengthOfCommonPrefix(...) correctly, this should never return 0
     // Note: If direction is 0, then something has gone terribly wrong.
     int d = sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
-
-//    uint val1 = 0;
-//    uint val2 = 0;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._d = d;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._indexA = thisLeafIndex;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._indexB = thisLeafIndex - 1;
-//    val1 = AllBvhNodes[thisLeafIndex]._data;
-//    val2 = AllBvhNodes[thisLeafIndex - 1]._data;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._valueA = val1;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._valueB = val2;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._xor = val1 ^ val2;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._before._commonPrefixLength = commonPrefixLengthBefore;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._indexA = thisLeafIndex;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._indexB = thisLeafIndex + 1;
-//    val1 = AllBvhNodes[thisLeafIndex]._data;
-//    val2 = AllBvhNodes[thisLeafIndex + 1]._data;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._valueA = val1;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._valueB = val2;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._xor = val1 ^ val2;
-//    AllBvhNodes[thisInternalNodeIndex]._signDebug._after._commonPrefixLength = commonPrefixLengthAfter;
-
-
 
     int range = DetermineRange(thisLeafIndex, d);
     int splitIndex = FindSplitPosition(thisLeafIndex, range, d);

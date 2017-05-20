@@ -22,65 +22,6 @@ struct BoundingBox
     float _bottom;
 };
 
-
-struct CommonPrefixDebug
-{
-    CommonPrefixDebug() :
-        _indexA(-1), _valueA(0),
-        _indexB(-1), _valueB(0),
-        _xor(0),
-        _commonPrefixLength(0)
-    {
-
-    }
-
-    int _indexA;
-    unsigned int _valueA;
-    int _indexB;
-    unsigned int _valueB;
-    unsigned int _xor;
-    int _commonPrefixLength;
-};
-
-struct DebugSignGeneration
-{
-    DebugSignGeneration() :
-        _d(0)
-    {
-
-    }
-
-    int _d;
-    CommonPrefixDebug _before;
-    CommonPrefixDebug _after;
-};
-
-struct DebugLength
-{
-    DebugLength() :
-        _lengthBefore(-1),
-        _lengthAfter(-1)
-    {
-    }
-
-    int _lengthBefore;
-    CommonPrefixDebug _prefixLength;
-    int _lengthAfter;
-};
-
-struct DebugFindLength
-{
-    CommonPrefixDebug _minPrefix;
-    DebugLength _iterations[25];
-};
-
-struct ThreadAccessor
-{
-    ThreadAccessor() : _threadId(-1), _previousNodeIndex(-1) {}
-    int _threadId;
-    int _previousNodeIndex;
-};
-
 /*------------------------------------------------------------------------------------------------
 Description:   
     Must match the corresponding structure in BvhNodeBuffer.comp.
@@ -102,24 +43,17 @@ struct BvhNode
         _threadEntranceCounter(0),
         _data(0),
         _extraData1(-1),
-        _extraData2(-1)
+        _extraData2(-1),
+        _extraData3(-1)
     {
-        for (size_t i = 0; i < 25; i++)
-        {
-            _extraDataArr1[i] = -1;
-            _extraDataArr2[i] = -1;
-        }
     }
     
     BoundingBox _boundingBox;
-//    DebugSignGeneration _signDebug;
-//    DebugFindLength _findMaxLengthDebug;
-//    DebugFindLength _findOtherEndDebug;
-//    ThreadAccessor _threadAccessors[25];
+
+    // TODO: remove
     int _extraData1;
     int _extraData2;
-    int _extraDataArr1[25];
-    int _extraDataArr2[25];
+    int _extraData3;
 
     int _isLeaf;
     int _parentIndex;
