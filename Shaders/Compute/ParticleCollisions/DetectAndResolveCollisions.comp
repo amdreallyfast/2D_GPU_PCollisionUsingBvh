@@ -96,6 +96,7 @@ void main()
 
     // iterative traversal of the tree requires keeping track of the depth yourself
     int topOfStackIndex = 0;
+    // TODO: ??would not initializing this speed it up??
     int nodeStack[64] = int[64](0);
 
     // push an "end of stack" and start at the root internal node
@@ -155,10 +156,43 @@ void main()
 
 
 
+
         // traverse the tree if the this particle's bounding box overlaps an internal node's 
         // bounding box
         bool traverseLeft = (overlapAreaLeft > 0.0f) && !leftChildIsLeaf;
         bool traverseRight = (overlapAreaRight > 0.0f) && !rightChildIsLeaf;
+
+
+//        // TODO: remove
+//        if ((overlapAreaLeft <= 0.0f) && !leftChildIsLeaf)
+//        {
+//            // left child is an internal node, but no overlap
+//            int start = min(AllBvhNodes[leftChildIndex]._startIndex, AllBvhNodes[leftChildIndex]._endIndex);
+//            int end = max(AllBvhNodes[leftChildIndex]._startIndex, AllBvhNodes[leftChildIndex]._endIndex);
+//            bool failedOverlap = (thisLeafNodeIndex >= start && thisLeafNodeIndex <= end);
+//
+//            if (failedOverlap)
+//            {
+//                BoundingBox thisBb = AllBvhNodes[thisLeafNodeIndex]._boundingBox;
+//                BoundingBox leftBb = AllBvhNodes[leftChildIndex]._boundingBox;
+//                AllBvhNodes[currentNodeIndex]._extraData1 = thisLeafNodeIndex;
+//
+//                AllBvhNodes[currentNodeIndex]._extraDataArrI[0] = currentNodeIndex;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrI[1] = leftChildIndex;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrI[2] = 37;
+//
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[0] = thisBb._left;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[1] = thisBb._right;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[2] = thisBb._top;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[3] = thisBb._bottom;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[4] = leftBb._left;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[5] = leftBb._right;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[6] = leftBb._top;
+//                AllBvhNodes[currentNodeIndex]._extraDataArrF[7] = leftBb._bottom;
+//            }
+//        }
+
+
         if (!traverseLeft && !traverseRight)
         {
             // children must be leaves, non-overlapping, or both; pop the top of the stack
@@ -175,19 +209,43 @@ void main()
             }
         }
 
+
+
+
+
     //} while (currentNodeIndex != -1);    // "end of stack"
     //} while (currentNodeIndex != -1 && loopCounter < 25);    // "end of stack"
     } while (currentNodeIndex != -1 && topOfStackIndex < 64);    // "end of stack"
 
 
-    //AllBvhNodes[threadIndex]._extraData2 = particleIndexWithGreatestOverlap;
+    int currentPotentialCollisionCount = numberPotentialCollisions;
+    int previousPotentialCollisionCount = AllBvhNodes[threadIndex]._extraData1;
+    AllBvhNodes[threadIndex]._extraData1 = currentPotentialCollisionCount;
+    AllBvhNodes[threadIndex]._extraData2 = previousPotentialCollisionCount;
+    if (currentPotentialCollisionCount == 0 && previousPotentialCollisionCount >= 10)
+    {
+        AllBvhNodes[0]._extraData1 = thisLeafNodeIndex;
+        AllBvhNodes[0]._extraData2 = 1977;
+    }
+
     AllParticles[threadIndex]._numberOfNearbyParticles = numberPotentialCollisions;
 
+    
+//    // TODO: remove
+//    int index = AllBvhNodes[threadIndex]._extraData1;
+//    if (index == -1)
+//    {
+//        index = 0;
+//    }
+//    AllBvhNodes[threadIndex]._extraDataArr1[index++] = numberPotentialCollisions;
+//    AllBvhNodes[threadIndex]._extraData1 = index % 25;
 
-    if (currentNodeIndex != -1)
+
+
+
+    if (currentNodeIndex != -1 || topOfStackIndex >= 64)
     {
-        AllBvhNodes[0]._extraData1 = int(threadIndex);
-        //AllBvhNodes[0]._extraData2 = nodeStack[topOfStackIndex - 1];
+        AllBvhNodes[0]._extraData1 = currentNodeIndex;
         AllBvhNodes[0]._extraData2 = topOfStackIndex;
     }
 

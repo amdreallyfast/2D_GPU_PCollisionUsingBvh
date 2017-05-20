@@ -104,6 +104,34 @@ void main()
         AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
         AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
 
+
+        //// TODO: remove
+        //BoundingBox result;
+        //result._left = min(leftBb._left, rightBb._left);
+        //result._right = max(leftBb._right, rightBb._right);
+        //result._bottom = min(leftBb._bottom, rightBb._bottom);
+        //result._top = max(leftBb._top, rightBb._top);
+        //if ((result._right < result._left) || (result._top < result._bottom))
+        //{
+        //    AllBvhNodes[nodeIndex]._extraData1 = int(threadIndex);
+        //
+        //    AllBvhNodes[nodeIndex]._extraDataArrI[0] = nodeIndex;
+        //    AllBvhNodes[nodeIndex]._extraDataArrI[1] = leftChildIndex;
+        //    AllBvhNodes[nodeIndex]._extraDataArrI[2] = rightChildIndex;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[0] = leftBb._left;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[1] = leftBb._right;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[2] = leftBb._top;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[3] = leftBb._bottom;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[4] = rightBb._left;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[5] = rightBb._right;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[6] = rightBb._top;
+        //    AllBvhNodes[nodeIndex]._extraDataArrF[7] = rightBb._bottom;
+        //
+        //    return;
+        //}
+
+
+
         prevNodeIndex = nodeIndex;
         nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
     }
@@ -112,13 +140,13 @@ void main()
     // TODO: infite loop avoidance on BVH traversal
 
 
-    // TODO: remove this
-    if (nodeIndex != -1)
-    {
-        AllBvhNodes[0]._extraData1 = int(threadIndex);
-        //AllBvhNodes[0]._extraData2 = int(uNumActiveParticles);ohCrapOhCrapCounter
-        AllBvhNodes[0]._extraData2 = prevNodeIndex;
-    }
+    //// TODO: remove this
+    //if (nodeIndex != -1)
+    //{
+    //    AllBvhNodes[0]._extraData1 = int(threadIndex);
+    //    //AllBvhNodes[0]._extraData2 = int(uNumActiveParticles);ohCrapOhCrapCounter
+    //    AllBvhNodes[0]._extraData2 = prevNodeIndex;
+    //}
     
 }
 

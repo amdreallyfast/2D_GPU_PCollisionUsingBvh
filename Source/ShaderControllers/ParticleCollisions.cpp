@@ -334,7 +334,25 @@ namespace ShaderControllers
         memcpy(checkOriginalData.data(), bufferPtr, bufferSizeBytes);
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-        if (checkOriginalData[0]._extraData1 != -1)
+
+        //int currentParticleCountIndex = checkOriginalData[0]._extraData1 - 1;
+        //int prevParticleCountIndex = checkOriginalData[0]._extraData1 - 2;
+        //if (currentParticleCountIndex == 0)
+        //{
+        //    currentParticleCountIndex = 24;
+        //}
+        //if (currentParticleCountIndex == 0)
+        //{
+        //    prevParticleCountIndex = 24;
+        //}
+        //if (checkOriginalData[0]._extraDataArr1[currentParticleCountIndex] == 0 &&
+        //    checkOriginalData[0]._extraDataArr1[prevParticleCountIndex] >= 7)
+        //{
+        //    printf("");
+        //}
+
+        //if (checkOriginalData[0]._extraData1 != -1)
+        if (checkOriginalData[0]._extraData2 == 1977)
         //if (numActiveParticles > 2000)
         {
             printf("");
@@ -350,6 +368,7 @@ namespace ShaderControllers
                     << "\tleftChildIndex = " << checkOriginalData[i]._leftChildIndex
                     << "\trightChildIndex = " << checkOriginalData[i]._rightChildIndex
                     << "\tdata = " << checkOriginalData[i]._data
+
                     << "\textraData1 = " << checkOriginalData[i]._extraData1
                     << "\textraData2 = " << checkOriginalData[i]._extraData2
                     //<< "\tleft = " << checkOriginalData[i]._boundingBox._left
@@ -360,13 +379,13 @@ namespace ShaderControllers
                 outfile << "\t";
                 for (size_t j = 0; j < 25; j++)
                 {
-                    outfile << checkOriginalData[i]._extraDataArr1[j] << "->";
+                    outfile << checkOriginalData[i]._extraDataArrI[j] << "->";
                 }
                 outfile << endl;
                 outfile << "\t";
                 for (size_t j = 0; j < 25; j++)
                 {
-                    outfile << checkOriginalData[i]._extraDataArr2[j] << "->";
+                    outfile << checkOriginalData[i]._extraDataArrF[j] << "->";
                 }
                 outfile << endl;
             }

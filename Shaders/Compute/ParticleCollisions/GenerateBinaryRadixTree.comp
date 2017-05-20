@@ -436,8 +436,8 @@ void ResetDebugStructures(uint nodeIndex)
 
 
 
-    AllBvhNodes[nodeIndex]._extraData1 = -1;
-    AllBvhNodes[nodeIndex]._extraData2 = -1;
+    //AllBvhNodes[nodeIndex]._extraData1 = -1;
+    //AllBvhNodes[nodeIndex]._extraData2 = -1;
 }
 
 
@@ -530,9 +530,13 @@ void main()
     // calculation is cheap and it's needed, so do it again
     int otherEndIndex = thisLeafIndex + (range * d);
 
+
+    // TODO: remove
     AllBvhNodes[thisInternalNodeIndex]._startIndex = thisLeafIndex;
     AllBvhNodes[thisInternalNodeIndex]._endIndex = otherEndIndex;
     AllBvhNodes[thisInternalNodeIndex]._leafSplitIndex = splitIndex;
+
+
 
     int leftChildIndex = -12;
     if (min(thisLeafIndex, otherEndIndex) == splitIndex)

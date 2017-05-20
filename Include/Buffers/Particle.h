@@ -26,7 +26,7 @@ struct Particle
         //_collisionCountThisFrame(0),
         _numberOfNearbyParticles(0),
         _mass(0.3f),
-        _collisionRadius(0.06f),
+        _collisionRadius(0.01f),
         _mortonCode(0),
         _hasCollidedAlreadyThisFrame(0),
         _isActive(0)

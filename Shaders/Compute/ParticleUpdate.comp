@@ -76,7 +76,7 @@ void main()
     // the particle moved, so let it have a chance to collide again
     pCopy._hasCollidedAlreadyThisFrame = 0;
 
-    // and re-count the number of nearby particles
+    //// and re-count the number of nearby particles
     pCopy._numberOfNearbyParticles = 0;
 
     // copy the particle back into global memory

@@ -67,8 +67,8 @@ struct BvhNode
 //    ThreadAccessor _threadAccessors[25];
     int _extraData1;
     int _extraData2;
-    int _extraDataArr1[25];
-    int _extraDataArr2[25];
+    int _extraDataArrI[25];
+    float _extraDataArrF[25];
 
     int _isLeaf;
     int _parentIndex;

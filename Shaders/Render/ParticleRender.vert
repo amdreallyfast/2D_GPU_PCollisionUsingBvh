@@ -21,15 +21,14 @@ void main()
 {
     if (isActive == 0)
     {
-        // invisible (alpha = 0), but "fully transparent" does not mean "no color", it merely 
-        // means that the color of this thing will be added to the thing behind it (see Z 
-        // adjustment later)
-        //particleColor = vec4(0.0f, 0.0f, 1.0f, 0.0f);   // blue for debugging
-        particleColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);   // black
-        
         // the Z buffer in this 2D demo is of depth 1, so putting the innactive particle out of 
         // range should make it disappear entirely
-        gl_Position = vec4(pos.xy, -1.1f, 1.0f);
+//        particleColor = vec4(0.0f, 0.0f, 0.0f, 0.0f);   // black
+//        gl_Position = vec4(pos.xy, -1.1f, 1.0f);
+
+        // for debugging
+        particleColor = vec4(1.0f, 0.0f, 1.0f, 1.0f);
+        gl_Position = vec4(pos.xy, -0.9f, 1.0f);
     }
     else
     {
@@ -46,8 +45,8 @@ void main()
         float min = 0;
 //        float mid = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE;
 //        float max = NUM_PARTICLES_TO_CHECK_ON_EACH_SIDE * 2;
-        float mid = 30;
-        float max = 60;
+        float mid = 10;
+        float max = 20;
 
         float blendValue = float(numberOfNearbyParticles);
         float fractionLowToMid = (blendValue - min) / (mid - min);
