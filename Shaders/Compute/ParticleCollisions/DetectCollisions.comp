@@ -10,20 +10,6 @@ layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 
 
 
-//// TODO: header
-//float OverlappingArea(BoundingBox bb1, boundingBox bb2)
-//{
-//    float overlapBoxLeft = max(bb1._left, bb2._left);
-//    float overlapBoxRight = min(bb1._right, bb2._right);
-//    float overlapBoxBottom = max(bb1._bottom, bb2._bottom);
-//    float overlapBoxTop = min(bb1._top, bb2._top);
-//
-//    float width = overlapBoxRight - overlapBoxLeft;
-//    float height = overlapBoxTop - overlapBoxBottom;
-//    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
-//    return overlapArea;
-//}
-
 // TODO: header
 float OverlappingArea(int node1Index, int node2Index)
 {
@@ -42,18 +28,6 @@ float OverlappingArea(int node1Index, int node2Index)
 
     float width = overlapBoxRight - overlapBoxLeft;
     float height = overlapBoxTop - overlapBoxBottom;
-//    if (isnan(width))
-//    {
-//        return 128.0f;
-//    }
-//    else if (isnan(height))
-//    {
-//        return 256.0f;
-//    }
-//    else if (isnan(width*height))
-//    {
-//        return 512.0f;
-//    }
     float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
     return overlapArea;
 }
@@ -99,7 +73,7 @@ void main()
     // all the BVH's nodes use signed integers for indices
     int thisLeafNodeIndex = int(threadIndex);
 
-    int numberPotentialCollisions = 0;
+    int numberOfPotentialCollisions = 0;
     float areaOfGreatestOverlap = 0.0f;
     int particleIndexWithGreatestOverlap = -1;
 
@@ -107,7 +81,7 @@ void main()
     int topOfStackIndex = 0;
     // TODO: ??would not initializing this speed it up??
     const int MAX_STACK_SIZE = 64;
-    int nodeStack[MAX_STACK_SIZE];// = int[MAX_STACK_SIZE](0);
+    int nodeStack[MAX_STACK_SIZE];
     nodeStack[topOfStackIndex++] = -1;  // "top of stack"
 
     // start at root internal node    
@@ -124,12 +98,12 @@ void main()
         bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
         if (overlapLeft && leftChildIsNotSelf && leftChildIsLeaf)
         {
-            numberPotentialCollisions++;
-            //if (overlapAreaLeft > areaOfGreatestOverlap)
-            //{
-            //    areaOfGreatestOverlap = overlapAreaLeft;
-            //    particleIndexWithGreatestOverlap = leftChildIndex;
-            //}
+            numberOfPotentialCollisions++;
+            if (overlapAreaLeft > areaOfGreatestOverlap)
+            {
+                areaOfGreatestOverlap = overlapAreaLeft;
+                particleIndexWithGreatestOverlap = leftChildIndex;
+            }
         }
 
         // repeat for the right branch
@@ -140,12 +114,12 @@ void main()
         bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
         if (overlapRight && rightChildIsNotSelf && rightChildIsLeaf)
         {
-            numberPotentialCollisions++;
-            //if (overlapAreaRight > areaOfGreatestOverlap)
-            //{
-            //    areaOfGreatestOverlap = overlapAreaRight;
-            //    particleIndexWithGreatestOverlap = rightChildIndex;
-            //}
+            numberOfPotentialCollisions++;
+            if (overlapAreaRight > areaOfGreatestOverlap)
+            {
+                areaOfGreatestOverlap = overlapAreaRight;
+                particleIndexWithGreatestOverlap = rightChildIndex;
+            }
         }
 
         // next node
@@ -169,85 +143,36 @@ void main()
                 nodeStack[topOfStackIndex++] = rightChildIndex;
             }
         }
-    } while (currentNodeIndex != -1 && topOfStackIndex < MAX_STACK_SIZE);    // "end of stack"
+    } while (currentNodeIndex != -1 && topOfStackIndex < MAX_STACK_SIZE);
 
-    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberPotentialCollisions;
-    AllBvhNodes[thisLeafNodeIndex]._extraData1 = numberPotentialCollisions;
-    AllBvhNodes[thisLeafNodeIndex]._extraData2 = AllParticles[thisLeafNodeIndex]._hasCollidedAlreadyThisFrame;
-    AllBvhNodes[thisLeafNodeIndex]._extraData3 = AllParticles[thisLeafNodeIndex]._isActive;
+    // for color
+    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberOfPotentialCollisions;
+    
+    if (particleIndexWithGreatestOverlap != -1)
+    {
+        // the bounding boxes overlapped, but particles have circular collision regions
+        float r1 = AllParticles[thisLeafNodeIndex]._collisionRadius;
+        float r2 = AllParticles[particleIndexWithGreatestOverlap]._collisionRadius;
+        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
 
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //
-    //if (particleIndexWithGreatestOverlap != -1)
-    //{
-    //
-    //}
-    //
-    //
-    //
-    //
-    //uint rightNeighborIndex = index + 1;
-    //
-    //if (index >= uParticleBufferSize || rightNeighborIndex >= uParticleBufferSize)
-    //{
-    //    return;
-    //}
-    //
-    //// local copies will be easier (and faster because it is shared memory instead of global?) 
-    //// to work with
-    //Particle p1 = AllParticles[index];
-    //Particle p2 = AllParticles[rightNeighborIndex];
-    //
-    //if (p1._isActive == 0 || p2._isActive == 0)
-    //{
-    //    return;
-    //}
-    //
-    //if (p1._hasCollidedAlreadyThisFrame != 0 || p2._hasCollidedAlreadyThisFrame != 0)
-    //{
-    //    // already collided this frame
-    //    return;
-    //}
-    //
-    //float minDistForCollision = p1._collisionRadius + p2._collisionRadius;
-    //float minDistForCollisionSqr = minDistForCollision * minDistForCollision;
-    //
-    //// partial pythagorean theorem so that I don't have to take the square root
-    //// Note: Only pluck out the positional information for these calculations.  Ignore the W 
-    //// component of the position.  It should end up as 0 after the subtraction, but force it to 
-    //// 0 just in case.
-    //vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
-    //float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
-    //
-    //if (distP1ToP2Sqr > minDistForCollisionSqr)
-    //{
-    //    // no collision
-    //    return;
-    //}
-    //// have collision
-    //
-    //
-    //// Note: I don't have an intuitive understanding of these calculations, but they work.  If I 
-    //// understood it better, then I could write better comments and variable names, but I don't, 
-    //// so I'm keeping it the way that I found it in the gamasutra article, or at least as much 
-    //// as I can given that it is math and pseudocode.
-    //vec4 normalizedLineOfContact = inversesqrt(distP1ToP2Sqr) * p1ToP2;
-    //float a1 = dot(p1._vel, p1ToP2);
-    //float a2 = dot(p2._vel, p1ToP2);
-    //float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
-    //vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
-    //vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
-    //
-    //// write results back to global memory
-    //AllParticles[index]._vel = p1VelocityPrime;
-    //AllParticles[index]._hasCollidedAlreadyThisFrame = 1;
-    //AllParticles[rightNeighborIndex]._vel = p2VelocityPrime;
-    //AllParticles[rightNeighborIndex]._hasCollidedAlreadyThisFrame = 1;
+        // partial pythagorean theorem so that I don't have to take the square root
+        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
+        // component of the position.  It should end up as 0 after the subtraction, but force it to 
+        // 0 just in case.
+        vec4 p1Pos = AllParticles[thisLeafNodeIndex]._pos;
+        vec4 p2Pos = AllParticles[particleIndexWithGreatestOverlap]._pos;
+        vec4 p1ToP2 = vec4(p2Pos.xyz - p1Pos.xyz, 0.0f);
+        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+    
+        if (distP1ToP2Sqr > minDistForCollisionSqr)
+        {
+            // close, but no cigar
+            particleIndexWithGreatestOverlap = -1;
+        }
+    }
+    AllParticles[thisLeafNodeIndex]._collideWithThisParticleIndex = particleIndexWithGreatestOverlap;
+
+    AllBvhNodes[thisLeafNodeIndex]._extraData1 = numberOfPotentialCollisions;
+
 }
 

@@ -23,11 +23,11 @@ struct Particle
     -------------------------------------------------------------------------------------------*/
     Particle() :
         // glm structures already have "set to 0" constructors
-        _numberOfNearbyParticles(0),
         _mass(0.3f),
         _collisionRadius(0.01f),
         _mortonCode(0),
-        _hasCollidedAlreadyThisFrame(0),
+        _collideWithThisParticleIndex(0),
+        _numberOfNearbyParticles(0),
         _isActive(0)
     {
     }
@@ -42,9 +42,6 @@ struct Particle
     glm::vec4 _position;
     glm::vec4 _velocity;
 
-    // used to determine color 
-    unsigned int _numberOfNearbyParticles;
-
     // all particles have identical mass for now
     // TODO: ??change to micrograms for air particles? nanograms??
     float _mass;
@@ -56,24 +53,17 @@ struct Particle
     // generated in the shader and stored for later use
     // Note: This value allows for proximity comparison of two 3-dimensional coordinates as if 
     // they were 1-dimensional coordinates.  Particles are sorted over this value.
+    // Also Note: Must be an unsigned int.  The calculation assumes that all bits are relavent 
+    // to the numerical quantity.  A sign bit is not, so it must not be an signed integer.  It 
+    // may not be a problem since this program uses a 30bit Morton Code and the sign bit is the 
+    // 32nd bit, but still keep it unsigned because that is what is expected in the calculation.
     unsigned int _mortonCode;
 
+    // recorded in DetectCollisions.comp, used in ResolveCollisions.comp
+    int _collideWithThisParticleIndex;
 
-    // TODO: ??change to "collide with this guy"? just remove??
-
-    // collision detection in the current demo (4-15-2017) runs twice:
-    // (1) Each thread checks two particles: i against i + 1.
-    // (2) Each thread checks two particles: i + 1 against i + 2.
-    // Note: Why?  Suppose there are several particles in an array: [0, 1, 2, 3, 4, 5, 6].
-    // One the first pass, 0 checks against 1, 2 against 3, and 4 against 5, but 6+1 is out of 
-    // bounds, so it doesn't check.  Also, 1 against 2 and 3 against 4 and 5 against 6 have not 
-    // been checked.  So run the collision again.  On the second pass, 1 checks against 2, 3 
-    // checks aginst 4, and 5 checks against 6.  Elastic collisions are expected to be between 
-    // only two particles at most every frame.  So if two particles collide on the first pass, 
-    // if there is another that is very close by on that same frame, ignore it.  The particles 
-    // should be so small that no two should collide anyway.  
-    // Also Note: If they do, decrease the radius of influence.
-    int _hasCollidedAlreadyThisFrame;
+    // used to determine color
+    int _numberOfNearbyParticles;
 
     // Note: Booleans cannot be uploaded to the shader 
     // (https://www.opengl.org/sdk/docs/man/html/glVertexAttribPointer.xhtml), so send the 

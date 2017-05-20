@@ -33,7 +33,8 @@ namespace ShaderControllers
         unsigned int _generateBinaryRadixTreeProgramId;
         unsigned int _generateBoundingVolumesProgramId;
         unsigned int _generateVerticesProgramId;
-        unsigned int _detectAndResolveCollisionsProgramId;
+        unsigned int _detectCollisionsProgramId;
+        unsigned int _resolveCollisionsProgramId;
 
         BvhNodeSsbo::SharedPtr _bvhNodeSsbo;
         PolygonSsbo::SharedPtr _bvhGeometrySsbo;

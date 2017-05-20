@@ -7,11 +7,11 @@
 // 2D demo.
 layout (location = 0) in vec4 pos;  
 layout (location = 1) in vec4 vel;  
-layout (location = 2) in uint numberOfNearbyParticles;
-layout (location = 3) in float mass;
-layout (location = 4) in float collisionRadius;
-layout (location = 5) in uint mortonCode;
-layout (location = 6) in uint hasCollidedAlreadyThisFrame;
+layout (location = 2) in float mass;
+layout (location = 3) in float collisionRadius;
+layout (location = 4) in uint mortonCode;
+layout (location = 5) in int collideWithThisParticleIndex;
+layout (location = 6) in int numberOfNearbyParticles;
 layout (location = 7) in int isActive;
 
 // must have the same name as its corresponding "in" item in the frag shader
@@ -43,11 +43,12 @@ void main()
 
         // min/mid/max possible nearby particles
         float min = 0;
-        float mid = 10;
-        float max = 20;
+        float mid = 20;
+        float max = 40;
 
 
-        if (numberOfNearbyParticles == 0)
+        if (collideWithThisParticleIndex == -1)
+        //if (numberOfNearbyParticles == -1)
         {
             particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
         }

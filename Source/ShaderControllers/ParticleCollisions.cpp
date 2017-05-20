@@ -98,7 +98,8 @@ namespace ShaderControllers
         _generateBinaryRadixTreeProgramId(0),
         _generateBoundingVolumesProgramId(0),
         _generateVerticesProgramId(0),
-        _detectAndResolveCollisionsProgramId(0),
+        _detectCollisionsProgramId(0),
+        _resolveCollisionsProgramId(0),
         _bvhNodeSsbo(nullptr),
         _bvhGeometrySsbo(nullptr)
     {
@@ -163,8 +164,9 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _generateVerticesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
-        // have each leaf check through the tree for potential collisions and resolve them
-        shaderKey = "detect and resolve collisions";
+        // have each leaf check through the tree for potential collisions and record the one 
+        // with the largest bounding box overlap
+        shaderKey = "detect collisions";
         shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
@@ -172,10 +174,24 @@ namespace ShaderControllers
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectAndResolveCollisions.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectCollisions.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
-        _detectAndResolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        _detectCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
+        // if a particle collided with anything, handle it
+        shaderKey = "resolve collisions";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/ResolveCollisions.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _resolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+
 
 
         // generate the BVH that will be used for all this collision detection
@@ -199,13 +215,16 @@ namespace ShaderControllers
         particleSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
-        particleSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
         particleSsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
+        particleSsbo->ConfigureConstantUniforms(_detectCollisionsProgramId);
+        particleSsbo->ConfigureConstantUniforms(_resolveCollisionsProgramId);
+
         _bvhNodeSsbo->ConfigureConstantUniforms(_populateLeavesWithDataProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBinaryRadixTreeProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateBoundingVolumesProgramId);
-        _bvhNodeSsbo->ConfigureConstantUniforms(_detectAndResolveCollisionsProgramId);
         _bvhNodeSsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
+        _bvhNodeSsbo->ConfigureConstantUniforms(_detectCollisionsProgramId);
+
         _bvhGeometrySsbo->ConfigureConstantUniforms(_generateVerticesProgramId);
         _bvhGeometrySsbo->ConfigureRender(GL_LINES);
     }
@@ -223,7 +242,8 @@ namespace ShaderControllers
         glDeleteProgram(_populateLeavesWithDataProgramId);
         glDeleteProgram(_generateBinaryRadixTreeProgramId);
         glDeleteProgram(_generateBoundingVolumesProgramId);
-        glDeleteProgram(_detectAndResolveCollisionsProgramId);
+        glDeleteProgram(_detectCollisionsProgramId);
+        glDeleteProgram(_resolveCollisionsProgramId);
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -269,11 +289,18 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
-        // traverse the tree, detect collisions, and resolve them
-        glUseProgram(_detectAndResolveCollisionsProgramId);
+        // traverse the tree and detect collisions
+        glUseProgram(_detectCollisionsProgramId);
         glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
+        // resolve any detected collisions
+        glUseProgram(_resolveCollisionsProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+
 
         // end collision detection and resolution
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -302,7 +329,8 @@ namespace ShaderControllers
         long long durationGenerateTree = 0;
         long long durationMergeBoundingBoxes = 0;
         long long durationGenerateBvhVertices = 0;
-        long long durationDetectAndResolveCollisions = 0;
+        long long durationDetectCollisions = 0;
+        long long durationResolveCollisions = 0;
 
         // wait for previous instructions to finish
         WaitForComputeToFinish();
@@ -355,15 +383,25 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationGenerateBvhVertices = duration_cast<microseconds>(end - start).count();
 
-        // traverse the tree, detect collisions, and resolve them
+        // traverse the tree and detect collisions
         start = high_resolution_clock::now();
-        glUseProgram(_detectAndResolveCollisionsProgramId);
+        glUseProgram(_detectCollisionsProgramId);
         glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
-        durationDetectAndResolveCollisions = duration_cast<microseconds>(end - start).count();
+        durationDetectCollisions = duration_cast<microseconds>(end - start).count();
+
+        // resolve any detected collisions
+        start = high_resolution_clock::now();
+        glUseProgram(_resolveCollisionsProgramId);
+        glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+        glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationResolveCollisions = duration_cast<microseconds>(end - start).count();
 
 
         glUseProgram(0);
@@ -431,8 +469,8 @@ namespace ShaderControllers
         //if (outFile.is_open())
         {
             long long totalCollisionDetectionTime = duration_cast<microseconds>(generateBvhEnd - generateBvhStart).count();
-            cout << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
-            //outFile << "total collision detection time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
+            cout << "total collision time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
+            //outFile << "total collision time: " << totalCollisionDetectionTime << "\tmicroseconds" << endl;
 
             cout << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
             //outFile << "populate leaves with particles' Morton Codes: " << durationPopulateTreeWithData << "\tmicroseconds" << endl;
@@ -446,8 +484,11 @@ namespace ShaderControllers
             cout << "generate BVH vertices: " << durationGenerateBvhVertices << "\tmicroseconds" << endl;
             //outFile << "generate BVH vertices: " << durationGenerateBvhVertices << "\tmicroseconds" << endl;
 
-            cout << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
-            //outFile << "detect and resolve collisions: " << durationDetectAndResolveCollisions << "\tmicroseconds" << endl;
+            cout << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
+            //outFile << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
+
+            cout << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
+            //outFile << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
 
             cout << endl;
             //outFile << endl;

@@ -143,10 +143,6 @@ static void InitializeWithRandomData(std::vector<Particle> &initThese)
 
         initThese[particleIndex]._velocity.x = static_cast<float>(rand()) * inverseRandMax;
         initThese[particleIndex]._velocity.y = static_cast<float>(rand()) * inverseRandMax;
-
-        // TODO: remove
-        // give each particle a unique original ID
-        initThese[particleIndex]._hasCollidedAlreadyThisFrame = particleIndex;
     }
 }
 
@@ -260,15 +256,6 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
-    // numberOfNearbyParticles
-    itemType = GL_UNSIGNED_INT;
-    sizeOfItem = sizeof(Particle::_numberOfNearbyParticles);
-    numItems = sizeOfItem / sizeof(unsigned int);
-    vertexArrayIndex++;
-    glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    bufferStartOffset += sizeOfItem;
-
     // mass
     itemType = GL_FLOAT;
     sizeOfItem = sizeof(Particle::_mass);
@@ -296,9 +283,18 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
-    // "has already collided this frame" flag
-    itemType = GL_UNSIGNED_INT;
-    sizeOfItem = sizeof(Particle::_hasCollidedAlreadyThisFrame);
+    // "collide with this guy" index
+    itemType = GL_INT;
+    sizeOfItem = sizeof(Particle::_collideWithThisParticleIndex);
+    numItems = sizeOfItem / sizeof(unsigned int);
+    vertexArrayIndex++;
+    glEnableVertexAttribArray(vertexArrayIndex);
+    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
+    bufferStartOffset += sizeOfItem;
+
+    // nearby particle count
+    itemType = GL_INT;
+    sizeOfItem = sizeof(Particle::_numberOfNearbyParticles);
     numItems = sizeOfItem / sizeof(unsigned int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
