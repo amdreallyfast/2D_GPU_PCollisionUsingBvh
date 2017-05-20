@@ -75,7 +75,7 @@ std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter =
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 10000;
+const unsigned int MAX_PARTICLE_COUNT = 50000;
 
 
 
@@ -300,19 +300,27 @@ void Init()
     glm::vec2 bar1P1(-0.8f, +0.5f);
     glm::vec2 bar1P2(-0.8f, -0.1f);
     glm::vec2 emitDir1(+1.0f, 0.0f);
-    float minVel = 0.1f;
-    float maxVel = 0.5f;
-    ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, minVel, maxVel);
+    float minVel1 = 0.1f;
+    float maxVel1 = 0.5f;
+    ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, minVel1, maxVel1);
     barEmitter1->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter1);
+    //particleResetter->AddEmitter(barEmitter1);
 
     // bar on the right and emitting up and left
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
-    glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
-    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
+    //glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
+    //glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
+    //glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.7f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, -0.4f);
+    glm::vec2 emitDir2 = glm::vec2(-1.0f, +1.0f);
+    float minVel2 = 0.3f;
+    float maxVel2 = 1.0f;
+    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel2, maxVel2);
     barEmitter2->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(barEmitter2);
+
     particleResetter->AddEmitter(barEmitter2);
+    particleResetter->AddEmitter(barEmitter1);
 
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
@@ -371,7 +379,7 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(5);
+    particleResetter->ResetParticles(10);
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
     parallelSort->SortWithoutProfiling();
@@ -424,7 +432,7 @@ void Display()
 
     particleRenderer->Render(particleBuffer);
     //geometryRenderer->Render(polygonBuffer);
-    geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
+    //geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));

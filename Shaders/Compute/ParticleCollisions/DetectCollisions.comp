@@ -99,11 +99,13 @@ void main()
         if (overlapLeft && leftChildIsNotSelf && leftChildIsLeaf)
         {
             numberOfPotentialCollisions++;
-            if (overlapAreaLeft > areaOfGreatestOverlap)
-            {
-                areaOfGreatestOverlap = overlapAreaLeft;
-                particleIndexWithGreatestOverlap = leftChildIndex;
-            }
+            particleIndexWithGreatestOverlap = leftChildIndex;
+            break;
+            //if (overlapAreaLeft > areaOfGreatestOverlap)
+            //{
+            //    areaOfGreatestOverlap = overlapAreaLeft;
+            //    particleIndexWithGreatestOverlap = leftChildIndex;
+            //}
         }
 
         // repeat for the right branch
@@ -115,11 +117,13 @@ void main()
         if (overlapRight && rightChildIsNotSelf && rightChildIsLeaf)
         {
             numberOfPotentialCollisions++;
-            if (overlapAreaRight > areaOfGreatestOverlap)
-            {
-                areaOfGreatestOverlap = overlapAreaRight;
-                particleIndexWithGreatestOverlap = rightChildIndex;
-            }
+            particleIndexWithGreatestOverlap = rightChildIndex;
+            break;
+            //if (overlapAreaRight > areaOfGreatestOverlap)
+            //{
+            //    areaOfGreatestOverlap = overlapAreaRight;
+            //    particleIndexWithGreatestOverlap = rightChildIndex;
+            //}
         }
 
         // next node
