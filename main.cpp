@@ -306,13 +306,13 @@ void Init()
     barEmitter1->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter1);
 
-    //// bar on the right and emitting up and left
-    //glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
-    //glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
-    //glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
-    //ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
-    //barEmitter2->SetTransform(windowSpaceTransform);
-    //particleResetter->AddEmitter(barEmitter2);
+    // bar on the right and emitting up and left
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.5f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
+    glm::vec2 emitDir2 = glm::vec2(-1.0f, 0.0f);
+    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, minVel, maxVel);
+    barEmitter2->SetTransform(windowSpaceTransform);
+    particleResetter->AddEmitter(barEmitter2);
 
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
