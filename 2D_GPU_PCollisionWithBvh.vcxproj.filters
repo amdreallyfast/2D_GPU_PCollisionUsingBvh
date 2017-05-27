@@ -312,40 +312,43 @@
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePotentialCollisionsBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_3ParallelPrefixScan.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_4SortMortonCodes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\MoveParticlesToCopyBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_5GuaranteeMortonCodeUniqueness.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScan.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_6SortParticles.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_7GenerateBinaryRadixTree.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\ResolveCollisions.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_8PopulateLeafNodes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\SortMortonCodes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_9a_GenerateBvhVertices.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\SortParticles.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_9MergeBoundingVolumes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_10DetectCollisions.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_11ResolveCollisions.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_1GenerateMortonCodes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateMortonCodes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\_2GetBitForPrefixScan.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GuaranteeMortonCodeUniqueness.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>
