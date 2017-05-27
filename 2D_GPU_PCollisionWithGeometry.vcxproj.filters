@@ -329,6 +329,7 @@
     <None Include="Shaders\Compute\PolygonBuffer.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
+    <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>

@@ -84,23 +84,23 @@ void main()
     AllPolygons[(leafNodeIndex * 4) + 2] = topFace;
     AllPolygons[(leafNodeIndex * 4) + 3] = bottomFace;
 
-    // do the same for the internal node with this index
-    if (leafNodeIndex < (uNumActiveParticles - 1))
-    {
-        bb = AllBvhNodes[internalNodeIndex]._boundingBox;
-        leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-        leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-        rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-        rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-        topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
-        topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
-        bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
-        bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
-
-        // 4 faces per bounding box
-        AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
-        AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
-        AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
-        AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
-    }
+//    // do the same for the internal node with this index
+//    if (leafNodeIndex < (uNumActiveParticles - 1))
+//    {
+//        bb = AllBvhNodes[internalNodeIndex]._boundingBox;
+//        leftFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+//        leftFace._end._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+//        rightFace._start._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+//        rightFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+//        topFace._start._pos = vec4(bb._left, bb._top, 0.0f, 1.0f);
+//        topFace._end._pos = vec4(bb._right, bb._top, 0.0f, 1.0f);
+//        bottomFace._start._pos = vec4(bb._left, bb._bottom, 0.0f, 1.0f);
+//        bottomFace._end._pos = vec4(bb._right, bb._bottom, 0.0f, 1.0f);
+//
+//        // 4 faces per bounding box
+//        AllPolygons[(internalNodeIndex * 4) + 0] = leftFace;
+//        AllPolygons[(internalNodeIndex * 4) + 1] = rightFace;
+//        AllPolygons[(internalNodeIndex * 4) + 2] = topFace;
+//        AllPolygons[(internalNodeIndex * 4) + 3] = bottomFace;
+//    }
 }

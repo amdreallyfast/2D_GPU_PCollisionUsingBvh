@@ -53,8 +53,6 @@ namespace ShaderControllers
 
         _unifLocDeltaTimeSec = shaderStorageRef.GetUniformLocation(shaderKey, "uDeltaTimeSec");
 
-        // set uniform values and generate the atomic counters for the number of active particles
-        glUseProgram(_computeProgramId);
         // delta time set in Update(...)
     }
 

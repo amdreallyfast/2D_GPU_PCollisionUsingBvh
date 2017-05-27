@@ -15,7 +15,7 @@ void main(void) {
     // draw).
     // Also Also Note: Nothing is being transformed here, so W's value doesn't matter, but W=1 
     // is pretty common, so I'll go with it.
-    gl_Position = vec4(screenCoord, 0, 1);
+    gl_Position = vec4(screenCoord, -1, 1);
 
     // this is a texture coordinate for one of the three corners of the triangle 
     texturePos = textureCoord;

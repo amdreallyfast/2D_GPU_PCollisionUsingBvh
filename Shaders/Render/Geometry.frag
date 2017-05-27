@@ -9,6 +9,6 @@ out vec4 finalFragColor;
 void main()
 {
     // just make the shapes white in this demo
-    //finalFragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-    finalFragColor = vec4(0.1f, 0.1f, 0.1f, 0.1f);
+    finalFragColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
+    //finalFragColor = vec4(0.1f, 0.1f, 0.1f, 0.1f);
 }

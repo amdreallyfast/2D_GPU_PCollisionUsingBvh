@@ -99,8 +99,8 @@ void main()
         if (overlapLeft && leftChildIsNotSelf && leftChildIsLeaf)
         {
             numberOfPotentialCollisions++;
-            //particleIndexWithGreatestOverlap = leftChildIndex;
-            //break;
+            particleIndexWithGreatestOverlap = leftChildIndex;
+            break;
             if (overlapAreaLeft > areaOfGreatestOverlap)
             {
                 areaOfGreatestOverlap = overlapAreaLeft;
@@ -117,8 +117,8 @@ void main()
         if (overlapRight && rightChildIsNotSelf && rightChildIsLeaf)
         {
             numberOfPotentialCollisions++;
-            //particleIndexWithGreatestOverlap = rightChildIndex;
-            //break;
+            particleIndexWithGreatestOverlap = rightChildIndex;
+            break;
             if (overlapAreaRight > areaOfGreatestOverlap)
             {
                 areaOfGreatestOverlap = overlapAreaRight;

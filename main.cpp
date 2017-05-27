@@ -323,11 +323,11 @@ void Init()
     barEmitter3->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter3);
 
-    // a point emitter in the center putting particles out in all directions
-    glm::vec2 point1Pos = glm::vec2(0.0f, 0.0f);
-    ParticleEmitterPoint::SHARED_PTR pointEmitter1 = std::make_shared<ParticleEmitterPoint>(point1Pos, particleMinVel, particleMaxVel);
-    pointEmitter1->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(pointEmitter1);
+    //// a point emitter in the center putting particles out in all directions
+    //glm::vec2 point1Pos = glm::vec2(0.0f, 0.0f);
+    //ParticleEmitterPoint::SHARED_PTR pointEmitter1 = std::make_shared<ParticleEmitterPoint>(point1Pos, particleMinVel, particleMaxVel);
+    //pointEmitter1->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(pointEmitter1);
 
 
     // for moving particles
