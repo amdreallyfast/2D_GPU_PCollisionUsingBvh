@@ -150,8 +150,8 @@
     <ClCompile Include="Shaders\ShaderStorage.cpp" />
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleMortonCodeSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
-    <ClCompile Include="Source\Buffers\SSBOs\IntermediateDataSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PrefixSumSsbo.cpp" />
@@ -174,15 +174,14 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Include\Buffers\BvhNode.h" />
-    <ClInclude Include="Include\Buffers\IntermediateData.h" />
     <ClInclude Include="Include\Buffers\Particle.h" />
-    <ClInclude Include="Include\Buffers\ParticleCollisions.h" />
     <ClInclude Include="Include\Buffers\ParticleMortonCode.h" />
+    <ClInclude Include="Include\Buffers\ParticlePotentialCollisions.h" />
     <ClInclude Include="Include\Buffers\ParticleProperties.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
     <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleMortonCodeSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
-    <ClInclude Include="Include\Buffers\SSBOs\IntermediateDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h" />
@@ -210,22 +209,24 @@
   <ItemGroup>
     <None Include="Shaders\Compute\CountNearbyParticles.comp" />
     <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp" />
-    <None Include="Shaders\Compute\ParallelSort\GetBitForPrefixScan.comp" />
-    <None Include="Shaders\Compute\ParallelSort\IntermediateSortBuffers.comp" />
-    <None Include="Shaders\Compute\ParallelSort\ParallelPrefixScan.comp" />
-    <None Include="Shaders\Compute\ParallelSort\ParticleDataToIntermediateData.comp" />
-    <None Include="Shaders\Compute\ParallelSort\PrefixScanBuffer.comp" />
-    <None Include="Shaders\Compute\ParallelSort\SortIntermediateData.comp" />
-    <None Include="Shaders\Compute\ParallelSort\SortParticleData.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\BvhNodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleMortonCodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePotentialCollisionsBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\PrefixScanBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateBoundingVolumes.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodesWithData.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\ResolveCollisions.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_10DetectCollisions.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_11ResolveCollisions.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_1GenerateMortonCodes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_2GetBitForPrefixScan.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_3ParallelPrefixScan.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_4SortMortonCodes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_5GuaranteeMortonCodeUniqueness.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_6SortParticles.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_7GenerateBinaryRadixTree.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_8PopulateLeafNodes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_9a_GenerateBvhVertices.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\_9MergeBoundingVolumes.comp" />
     <None Include="Shaders\Compute\ParticleRegionBoundaries.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp" />
@@ -246,7 +247,6 @@
     <None Include="Shaders\ShaderHeaders\Version.comp" />
   </ItemGroup>
   <ItemGroup>
-    <Text Include="Shaders\Compute\ParallelSort\ReadMe.txt" />
     <Text Include="Shaders\Compute\ParticleReset\ReadMe.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

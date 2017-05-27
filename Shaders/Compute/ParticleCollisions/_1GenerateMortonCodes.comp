@@ -1,10 +1,9 @@
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
-// - PARALLEL_SORT_WORK_GROUP_SIZE_X
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES ParticleBuffer.comp
-// REQUIRES IntermediateSortBuffers.comp
+// REQUIRES ParticleMortonCodeBuffer.comp
 // REQUIRES PositionToMortonCode.comp
 
 // Y and Z work group sizes default to 1
@@ -12,55 +11,41 @@ layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Adapt to whatever needs to be sorted as necessary.
+    Generates a Morton Code for the current thread's particle's position, then moves the 
+    particle into the "copy" position in preparation for the last step of the parallel sort.
 
-    The original data that needs to be sorted may not be a simple set of integers, but rather 
-    structures that have integers, floatas, and vec4s and are very unwieldy to move around after 
-    every prefix scan during the Radix Sort.  This shader takes the original data and fills out 
-    a simple, intermediate structure that is much more easily moved around.
+    Note: This latter step could be done in another shader, but I decided to do it in this one 
+    as part of preparation for the parallel sort.
+
+    Also Note: The post-sort SortParticles.comp must be separate from SortMortonCodes.comp 
+    because the latter is called at the end of every loop, while the former should only be 
+    called once the loop is done.
+
+    Also Also Note: I also don't want to rename the compute shaders' numbering, so I'm making 
+    excuses.
 Parameters: None
 Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // Note: The number of items in each half of IntermediateSortBuffers is equivalent to the 
-    // number of items in the PrefixScanBuffer::PrefixSumsPerWorkGroup, which will likely exceed 
-    // the size of the user-provided data.  The number of threads is managed by 
-    // ParallelSort::Sort() to be the same as the number of data entries that need to be filled 
-    // out, so if the thread ID is greater than the number of user-provided data entries, pad 
-    // out the IntermediateData with values of max uint.
-    // Also Note: Pad with max integer instead of 0s because the sorting will put items with the 
-    // smallest value first, but entries that don't refer to any real data should be put at the 
-    // back.  
-    
-    IntermediateData newThing;
     uint threadIndex = gl_GlobalInvocationID.x;
-    newThing._globalIndexOfOriginalData = threadIndex;
-    
-    if (threadIndex >= uParticleBufferSize)
+    if (threadIndex >= uMaxNumParticles)
     {
-        // dud thread
-        newThing._data = 0xffffffff;
+        return;
     }
-    else if (AllParticles[threadIndex]._isActive == 0)
-    {
-        // sort it to the back, but not as far back as the extra threads' data
-        // Note: I don't want an IntermediateData object with a _globalIndexOfOriginalData that
-        // is greater than the total particle count getting into the final sort.
-        newThing._data = 0xfffffff0;
-    }
-    else
-    {
-        // this particle is active
-        uint mortonCode = PositionToMortonCode(AllParticles[threadIndex]._pos);
-        newThing._data = mortonCode;
 
-        // also record in the particle (for use later in verification (??anywhere else??))
-        AllParticles[threadIndex]._mortonCode = mortonCode;
+    uint mortonCode = PositionToMortonCode(AllParticles[threadIndex]._pos);
+    if (AllParticles[threadIndex]._isActive == 0)
+    {
+        // override the code with a number that will cause it to be sorted to the back
+        mortonCode = 0xffffffff;
     }
-    
-    // this is the beginning of the sorting, so put the values into the first buffer (note the 
-    // lack of an offset), no questions asked
-    IntermediateDataBuffer[threadIndex] = newThing;
+
+    AllParticleMortonCodes[threadIndex]._mortonCode = mortonCode;
+    AllParticleMortonCodes[threadIndex]._preSortedParticleIndex = int(threadIndex);
+
+    // put the particle into the copy buffer so that the post-sorting shader SortParticles.comp 
+    // can immediately move the particles to their sorted position
+    AllParticles[uMaxNumParticles + threadIndex] = AllParticles[threadIndex];
 }

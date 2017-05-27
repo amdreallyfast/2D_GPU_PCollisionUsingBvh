@@ -1,10 +1,10 @@
-#include "Include/Buffers/SSBOs/IntermediateDataSsbo.h"
+#include "Include/Buffers/SSBOs/ParticleMortonCodeSsbo.h"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 #include "Shaders/ShaderHeaders/SsboBufferBindings.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
 
-#include "Include/Buffers/IntermediateData.h"
+#include "Include/Buffers/ParticleMortonCode.h"
 
 #include <vector>
 
@@ -13,22 +13,24 @@ Description:
     Initializes base class, then gives derived class members initial values and allocates space 
     for the SSBO.
 Parameters: 
-    numItems    MUST be the same size as PrefixScanBuffer::PrefixSumsPerWorkGroup.
+    numItems    Expected to be the number of particles.
 Returns:    None
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-IntermediateDataSsbo::IntermediateDataSsbo(unsigned int numItems) :
+ParticleMortonCodeSsbo::ParticleMortonCodeSsbo(unsigned int numItems) :
     SsboBase(),  // generate buffers
     _numItems(numItems)
 {
-    std::vector<IntermediateData> v(numItems * 2);
+    // allocate enough space for these structures to be moved from a "read" section to a 
+    // "write" section and back again
+    std::vector<ParticleMortonCode> v(numItems * 2);
 
     // now bind this new buffer to the dedicated buffer binding location
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, INTERMEDIATE_SORT_BUFFERS_BINDING, _bufferId);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_MORTON_CODE_BUFFER_BINDING, _bufferId);
 
     // and fill it with new data
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, v.size() * sizeof(IntermediateData), v.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, v.size() * sizeof(ParticleMortonCode), v.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -44,13 +46,13 @@ Parameters:
     computeProgramId    Self-explanatory.
 Returns:    
     See Description.
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-void IntermediateDataSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
+void ParticleMortonCodeSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
 {
     // the uniform should remain constant after this 
     glUseProgram(computeProgramId);
-    glUniform1ui(UNIFORM_LOCATION_INTERMEDIATE_BUFFER_HALF_SIZE, _numItems);
+    glUniform1ui(UNIFORM_LOCATION_MAX_NUM_PARTICLE_MORTON_CODES, _numItems);
     glUseProgram(0);
 }
 
@@ -60,9 +62,9 @@ Description:
 Parameters: None
 Returns:    
     See Description.
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-unsigned int IntermediateDataSsbo::NumItems() const
+unsigned int ParticleMortonCodeSsbo::NumItems() const
 {
     return _numItems;
 }

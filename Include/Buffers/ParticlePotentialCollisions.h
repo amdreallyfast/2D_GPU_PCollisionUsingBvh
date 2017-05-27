@@ -2,7 +2,7 @@
 
 /*------------------------------------------------------------------------------------------------
 Description:   
-    Must match the corresponding structure in ParticleCollisionsBuffer.comp.
+    Must match the corresponding structure in ParticlePotentialCollisionsBuffer.comp.
 
     This object is the blueprint for an array of potential collisions that each particle is 
     engaged in.  This buffer was created because potential collision candidates is used only 
@@ -14,5 +14,8 @@ Description:
     wishes.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-struct ParticleCollisions
+struct ParticlePotentialCollisions
+{
+    int 
+};
 
