@@ -1,7 +1,0 @@
-total collision detection time: 6780	microseconds
-populate leaves with particles' Morton Codes: 1982	microseconds
-generate BVH tree: 1204	microseconds
-generate BVH bounding boxes: 908	microseconds
-generate BVH vertices: 1016	microseconds
-detect and resolve collisions: 1657	microseconds
-
