@@ -152,7 +152,6 @@
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleMortonCodeSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
-    <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PrefixSumSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\SsboBase.cpp" />
@@ -182,7 +181,6 @@
     <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleMortonCodeSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
-    <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h" />
@@ -223,7 +221,8 @@
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeMortonCodeUniqueness.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\MoveParticlesToCopyBuffer.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScan.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverAllData.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverWorkGroupSums.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\SortMortonCodes.comp" />

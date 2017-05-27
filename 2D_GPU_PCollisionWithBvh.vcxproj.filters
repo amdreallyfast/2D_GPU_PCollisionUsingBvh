@@ -35,9 +35,6 @@
     <ClCompile Include="Source\Particles\ParticleEmitterBar.cpp">
       <Filter>Source\Particles</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Buffers\SSBOs\ParticleCopySsbo.cpp">
-      <Filter>Source\Buffers\SSBOs</Filter>
-    </ClCompile>
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
@@ -111,9 +108,6 @@
     </ClInclude>
     <ClInclude Include="Include\Particles\ParticleEmitterBar.h">
       <Filter>Include\Particles</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Buffers\SSBOs\ParticleCopySsbo.h">
-      <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h">
       <Filter>Include\Buffers\SSBOs</Filter>
@@ -318,9 +312,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\MoveParticlesToCopyBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScan.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
@@ -349,6 +340,12 @@
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeMortonCodeUniqueness.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverWorkGroupSums.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverAllData.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>

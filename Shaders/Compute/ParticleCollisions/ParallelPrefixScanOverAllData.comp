@@ -14,8 +14,6 @@ Creator:    John Cox, 3/11/2017
 
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
-// - PARALLEL_SORT_WORK_GROUP_SIZE_X
-// - PARALLEL_SORT_ITEMS_PER_WORK_GROUP
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES PrefixScanBuffer.comp.comp
@@ -26,30 +24,30 @@ layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
 // create a shared memory buffer for fast memory operations (better than global), two items per 
 // thread
 // Note: By definition of keyword "shared", this is shared amongst all threads in a work group.
-// Also Note: Every item gets written before it is read, so don't bother initializing the 0.
-shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr;// = uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP](0);
+// Also Note: Every item gets written before it is read, so don't bother initializing with 0.
+shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr;
+
 
 /*------------------------------------------------------------------------------------------------
 Description:
     This is where the magic happens.  Each thread in a work group copies two items from global 
-    memory to work-group-shared memory, waits for all the other threads to catch up, performs 
-    the scan (up the tree and back down), then writes their two result back to global memory.
+    memory to work-group-shared memory, waits for all the other threads to catch up to the 
+    write, performs the scan (up the tree and back down), then writes their two results back to 
+    global memory.
+
+    This half of the parallel prefix scan algorithm runs over all the data.  The algorithm needs 
+    to run both up and down the tree, and this causes a race condition when other work groups' 
+    data has not been operated on.  Solution: This part of the prefix scan only works on a 
+    single work group's worth of data in the PrefixSumBuffer, specifically 
+    PrefixSumsPerWorkGroup.  The rest of the prefix sums will calculated in the second half in
+    ParallelPrefixScanOverWorkGroupSums.comp
+
 Parameters: None
 Returns:    None
-Creator:    John Cox, 3/16/2017
+Creator:    John Cox, 3/11/2017
 ------------------------------------------------------------------------------------------------*/
-void CalculatePrefixSumsPerWorkGroup()
+void main()
 {
-    // wait for all the threads in this group to do the shared memory initialization
-    // Note: Consider this code: 
-    //  shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr = uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP](0);
-    // The left side of that statement is shared between all values of the work group, but after 
-    // some frustration and experimentation, I found that the right side seems to be run per 
-    // thread.  Not all the threads in a group will run simultaneously, so to prevent some 
-    // initial assignment of data followed by another thread in the group initializing the array 
-    // back to 0, make everyone wait until initialization is done.
-    barrier();
-
     // doubled because each thread deals with 2 items, so the shared data size is double the 
     // work group size, and everything dealing with indices also doubles them, so just make a 
     // doubled variable up front
@@ -110,7 +108,7 @@ void CalculatePrefixSumsPerWorkGroup()
     // indices of the first data pair off the root.
     indexMultiplierDueToDepth >>= 1;
 
-    // going down multiplies pair count in half with each level
+    // going down multiplies pair count by 2 with each level
     for (uint dataPairs = 1; dataPairs < PARALLEL_SORT_ITEMS_PER_WORK_GROUP; dataPairs *= 2)
     {
         // wait for the other threads in the group to catch up
@@ -139,92 +137,5 @@ void CalculatePrefixSumsPerWorkGroup()
     barrier();
     PrefixSumsPerWorkGroup[doubleGlobalThreadIndex] = fastTempArr[doubleGroupThreadIndex];
     PrefixSumsPerWorkGroup[doubleGlobalThreadIndex + 1] = fastTempArr[doubleGroupThreadIndex + 1];
-}
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    Like CalculatePrefixSumsPerWorkGroup(), but only for the PrefixSumsOfWorkGroupSums.
-Parameters: None
-Returns:    None
-Creator:    John Cox, 3/16/2017
-------------------------------------------------------------------------------------------------*/
-void PrefixSumOnPrefixSumsOfWorkGroupSums()
-{
-    // the PrefixSumsOfWorkGroupSums array is only one work group's worth of data, so the starting 
-    // index is implicitly 0 and there is no need for a workGroupStartingIndex
-    uint doubleGroupThreadIndex = gl_LocalInvocationID.x * 2;
-
-    uint indexMultiplierDueToDepth = 1;
-    for (int dataPairs = PARALLEL_SORT_ITEMS_PER_WORK_GROUP >> 1; dataPairs > 0; dataPairs >>= 1)
-    {
-        barrier();
-
-        if (gl_LocalInvocationID.x < dataPairs)
-        {
-            uint lesserIndex = (indexMultiplierDueToDepth * (doubleGroupThreadIndex + 1)) - 1;
-            uint greaterIndex = (indexMultiplierDueToDepth * (doubleGroupThreadIndex + 2)) - 1;
-
-            PrefixSumsOfWorkGroupSums[greaterIndex] += PrefixSumsOfWorkGroupSums[lesserIndex];
-        }
-        indexMultiplierDueToDepth *= 2;
-    }
-
-    // only one thread should do these (prevents unnecessary writes)
-    if (doubleGroupThreadIndex == 0)
-    {
-        totalNumberOfOnes = PrefixSumsOfWorkGroupSums[PARALLEL_SORT_ITEMS_PER_WORK_GROUP - 1];
-        PrefixSumsOfWorkGroupSums[PARALLEL_SORT_ITEMS_PER_WORK_GROUP - 1] = 0;
-    }
-    indexMultiplierDueToDepth >>= 1;
-    
-    for (int dataPairs = 1; dataPairs < PARALLEL_SORT_ITEMS_PER_WORK_GROUP; dataPairs *= 2)
-    {
-        barrier();
-        
-        if (gl_LocalInvocationID.x < dataPairs)
-        {
-            uint lesserIndex = (indexMultiplierDueToDepth * (doubleGroupThreadIndex + 1)) - 1;
-            uint greaterIndex = (indexMultiplierDueToDepth * (doubleGroupThreadIndex + 2)) - 1;
-    
-            uint temp = PrefixSumsOfWorkGroupSums[lesserIndex];
-            PrefixSumsOfWorkGroupSums[lesserIndex] = PrefixSumsOfWorkGroupSums[greaterIndex];
-            PrefixSumsOfWorkGroupSums[greaterIndex] += temp;
-        }
-    
-        indexMultiplierDueToDepth >>= 1;
-    }
-}
-
-
-layout(location = UNIFORM_LOCATION_CALCULATE_ALL) uniform uint uCalculateAll;
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    Determine whether to run the parallel prefix scan algorithm over all the data entries or 
-    over the per-work-group sums.
-Parameters: None
-Returns:    None
-Creator:    John Cox, 3/11/2017
-------------------------------------------------------------------------------------------------*/
-void main()
-{
-    // this algorithm is closely tied to the size of a work group, and when setting up for it 
-    // care is taken to make sure that all threads within a work group have something to do, so 
-    // as long as care keeps being taken to make sure that all threads are busy, then there is 
-    // no need for a "max thread count" check or something like that
-
-    if (uCalculateAll == 1)
-    {
-        // calculate the prefix sums for everyone and fill out the per-work-group sums
-        CalculatePrefixSumsPerWorkGroup();
-    }
-    else
-    {
-        // calculate the prefix sums for the collection of per-work-group sums, turning this 
-        // array from a collection of individual sums into a prefix sum array itself
-        PrefixSumOnPrefixSumsOfWorkGroupSums();
-    }
-
-    // done!
 }
 

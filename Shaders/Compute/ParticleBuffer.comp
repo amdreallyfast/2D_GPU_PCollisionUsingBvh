@@ -1,41 +1,31 @@
 // REQUIRES SsboBufferBindings.comp
-//  PREFIX_SCAN_BUFFER_BINDING
 // REQUIRES CrossShaderUniformLocations
-//  UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE
 
 
 /*------------------------------------------------------------------------------------------------
 Description:
     Stores info about a single particle.  Must match the value type and order in Particle.h.
-Creator:    John Cox, 4/2017 (original from 9-25-2016)
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 struct Particle
 {
-    vec4 _pos;
-    vec4 _vel;
+    vec4 _position;
+    vec4 _velocity;
 
-    float _mass;
-    float _collisionRadius;
-    uint _mortonCode;
-    int _collideWithThisParticleIndex;
-    int _numberOfNearbyParticles;
+    int _particleTypeIndex;
+    int _numNearbyParticles;
     int _isActive;
 
     // vec4s are 16 bytes, +6 individual 4-byte items, so needs 2 bytes padding on the CPU side
 };
 
 // whatever size the user wants
-layout(location = UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE) uniform uint uParticleBufferSize;
-
-// this is used during construction of the BVH tree to make sure that leaf node analysis doesn't 
-// take into account leaf nodes that don't correspond to any particle data
-layout(location = UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES) uniform uint uNumActiveParticles;
+layout(location = UNIFORM_LOCATION_MAX_NUM_PARTICLES) uniform uint uMaxNumParticle\s;
 
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    This is the array of particles that the compute shader will be accessing.  It is set up on 
-    the CPU side in ParticleSsbo::Init(...).
+    See description in ParticleSsbo.h.
 
     Note: Without the binding point specifier, which implicitly assumed std430, then the 
     layout standard needs to be specified explicitly.  According to this website under heading 
@@ -47,26 +37,5 @@ Creator:    John Cox, 9-25-2016
 layout (std430, binding = PARTICLE_BUFFER_BINDING) buffer ParticleBuffer
 {
     Particle AllParticles[];
-};
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    At the end of the parallel Radix Sort, the original data needs to be sorted.  Doing this in 
-    parallel requires making a copy of the original data and then writing back to wherever in 
-    the original buffer.  This buffer serves that purpose.
-
-    Note: It should be in its own buffer so that it can easily be used with 
-    glCopyBufferSubData(...).
-
-    Also Note: According to the documentation for shader storage buffer objects, "there can only 
-    be one array of variable size per SSBO and it has to be the bottommost in the layout 
-    definition."  So I can't create a particle buffer of variable size and then another of the 
-    same size back to back in the same buffer.  They have to be separate buffers.
-    See here: https://www.opengl.org/wiki/Shader_Storage_Buffer_Object.
-Creator:    John Cox, 4/2017
-------------------------------------------------------------------------------------------------*/
-layout (std430, binding = PARTICLE_COPY_BUFFER_BINDING) buffer ParticleCopyBuffer
-{
-    Particle AllParticlesCopy[];
 };
 

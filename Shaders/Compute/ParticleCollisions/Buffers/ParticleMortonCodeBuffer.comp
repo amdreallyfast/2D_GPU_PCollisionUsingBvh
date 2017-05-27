@@ -25,7 +25,7 @@ layout(location = UNIFORM_LOCATION_PARTICLE_MORTON_CODE_BUFFER_WRITE_OFFSET) uni
 /*------------------------------------------------------------------------------------------------
 Description:
     See description in ParticleMortonCodeSsbo.h.
-Creator:    John Cox, 3-2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 layout (std430, binding = PARTICLE_MORTON_CODE_BUFFER_BINDING) buffer ParticleMortonCodeBuffer
 {

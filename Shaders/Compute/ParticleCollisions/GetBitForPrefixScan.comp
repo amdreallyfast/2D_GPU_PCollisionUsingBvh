@@ -1,9 +1,8 @@
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
-// - PARALLEL_SORT_WORK_GROUP_SIZE_X
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES SsboBufferBindings.comp
-// REQUIRES IntermediateSortBuffers.comp
+// REQUIRES ParticleMortonCodeBuffer.comp
 // REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
@@ -14,7 +13,7 @@ layout(location = UNIFORM_LOCATION_BIT_NUMBER) uniform uint uBitNumber;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Grabs a bit from the "read" buffer of the IntermediateSortBuffers and puts it into the 
+    Grabs a bit from the "read" buffer of the ParticleMortonCodeBuffer and puts it into the 
     PrefixScanBuffer::PrefixSumsPerWorkGroup array.
 
     This is part of the Radix Sort algorithm.
@@ -24,6 +23,8 @@ Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
+    uint readIndex = gl_GlobalInvocationID.x + uParticleMortonCodeBufferReadOffset;
+
     // extract the bit value, NOT the positional bit value
     // Ex: What is the value of the 3rd bit in 0b101011?
     // The bit value at bit 3 is 0b101011 & 0b001000 = 0b001000 = 8.
@@ -33,8 +34,7 @@ void main()
     // Also Note: The "& 1" is very important.  This is 32bit land (at the time of this demo), 
     // so there are 31 0s to left of the 1, and they will strip off any additional 1s in the 
     // value, leaving just the value of the desired bit.
-    uint intermediateDataReadIndex = gl_GlobalInvocationID.x + uIntermediateBufferReadOffset;
-    uint bitVal = (IntermediateDataBuffer[intermediateDataReadIndex]._data >> uBitNumber) & 1;
+    uint bitVal = (AllParticleMortonCodes[readIndex]._data >> uBitNumber) & 1;
 
     // Note: Thread count should be the size of the PrefixScanBuffer::PrefixSumsPerWorkGroup 
     // array, so no special calculations are required for the "write" index.

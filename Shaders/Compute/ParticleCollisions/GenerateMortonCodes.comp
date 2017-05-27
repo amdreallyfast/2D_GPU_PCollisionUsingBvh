@@ -11,18 +11,7 @@ layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Generates a Morton Code for the current thread's particle's position, then moves the 
-    particle into the "copy" position in preparation for the last step of the parallel sort.
-
-    Note: This latter step could be done in another shader, but I decided to do it in this one 
-    as part of preparation for the parallel sort.
-
-    Also Note: The post-sort SortParticles.comp must be separate from SortMortonCodes.comp 
-    because the latter is called at the end of every loop, while the former should only be 
-    called once the loop is done.
-
-    Also Also Note: I also don't want to rename the compute shaders' numbering, so I'm making 
-    excuses.
+    Generates a Morton Code for the current thread's particle's position.
 Parameters: None
 Returns:    None
 Creator:    John Cox, 3/2017
@@ -44,8 +33,4 @@ void main()
 
     AllParticleMortonCodes[threadIndex]._mortonCode = mortonCode;
     AllParticleMortonCodes[threadIndex]._preSortedParticleIndex = int(threadIndex);
-
-    // put the particle into the copy buffer so that the post-sorting shader SortParticles.comp 
-    // can immediately move the particles to their sorted position
-    AllParticles[uMaxNumParticles + threadIndex] = AllParticles[threadIndex];
 }

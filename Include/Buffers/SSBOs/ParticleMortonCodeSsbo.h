@@ -16,6 +16,8 @@ class ParticleMortonCodeSsbo: public SsboBase
 public:
     ParticleMortonCodeSsbo(unsigned int numItems);
     virtual ~ParticleMortonCodeSsbo() = default;
+
+    // TODO: remove if possible
     //using SharedPtr = std::shared_ptr<ParticleMortonCodeSsbo>;
     //using SharedConstPtr = std::shared_ptr<const ParticleMortonCodeSsbo>;
 

@@ -21,8 +21,7 @@ Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 
 // ParticleBuffer.comp
-#define UNIFORM_LOCATION_max_num_particles 0
-//#define UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES 1    // TODO: remove
+#define UNIFORM_LOCATION_MAX_NUM_PARTICLES 0
 
 // ParticleMortonCodeBuffer.comp
 #define UNIFORM_LOCATION_MAX_NUM_PARTICLE_MORTON_CODES 2

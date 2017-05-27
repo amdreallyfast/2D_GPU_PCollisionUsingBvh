@@ -1,8 +1,5 @@
 // REQUIRES SsboBufferBindings.comp
-//  PREFIX_SCAN_BUFFER_BINDING
 // REQUIRES CrossShaderUniformLocations
-//  UNIFORM_LOCATION_ALL_PREFIX_SUMS_SIZE
-
 
 
 // Note: The ParallelSort compute controller should be carefully controlling the number of work 
@@ -15,6 +12,18 @@ layout(location = UNIFORM_LOCATION_ALL_PREFIX_SUMS_SIZE) uniform uint uPrefixSum
 Description:
     This is the data that is being scanned AND that is being altered into a prefix sum.
     See explanation of sizes in PrefixSumSsbo.
+
+    The prefix scan has to be split into two parts.  This would not be necessary if GLSL compute 
+    shaders had a "hang all threads in the dispatch until they reach this point", but since it 
+    only has a "hang all threads in work group until they reach this point", then the parallel 
+    prefix scan has to be divided into two parts in order to operate on on a data set larger 
+    than GL_MAX_COMPUTE_WORK_GROUP_SIZE * 2 (remember that this scan operates on two integers 
+    per thread).  The Khronos documentation says that this variable should be called 
+    GL_MAX_COMPUTE_WORK_GROUP_INVOCATIONS, and it may be on another OpenGL implementation than 
+    GLLoad.  On My GTX 560M that I am currently programming on, this max value is 1536.  If I 
+    want to sort, for example, 10,000 particles, I can't do a prefix sum over a single work 
+    group.  So I need to split the jobs up into multiple work groups, then add their sums 
+    together with the second half of the prefix scan.
 
     Note: The totalNumberOfOnes value between the buffers is set during in the middle of the 
     prefix scan algorithm of the PrefixSumsOfWorkGroupSums array in the same manner that entries 

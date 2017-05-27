@@ -37,8 +37,7 @@ SsboBase::SsboBase() :
     _vaoId(0),
     _bufferId(0),
     _drawStyle(0),
-    _numVertices(0),
-    _ssboBindingPointIndex(GetNewStorageBlockBindingPointIndex())
+    _numVertices(0)
 {
     glGenBuffers(1, &_bufferId);
     glGenVertexArrays(1, &_vaoId);
@@ -65,6 +64,10 @@ Description:
     algorithm, which has multiple sets, and in each step data may be taken from one buffer, have 
     calculations performed on it, and then stuck into another buffer.
 
+    If the shader does not have the uniform or if the shader compiler optimized it out, then
+    OpenGL will complain about not finding it.  Enable debugging in main() in main.cpp for more
+    detail.
+
     The method does nothing though.  Override as needed.
 Parameters: 
     Ignored
@@ -72,25 +75,6 @@ Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void SsboBase::ConfigureConstantUniforms(unsigned int) const
-{
-    // nothing
-}
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    Define in derived class if the SSBO's data will be used during rendering.
-
-    This one does nothing.  There are several SSBOs required as part of the parallel sorting, 
-    and those SSBO don't do anything with rendering, so let this be a virtual method, not pure 
-    virtual.
-
-    Note: This method cannot be const because the the user needs to record the draw style.
-Parameters: 
-    Ignored
-Returns:    None
-Creator:    John Cox, 3/2017
-------------------------------------------------------------------------------------------------*/
-void SsboBase::ConfigureRender(unsigned int)
 {
     // nothing
 }
@@ -148,24 +132,18 @@ unsigned int SsboBase::NumVertices() const
     return _numVertices;
 }
 
-///*------------------------------------------------------------------------------------------------
-//Description:
-//    At this point in my demos, I have three SSBO structures: particle, polygon face, and quad tree node.  The polygon face SSBO may end up being used more than once, so there is at least 3, possibly more, SSBOs that need unique binding points.  
-//    
-//    
-//    I can't do a simple increment though, because the SSBO needs to keep its binding point index across 
-//    
-//
-//
-//Parameters: None
-//Returns:
-//    See description.
-//Creator:    John Cox, 9-20-2016
-//------------------------------------------------------------------------------------------------*/
-//unsigned int SsboBase::GetStorageBlockBindingPointIndexForBuffer(const std::string &bufferNameInShader)
-//{
-//    static GLuint ssboBindingPointIndex = 0;
-//
-//    return ssboBindingPointIndex++;
-//}
+/*------------------------------------------------------------------------------------------------
+Description:
+    Define in derived class if the SSBO's data will be used during rendering.  Particle and 
+    polygon SSBOs, for examble, need to override and define this method, while BvhNodeSsbo and 
+    ParticleMortonCodeSsbo do not.
 
+    Note: This method cannot be const because the the user needs to record the draw style.
+Parameters: None
+Returns:    None
+Creator:    John Cox, 3/2017
+------------------------------------------------------------------------------------------------*/
+void SsboBase::ConfigureRender()
+{
+    // nothing
+}

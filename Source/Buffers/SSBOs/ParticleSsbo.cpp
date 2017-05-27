@@ -146,13 +146,32 @@ static void InitializeWithRandomData(std::vector<Particle> &initThese)
     }
 }
 
+/*------------------------------------------------------------------------------------------------
+Description:
+    Currently sets all particles to a generic type.
+Parameters: 
+    initThese   Self-explanatory.
+Returns:    None
+Creator:    John Cox, 4/2017
+------------------------------------------------------------------------------------------------*/
+static void InitializeParticleTypes(std::vector<Particle> &initThese)
+{
+    for (size_t particleIndex = 0; particleIndex < initThese.size(); particleIndex++)
+    {
+        initThese[particleIndex]._particleTypeIndex = ParticleProperties::ParticleType::GENERIC;
+    }
+}
 
 /*------------------------------------------------------------------------------------------------
 Description:
     Initializes base class, then gives derived class members initial values and allocates space 
     for the SSBO.
 
-    Generates random initial particle positions and velocities, but all particles are still 
+    Allocates space for 2x the number of particles.  The second half is used during particle 
+    sorting so that particles can be copied to the second half, then copied back to their sorted 
+    positions in the first half.
+
+    Also generates random initial particle positions and velocities, but all particles are still 
     default inactive.  See description in InitializeWithRandomData(...).
 
     Uploads the initialized particles to the SSBOs newly allocated buffer memory.
@@ -165,8 +184,9 @@ Creator:    John Cox, 4/2017
 ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     SsboBase()  // generate buffers
 {
-    std::vector<Particle> v(numItems);
+    std::vector<Particle> v(numItems * 2);
     InitializeWithRandomData(v);
+    InitializeParticleTypes(v);
 
     //// test buffer
     //GenerateTestParticlesForBvhGeneration(v);
@@ -174,8 +194,11 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 
     // members of this class only (ParticleSsbo), not for base class members. 
-    _numVertices = v.size();
-    _numParticles = v.size();
+    _numVertices = numItems;
+    _numParticles = numItems;
+
+    // the second half has no need for initial data
+    v.resize(numItems * 2);
 
     // now bind this new buffer to the dedicated buffer binding location
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_BUFFER_BINDING, _bufferId);
@@ -190,10 +213,6 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
 Description:
     Defines the buffer's size uniform in the specified shader.  It uses the #define'd uniform 
     location found in CrossShaderUniformLocations.comp.
-
-    If the shader does not have the uniform or if the shader compiler optimized it out, then 
-    OpenGL will complain about not finding it.  Enable debugging in main() in main.cpp for more 
-    detail.
 Parameters: 
     computeProgramId    Self-explanatory.
 Returns:    
@@ -204,34 +223,41 @@ void ParticleSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) cons
 {
     // the uniform should remain constant after this 
     glUseProgram(computeProgramId);
-    glUniform1ui(UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE, _numVertices);
+    glUniform1ui(UNIFORM_LOCATION_MAX_NUM_PARTICLES, _numVertices);
     glUseProgram(0);
 }
 
 /*------------------------------------------------------------------------------------------------
 Description:
+    A simple getter for the value that was passed in on creation.
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int ParticleSsbo::NumParticles() const
+{
+    return _numParticles;
+}
+
+/*------------------------------------------------------------------------------------------------
+Description:
     Sets up the vertex attribute pointers for this SSBO's VAO.
-Parameters: 
-    drawStyle           Expected to be GL_POINTS.
+Parameters: None
 Returns:    None
 Creator:    John Cox, 11-24-2016
 ------------------------------------------------------------------------------------------------*/
-void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
+void ParticleSsbo::ConfigureRender()
 {
-    _drawStyle = drawStyle;
+    // particles shall always be rendered as points
+    _drawStyle = GL_POINTS;
 
     // the vertex array attributes will make an association between whatever is bound to the 
     // array buffer and whatever is set up with glVertexAttrib*(...)
     glBindVertexArray(_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, _bufferId);
 
-    // vertex attribute order is same as the structure
-    // - glm::vec4 _position;
-    // - glm::vec4 _velocity;
-    // - float _mass;
-    // - float _collisionRadius;
-    // - unsigned int _hasCollidedAlreadyThisFrame;
-    // - int _isActive;
+    // vertex attribute order is same as the structure members
 
     unsigned int vertexArrayIndex = 0;
     unsigned int bufferStartOffset = 0;
@@ -256,46 +282,19 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
     glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
-    // mass
-    itemType = GL_FLOAT;
-    sizeOfItem = sizeof(Particle::_mass);
+    // particle type index
+    itemType = GL_INT;
+    sizeOfItem = sizeof(Particle::_particleTypeIndex);
     numItems = sizeOfItem / sizeof(float);
-    vertexArrayIndex++;
-    glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    bufferStartOffset += sizeOfItem;
-
-    // collision radius
-    itemType = GL_FLOAT;
-    sizeOfItem = sizeof(Particle::_collisionRadius);
-    numItems = sizeOfItem / sizeof(float);
-    vertexArrayIndex++;
-    glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
-    bufferStartOffset += sizeOfItem;
-
-    // morton code
-    itemType = GL_UNSIGNED_INT;
-    sizeOfItem = sizeof(Particle::_mortonCode);
-    numItems = sizeOfItem / sizeof(unsigned int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
-    // "collide with this guy" index
+    // number of nearby particles
     itemType = GL_INT;
-    sizeOfItem = sizeof(Particle::_collideWithThisParticleIndex);
-    numItems = sizeOfItem / sizeof(unsigned int);
-    vertexArrayIndex++;
-    glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
-    bufferStartOffset += sizeOfItem;
-
-    // nearby particle count
-    itemType = GL_INT;
-    sizeOfItem = sizeof(Particle::_numberOfNearbyParticles);
-    numItems = sizeOfItem / sizeof(unsigned int);
+    sizeOfItem = sizeof(Particle::_numNearbyParticles);
+    numItems = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
     glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
@@ -316,15 +315,3 @@ void ParticleSsbo::ConfigureRender(unsigned int drawStyle)
 }
 
 
-/*------------------------------------------------------------------------------------------------
-Description:
-    A simple getter for the value that was passed in on creation.
-Parameters: None
-Returns:    
-    See Description.
-Creator:    John Cox, 5/2017
-------------------------------------------------------------------------------------------------*/
-unsigned int ParticleSsbo::NumParticles() const
-{
-    return _numParticles;
-}
