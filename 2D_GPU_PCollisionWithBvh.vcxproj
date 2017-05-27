@@ -176,6 +176,9 @@
     <ClInclude Include="Include\Buffers\BvhNode.h" />
     <ClInclude Include="Include\Buffers\IntermediateData.h" />
     <ClInclude Include="Include\Buffers\Particle.h" />
+    <ClInclude Include="Include\Buffers\ParticleCollisions.h" />
+    <ClInclude Include="Include\Buffers\ParticleMortonCode.h" />
+    <ClInclude Include="Include\Buffers\ParticleProperties.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
     <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />

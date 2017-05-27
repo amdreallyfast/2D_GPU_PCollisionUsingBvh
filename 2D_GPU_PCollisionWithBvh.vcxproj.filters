@@ -166,6 +166,15 @@
     <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Buffers\ParticleCollisions.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\ParticleMortonCode.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\ParticleProperties.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
