@@ -38,10 +38,6 @@ ParticleSortingDataSsbo::ParticleSortingDataSsbo(unsigned int numItems) :
 Description:
     Defines the buffer's size uniform in the specified shader.  It uses the #define'd uniform 
     location found in CrossShaderUniformLocations.comp.
-
-    If the shader does not have the uniform or if the shader compiler optimized it out, then 
-    OpenGL will complain about not finding it.  Enable debugging in main() in main.cpp for more 
-    detail.
 Parameters: 
     computeProgramId    Self-explanatory.
 Returns:    

@@ -19,7 +19,8 @@ Parameters:
 Returns:    None
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles)
+BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles) :
+    SsboBase()
 {
     // binary trees with N leaves have N-1 branches
     _numLeaves = numParticles;
@@ -45,10 +46,6 @@ BvhNodeSsbo::BvhNodeSsbo(unsigned int numParticles)
 Description:
     Defines the buffer's size uniform in the specified shader.  It uses the #define'd uniform 
     location found in CrossShaderUniformLocations.comp.
-
-    If the shader does not have the uniform or if the shader compiler optimized it out, then 
-    OpenGL will complain about not finding it.  Enable debugging in main() in main.cpp for more 
-    detail.
 Parameters: 
     computeProgramId    Self-explanatory.
 Returns:    

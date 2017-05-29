@@ -16,6 +16,8 @@ class ParticleSortingDataSsbo: public SsboBase
 public:
     ParticleSortingDataSsbo(unsigned int numItems);
     virtual ~ParticleSortingDataSsbo() = default;
+    using SharedPtr = std::shared_ptr<ParticleSortingDataSsbo>;
+    using SharedConstPtr = std::shared_ptr<const ParticleSortingDataSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
     unsigned int NumItems() const;

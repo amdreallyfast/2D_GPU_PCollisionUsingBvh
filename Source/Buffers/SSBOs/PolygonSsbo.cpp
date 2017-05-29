@@ -31,6 +31,9 @@ PolygonSsbo::PolygonSsbo(int numPolygons) :
     GLuint bufferSizeBytes = sizeof(PolygonFace) * numPolygons;
     glBufferData(GL_SHADER_STORAGE_BUFFER, bufferSizeBytes, nullptr, GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+
+    // generate the VAO
+    ConfigureRender();
 }
 
 /*-----------------------------------------------------------------------------------------------
@@ -58,34 +61,10 @@ PolygonSsbo::PolygonSsbo(const std::vector<PolygonFace> &faceCollection) :
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
-// TODO: header
-void PolygonSsbo::ConfigureComputeBindingPoint(unsigned int computeProgramId) const
-{
-
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, POLYGON_BUFFER_BINDING, _bufferId);
-
-    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
-
-    //// see the corresponding area in ParticleSsbo::Init(...) for explanation
-    //// Note: MUST use the same binding point 
-
-    ////GLuint ssboBindingPointIndex = 13;   // or 1, or 5, or 17, or wherever IS UNUSED
-    //GLuint storageBlockIndex = glGetProgramResourceIndex(computeProgramId, GL_SHADER_STORAGE_BLOCK, bufferNameInShader.c_str());
-    //glShaderStorageBlockBinding(computeProgramId, storageBlockIndex, _ssboBindingPointIndex);
-    //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, _ssboBindingPointIndex, _bufferId);
-
-
-    //// cleanup
-    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-}
-
 /*------------------------------------------------------------------------------------------------
 Description:
     Defines the buffer's size uniform in the specified shader.  It uses the #define'd uniform 
-
-    If the shader does not have the uniform or if the shader compiler optimized it out, then 
-    OpenGL will complain about not finding it.  Enable debugging in main() in main.cpp for more 
-    detail.
+    location found in CrossShaderUniformLocations.comp.
 Parameters: 
     computeProgramId    Self-explanatory.
 Returns:    
@@ -105,14 +84,14 @@ void PolygonSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
 /*-----------------------------------------------------------------------------------------------
 Description:
     Sets up the vertex attribute pointers for this SSBO's VAO.
-Parameters: 
-    drawStyle           Expected to be GL_LINES (2D program) or GL_TRIANGLES (3D program).
+Parameters: None
 Returns:    None
 Creator: John Cox, 11-24-2016
 -----------------------------------------------------------------------------------------------*/
-void PolygonSsbo::ConfigureRender(unsigned int drawStyle)
+void PolygonSsbo::ConfigureRender()
 {
-    _drawStyle = drawStyle;
+    // 2D polygons shall always be rendered as lines
+    _drawStyle = GL_LINES;
 
     glBindVertexArray(_vaoId);
     glBindBuffer(GL_ARRAY_BUFFER, _bufferId);

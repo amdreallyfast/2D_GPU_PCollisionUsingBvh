@@ -5,7 +5,7 @@
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Intended for use only by the GenerateBoundingVolumeHierarchy compute controller.
+    Used during particle collision detection to generate the bounding volume hierarchy (BVH).
 
     Contains enough nodes for
     - 1 leaf node for each particle (n leaves)

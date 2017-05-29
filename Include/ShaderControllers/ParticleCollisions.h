@@ -3,9 +3,11 @@
 #include <memory>
 #include <string>
 
-#include "Include/Buffers/SSBOs/SsboBase.h"
-#include "Include/Buffers/SSBOs/ParticleSsbo.h"
 #include "Include/Buffers/SSBOs/BvhNodeSsbo.h"
+#include "Include/Buffers/SSBOs/ParticlePropertiesSsbo.h"
+#include "Include/Buffers/SSBOs/ParticleSortingDataSsbo.h"
+#include "Include/Buffers/SSBOs/ParticleSsbo.h"
+#include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
 #include "Include/Buffers/SSBOs/PolygonSsbo.h"
 
 namespace ShaderControllers
@@ -20,7 +22,7 @@ namespace ShaderControllers
     {
     public:
         //??is the particle SSBO really necessary??
-        ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo);
+        ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo, const ParticlePropertiesSsbo::SharedConstPtr particlePropertiesSsbo);
         ~ParticleCollisions();
 
         void DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const;
@@ -30,8 +32,7 @@ namespace ShaderControllers
     private:
         unsigned int _numLeaves;
 
-        // lots of programs
-        // TODO: init to 0 in constructor
+        // lots of programs for sorting
         unsigned int _programIdCopyParticlesToCopyBuffer;
         unsigned int _programIdGenerateSortingData;
         unsigned int _programIdClearWorkGroupSums;
@@ -40,8 +41,15 @@ namespace ShaderControllers
         unsigned int _programIdPrefixScanOverWorkGroupSums;
         unsigned int _programIdSortSortingDataWithPrefixSums;
         unsigned int _programIdSortParticles;
+
+        // and a few more for collisions
         unsigned int _programIdGuaranteeSortingDataUniqueness;
-        
+        unsigned int _programIdGenerateLeafNodeBoundingBoxes;
+        unsigned int _programIdGenerateBinaryRadixTree;
+        unsigned int _programIdMergeBoundingVolumes;
+
+        // TODO: detect collisions, resolve collisions
+
         void AssembleProgramHeader(const std::string &shaderKey) const;
         void AssembleProgramCopyParticlesToCopyBuffer();
         void AssembleProgramGenerateSortingData();
@@ -52,6 +60,11 @@ namespace ShaderControllers
         void AssembleProgramSortSortingDataWithPrefixSums();
         void AssembleProgramSortParticles();
         void AssembleProgramGuaranteeSortingDataUniqueness();
+        void AssembleProgramGenerateLeafNodeBoundingBoxes();
+        void AssembleProgramGenerateBinaryRadixTree();
+        void AssembleProgramMergeBoundingVolumes();
+
+
 
 
 
@@ -69,19 +82,25 @@ namespace ShaderControllers
         // - SortSortingDataWithPrefixSums.comp
         // - memory barrier
         // SortParticles.comp
-        // GuaranteeMortonCodeUniqueness.comp
+        // GuaranteeSortingDataUniqueness.comp
+
+        // TODO: verify uniqueness!
+
+        // memory barrier
+        // GenerateLeafNodeBoundingBoxes.comp
+        // GenerateBinaryRadixTree.comp
+        // memory barrier
+        // MergeBoundingVolumes.comp
+        // memory barrier
 
 
-        unsigned int _populateLeavesWithDataProgramId;
-        unsigned int _generateBinaryRadixTreeProgramId;
-        unsigned int _generateBoundingVolumesProgramId;
-        unsigned int _generateVerticesProgramId;
-        unsigned int _detectCollisionsProgramId;
-        unsigned int _resolveCollisionsProgramId;
 
-        BvhNodeSsbo::SharedPtr _bvhNodeSsbo;
+        ParticleSortingDataSsbo::SharedConstPtr _particleSortingDataSsbo;
+        PrefixSumSsbo::SharedConstPtr _prefixSumSsbo;
+        BvhNodeSsbo::SharedConstPtr _bvhNodeSsbo;
         PolygonSsbo::SharedPtr _bvhGeometrySsbo;
 
-
+        // used for verifying that particle sorting is working
+        ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
     };
 }

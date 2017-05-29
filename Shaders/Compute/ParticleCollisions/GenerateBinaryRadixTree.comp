@@ -2,103 +2,15 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
-// REQUIRES ParticleBuffer.comp
+// REQUIRES ParticleSortingDataBuffer.comp
 // REQUIRES BvhNodeBuffer.comp
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
 
-
-// see CLZ1(...) comment block for credit
-// Note: This array is a key part of CLZ1, which in turn is a key part of LengthOfCommonPrefix
-// (...), which in turn is a key part of the binary radix tree construction.  Let it be a global 
-// in this shader, and make it shared to prevent copies from hogging more memory than necessary 
-// (it's honestly not much, but still).
-// Also Note: ??why can't I make it shared? why is there an error about "might be used before it is initialized"??
-const int[] clz_lkup = 
-{
-    32, 31, 30, 30, 29, 29, 29, 29,
-    28, 28, 28, 28, 28, 28, 28, 28,
-    27, 27, 27, 27, 27, 27, 27, 27,
-    27, 27, 27, 27, 27, 27, 27, 27,
-    26, 26, 26, 26, 26, 26, 26, 26,
-    26, 26, 26, 26, 26, 26, 26, 26,
-    26, 26, 26, 26, 26, 26, 26, 26,
-    26, 26, 26, 26, 26, 26, 26, 26,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    25, 25, 25, 25, 25, 25, 25, 25,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24,
-    24, 24, 24, 24, 24, 24, 24, 24
-};
-
 /*------------------------------------------------------------------------------------------------
 Description:
-    Algorithm credit goes to Miro Samek with Embedded Gurus.
-    http://embeddedgurus.com/state-space/2014/09/fast-deterministic-and-portable-counting-leading-zeros/
-
-    I adapted it for use in an OpenGL compute shader.
-
-    Note: This algorithm works by figuring out which byte has the most significant 1 bit.  Then 
-    the whole thing is bit shifted so that the byte with the most significant 1 is in byte 0 of 
-    the 32bit integer (all trailing bits are considered irrelevant).  This makes the most 
-    significant byte on the range 0-255.  The "clz_lkup" array has 256 values.  These values are 
-    the number of leading zeros for every single possible value on range 0-255.  This is less of 
-    a calculation and more of a lookup.  And it's a fast lookup.
-    
-    Also Note: Miro Samek also posted a CLZ2(...) function in the same article.  That function 
-    is meant for embedded systems that are severely limited in ROM and are willing to sacrifice 
-    a little run speed for a smaller clz_lkup[] footprint.  I am not running this on an embedded 
-    system and have no problems with available memory, so I will keep using CLZ1(...).
-Parameters: 
-    x   The value to analyze.
-Returns:    
-    The number of leading zeros in the 32bit unsigned integer
-Creator:    John Cox, 5/2017
-------------------------------------------------------------------------------------------------*/
-int CLZ1(uint x) {
-    int n = 0;
-    if (x >= (1U << 16)) {
-        if (x >= (1U << 24)) {
-            n = 24;
-        }
-        else {
-            n = 16;
-        }
-    }
-    else {
-        if (x >= (1 << 8)) {
-            n = 8;
-        }
-        else {
-            n = 0;
-        }
-    }
-    return clz_lkup[x >> n] - n;
-}
-
-/*------------------------------------------------------------------------------------------------
-Description:
-    Calculates the number of leading bits that the two arguments have in common.
+    Calculates the number of leading bits that the two arguments have in common.  This is a #define macro because it is used in aseveral places and called many times.  This is suspected to be a possible point of execution divergeance.  It is a short function, so it is not difficult to turn it into a macro.
 
     Ex: 0b00001 and 0b10001
     The common prefix is length 0.  There are three bits in common, but they are not leading 
@@ -109,18 +21,13 @@ Description:
 
     This method performs the job of the pseudocode's sigma.  
 
-    Note: The paper said to, if the values were equal, concatenate the bits of the index to the 
-    bits of the values being analyzed and then then determine the longest common prefix.  This 
-    implementation only lives in 32bit land, so I can't concatenate a 32bit value to another 
-    32bit value.  There aren't enough bits.  I'd need a a 64bit uint for that.  But I can 
-    determine the longest common prefix of the values and of their indices and then add the two 
-    together if necessary.  The CLZ1(...) function is fast enough to make performance not a 
-    concern.
+    Note: The paper said to, if the values were equal, concatenate the bits of the index to 
+    the bits of the values being analyzed and then then determine the longest common prefix.  
+    This implementation only lives in 32bit land, so I can't concatenate a 32bit value to 
+    another 32bit value.  There aren't enough bits.  I'd need a a 64bit uint for that.  But I 
+    can determine the longest common prefix of the values and of their indices and then add the 
+    two together if necessary.  
     
-    Also Note: I discovered by experimentation that always adding the lenght of the common 
-    prefixes together messed up the tree.  So only add the length of the common prefix if the 
-    values are equal.
-
     Ex 1: 
         // suppose our integers live in 5bit land
         value1 at indexA = 0b00010
@@ -137,6 +44,12 @@ Description:
         length of common prefix = 3 (most significant bits)
         reported common prefix length = 5 + 3 = 8;
 
+    This will not be necessary if all the values in the ParticleSortingDataBuffer are unique.
+
+    Also Note: I discovered by experimentation that always adding the lenght of the common 
+    prefixes together messed up the tree.  So only add the length of the common prefix if the 
+    values are equal.
+
 Parameters: 
     indexA  An index into the "leaf" section of AllBvhNodes.  Expected to be thread ID.
     indexB  Another index into the "leaf" section of AllBvhNodes.
@@ -144,25 +57,29 @@ Returns:
     See Description.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
+// TODO: try the macro
+//#define LengthOfCommonPrefix(indexA, indexB) \
+//((indexB < 0 || indexB >= uBvhNumberLeaves) ? \
+//-1 \
+//32 - findMSB(AllParticleSortingData[indexA]._sortingData, AllParticleSortingData[indexB]._sortingData);)
 int LengthOfCommonPrefix(int indexA, int indexB)
 {
-    // don't need to check 'a' because that is a thread ID and therefore should always be in 
-    // bounds
+    // don't need to check 'a' because the thread ID should always be in bounds
     // Note: It seems that a >= comparison between int and uint is ok, no cast required.
-    if (indexB < 0 || indexB >= uNumActiveParticles)
+    if (indexB < 0 || indexB >= uBvhNumberLeaves)
     {
         return -1;
     }
-
-    uint valueA = AllBvhNodes[indexA]._data;
-    uint valueB = AllBvhNodes[indexB]._data;
+    
+    uint valueA = AllParticleSortingData[indexA]._sortingData
+    uint valueB = AllParticleSortingData[indexB]._sortingData
 
     // the XOR will highlight the bits that are different, thus leaving as 0s all the bits that 
     // are identical
-    int valueNumCommonBits = CLZ1(valueA ^ valueB);
-    int indexNumCommonBits = CLZ1(indexA ^ indexB);
-    //return (valueA == valueB) ? valueNumCommonBits + indexNumCommonBits : valueNumCommonBits;
-    return (valueA == valueB) ? 32 + indexNumCommonBits : valueNumCommonBits;
+    // Note: Special thanks to concerned-cynic on the OpenGL subreddit for alerting me to the 
+    // GLSL-native function findMSB(...).  GLSL lives in 32-bit land, so this function can be 
+    // easily turned into a "count leading zeros" function by "32 - findMSB(...)".
+    return (32 - findMSB(valueA ^ valueB));
 }
 
 /*------------------------------------------------------------------------------------------------
@@ -267,8 +184,6 @@ int FindSplitPosition(int startNodeIndex, int length, int direction)
     {
         // cut the increment in half on each loop
         rangeIncrement = ceil(rangeIncrement * 0.5f);
-        //rangeIncrement = ceil(rangeIncrement / 2.0f);
-        //int rangeIncrementInteger = int(rangeIncrement + 0.001f);
         int rangeIncrementInteger = int(rangeIncrement);
         int secondNodeIndex = startNodeIndex + ((splitOffset + rangeIncrementInteger) * direction);
         if (LengthOfCommonPrefix(startNodeIndex, secondNodeIndex) > commonPrefixLengthBetweenBeginAndEnd)
@@ -299,16 +214,13 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // Note: For N leaves there are n-1 internal nodes, hence the -1.
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize ||
-        threadIndex >= (uNumActiveParticles - 1))
+    if (threadIndex >= uBvhNumberInternalNodes)
     {
-        // all inactive particles are sorted to the back of the particle buffer, so returning 
-        // now won't leave a gap in the tree
         return;
     }
 
+    // cast a few unsigned values to signed
     // Note: This algorithm invloves lots of index calculations that must be allowed to go 
     // negative.  For example, the function LengthOfCommonPrefix(...) will return -1 if the 
     // second index is out of range.  That is an important part of the range calculation.
@@ -316,16 +228,18 @@ void main()
     int thisInternalNodeIndex = int(uBvhNumberLeaves + threadIndex);
     int rootInternalNodeIndex = int(uBvhNumberLeaves);
 
+    // prep for next stage (MergeBoundingVolumes.comp)
     AllBvhNodes[thisInternalNodeIndex]._threadEntranceCounter = 0;
 
     // build the tree
+
+    // Note: If I made LengthOfCommonPrefix(...) correctly and all the sorted data that this 
+    // tree is being built over is unique, then the common prefixes between a value and its 
+    // two neighbors will never be identical and thus the direction will never be 0.  If it is, 
+    // then something has gone terribly wrong with the data set.
     int commonPrefixLengthBefore = LengthOfCommonPrefix(thisLeafIndex, thisLeafIndex - 1);
     int commonPrefixLengthAfter = LengthOfCommonPrefix(thisLeafIndex, thisLeafIndex + 1);
-
-    // if I made LengthOfCommonPrefix(...) correctly, this should never return 0
-    // Note: If direction is 0, then something has gone terribly wrong.
     int d = sign(commonPrefixLengthAfter - commonPrefixLengthBefore);
-
     int range = DetermineRange(thisLeafIndex, d);
     int splitIndex = FindSplitPosition(thisLeafIndex, range, d);
     

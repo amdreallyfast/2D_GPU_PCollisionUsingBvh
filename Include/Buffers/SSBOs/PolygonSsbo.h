@@ -19,9 +19,8 @@ public:
     using SharedPtr = std::shared_ptr<PolygonSsbo>;
     using SharedConstPtr = std::shared_ptr<const PolygonSsbo>;
 
-    void ConfigureComputeBindingPoint(unsigned int computeProgramId) const;
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
-    void ConfigureRender(unsigned int drawStyle) override;
+    void ConfigureRender() override;
 
     unsigned int NumItems() const;
 

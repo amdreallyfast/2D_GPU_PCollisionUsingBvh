@@ -2,7 +2,6 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
-// REQUIRES ParticleBuffer.comp
 // REQUIRES BvhNodeBuffer.comp
 
 // Y and Z work group sizes default to 1
@@ -16,9 +15,11 @@ Description:
     root, merging bounding boxes as they go.  Only one thread is allowed to do the merging of 
     two child nodes at a time, so the number of active threads decreases as they go up the 
     chain.  This shouldn't be much of a performance problem though because the algorithm is 
-    simple and fast and only goes through log2N iterations at most (16 for 50,000 particles 
-    (leaves), 20 for 1,000,000 particles).
-
+    simple and fast and only goes through approximately log2N iterations as long as the binary 
+    radix tree doesn't have to deal with duplicate values.
+    
+    Note: log2N is ~16 for N = 50,000 leaves and is ~20 for N = 1,000,000 leaves.
+    
     This comes as part of this BVH algorithm, specifically the section 
     "Bounding Box Calculation":
     https://devblogs.nvidia.com/parallelforall/thinking-parallel-part-iii-tree-construction-gpu/
@@ -29,18 +30,13 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // all the leaf nodes are at the front of the BvhNodeBuffer, sharing the same indices with 
-    // the particles, so this same index can be used for both ParticleBuffer access and 
-    // BvhNodeBuffer access
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize ||
-        threadIndex >= uNumActiveParticles)
+    if (threadIndex >= uBvhNumberLeaves)
     {
-        // thread greater than data set size or no leaf was made for this particle
         return;
     }
 
-    // now go up through the internal nodes and merge the bounding boxes until the root
+    // start at the leaves and merge bounding boxes up through the root
     // Note: The parent index should only be -1 at the root node.
     int nodeIndex = AllBvhNodes[threadIndex]._parentIndex;
     while(nodeIndex != -1)
@@ -51,6 +47,11 @@ void main()
         // first thread that enters it, while letting the second one through. This ensures that 
         // every node gets processed only once, and not before both of its children are 
         // processed."
+        // Also Note: If this is incremented more than twice, then there is a problem with the 
+        // tree.  This is a binary tree, and a binary tree should have exactly two leaves per 
+        // node.  A third increment, or a fourth, or more would mean that the node has more than 
+        // two other nodes referencing it as their parent.  This is problem with tree 
+        // construction.
         if (atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1) == 0)
         {
             return;
