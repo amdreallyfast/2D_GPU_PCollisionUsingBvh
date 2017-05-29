@@ -34,14 +34,14 @@ struct BvhNode
 {
     BvhNode() :
         _isLeaf(0),
+        _isNull(0),
         _parentIndex(-1),
+        _threadEntranceCounter(0),
+        _leftChildIndex(-1),
+        _rightChildIndex(-1),
         _startIndex(-1),
         _endIndex(-1),
         _leafSplitIndex(-1),
-        _leftChildIndex(-1),
-        _rightChildIndex(-1),
-        _threadEntranceCounter(0),
-        _data(0),
         _extraData1(-1),
         _extraData2(-1),
         _extraData3(-1)
@@ -50,20 +50,32 @@ struct BvhNode
     
     BoundingBox _boundingBox;
 
+    // if 0, then it is an internal node
+    int _isLeaf;
+
+    // used during tree construction to prevent merging bounding boxes from inactive leaves (see 
+    // GuaranteeMortonCodeUniqueness.comp for explanation)
+    int _isNull;
+
+    // used for merging bounding boxes up to the root
+    int _parentIndex;
+
+    // used to prevent the first thread that reads this internal node from trying to merge the 
+    // bounding boxes of its child, one of which may not be finished yet
+    int _threadEntranceCounter;
+
+    // used when traversing down the tree during collision detection
+    int _leftChildIndex;
+    int _rightChildIndex;
+
+    // debugging
     // TODO: remove
+    int _startIndex;
+    int _endIndex;
+    int _leafSplitIndex;
     int _extraData1;
     int _extraData2;
     int _extraData3;
-
-    int _isLeaf;
-    int _parentIndex;
-    int _startIndex;        // TODO: remove
-    int _endIndex;          // TODO: remove
-    int _leafSplitIndex;    // TODO: remove
-    int _leftChildIndex;
-    int _rightChildIndex;
-    int _threadEntranceCounter;
-    unsigned int _data;
 
     // Note: Lesson learned about buffer padding.  It is only necessary if the structure defines 
     // a vec* (yes, vec2 included; I tested it) or mat*.  The CPU side can declare whatever it 

@@ -1,17 +1,3 @@
-/*------------------------------------------------------------------------------------------------
-Description:
-    This is a parallel prefix sums algorithm that uses shared memory, a binary tree, and no 
-    atomic counters to build up a prefix sum within a work group.  This is advantageous because 
-    it uses fast shared memory instead of having many threads get in line to use atomic 
-    counters, of which there are a limited number, on global memory.
-
-    Thanks to developer.nvidia.com, GPU Gems 3, Chapter 39. Parallel Prefix Sum (Scan) with CUDA
-    for the algorithm (despite the code golfing variable names and lack of comments, at least 
-    they had pictures that I could eventually work out).
-    http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html
-Creator:    John Cox, 3/11/2017
-------------------------------------------------------------------------------------------------*/
-
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES CrossShaderUniformLocations.comp
@@ -41,6 +27,16 @@ Description:
     single work group's worth of data in the PrefixSumBuffer, specifically 
     PrefixSumsPerWorkGroup.  The rest of the prefix sums will calculated in the second half in
     ParallelPrefixScanOverWorkGroupSums.comp
+
+    Note: This is a parallel prefix sums algorithm that uses shared memory, a binary tree, and 
+    no atomic counters to build up a prefix sum within a work group.  The shared memory is 
+    advantageous fast shared memory is favorable over having many threads get in line to use 
+    atomic counters, of which there are a limited number, on global memory.
+
+    Thanks to developer.nvidia.com, GPU Gems 3, Chapter 39. Parallel Prefix Sum (Scan) with CUDA
+    for the algorithm (despite the code golfing variable names and lack of comments, at least 
+    they had pictures that I could eventually work out).
+    http://http.developer.nvidia.com/GPUGems3/gpugems3_ch39.html
 
 Parameters: None
 Returns:    None
@@ -87,7 +83,10 @@ void main()
         indexMultiplierDueToDepth *= 2;
     }
 
-    // only one thread should do these (prevents unnecessary writes)
+    // only thread 0 should do this (prevents unnecessary writes)
+    // Note: No barrier() is necessary here because this algorithm guarantees that thread 0 will 
+    // be the last thread to check this condition, at which point it has already written to the 
+    // last index in fastTempArr.
     if (doubleGroupThreadIndex == 0)
     {
         // write the work group sum to the group sums buffer

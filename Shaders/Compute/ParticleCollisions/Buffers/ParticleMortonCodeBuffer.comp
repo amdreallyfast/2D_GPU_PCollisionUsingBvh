@@ -25,6 +25,8 @@ layout(location = UNIFORM_LOCATION_PARTICLE_MORTON_CODE_BUFFER_WRITE_OFFSET) uni
 /*------------------------------------------------------------------------------------------------
 Description:
     See description in ParticleMortonCodeSsbo.h.
+
+    Will be 2x the size of uMaxNumParticleMortonCodes (same as 2X the number of particles).
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 layout (std430, binding = PARTICLE_MORTON_CODE_BUFFER_BINDING) buffer ParticleMortonCodeBuffer

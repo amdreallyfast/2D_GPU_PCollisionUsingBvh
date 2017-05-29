@@ -21,6 +21,7 @@ void main()
     uint threadIndex = gl_GlobalInvocationID.x;
     if (threadIndex >= uMaxNumParticles)
     {
+        // index out of bounds, so don't even try to dereference the particle index
         return;
     }
 

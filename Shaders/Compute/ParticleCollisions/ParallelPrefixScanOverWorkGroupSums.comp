@@ -11,10 +11,10 @@ shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    This is the second half of the parallel prefix scan algorithm.  See description of 
-    PrefixScanBuffer for more detail.
-
-    See ParallelPrefixScanOverAllData.comp for comments on this algorithm.
+    This is the second half of the parallel prefix scan algorithm.  It is the exact same 
+    algorithm as in ParallelPrefixScanOverAllData.comp (see that shader for comments), but it 
+    needs to work on a different buffer, which in GLSL need to be specified explicitly, so it 
+    needs a different shader.
 Parameters: None
 Returns:    None
 Creator:    John Cox, 5/2017
@@ -43,7 +43,6 @@ void main()
         indexMultiplierDueToDepth *= 2;
     }
 
-    // only one thread should do these (prevents unnecessary writes)
     if (doubleGroupThreadIndex == 0)
     {
         totalNumberOfOnes = PrefixSumsOfWorkGroupSums[PARALLEL_SORT_ITEMS_PER_WORK_GROUP - 1];

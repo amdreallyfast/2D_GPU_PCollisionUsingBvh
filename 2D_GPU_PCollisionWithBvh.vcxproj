@@ -205,13 +205,13 @@
     <ClInclude Include="Shaders\ShaderStorage.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Compute\CountNearbyParticles.comp" />
-    <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleMortonCodeBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePotentialCollisionsBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\PrefixScanBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\ClearWorkGroupSums.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\CopyParticlesToCopyBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
@@ -220,7 +220,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeMortonCodeUniqueness.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\MoveParticlesToCopyBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverAllData.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverWorkGroupSums.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp" />

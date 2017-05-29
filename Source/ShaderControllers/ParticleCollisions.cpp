@@ -106,6 +106,23 @@ namespace ShaderControllers
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
 
+
+        // CopyParticlesToCopyBuffer.comp
+        // GenerateMortonCodes.comp
+        // memory barrier
+        // loop
+        // - ClearWorkGroupSums.comp
+        // - GetBitForPrefixScan.comp
+        // - memory barrier
+        // - ParallelPrefixScanOverAllData.comp
+        // - memory barrier
+        // - ParallelPrefixScanOverWorkGroupSums.comp
+        // - memory barrier
+        // - SortMortonCodes.comp
+        // - memory barrier
+        // SortParticles.comp
+        // GuaranteeMortonCodeUniqueness.comp
+
         // populate leaf nodes with the particles' Morton Codes
         shaderKey = "populate leaf nodes with data";
         shaderStorageRef.NewCompositeShader(shaderKey);

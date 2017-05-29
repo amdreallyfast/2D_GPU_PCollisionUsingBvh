@@ -1,0 +1,46 @@
+// REQUIRES Version.comp
+// REQUIRES ComputeShaderWorkGroupSizes.comp
+// REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES SsboBufferBindings.comp
+// REQUIRES ParticleMortonCodeBuffer.comp
+
+// Y and Z work group sizes default to 1
+layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    This shader was introduced to try to minimize the depth of the binary radix tree.  The tree 
+    construction algorithm is such that the tree has depth spikes where there are clumps of 
+    duplicate data.  I have been having a little trouble with getting tree construction to 
+    operate properly over just the number of active particles, and I want to remove the 
+    dependency of tree construction on the number of active particles, and I want to make 
+    tree construction performance a function of the total number of particles and thus behave 
+    consistently for a given maximum particle count.
+
+    Problem: All the Motron Codes for inactive particles were set to 0xffffffff (see 
+    GenerateMortonCodes.comp).  That is a lot of duplicate entries, which will cause a spike in 
+    tree depth and thus in construction time for the inactive nodes in the tree.
+
+    Solution: Subtract from each Morton Code the distance from its index until the end of the 
+    buffer.  This is the mathematical equivalent to adding the index to each code, but 
+    0xffffffff will wrap around upon any addition, so instead subtract the distance from the 
+    end.  Entries near the beginning of the buffer will see the largest subtraction, and entries 
+    near the end of the buffer will see the least subtraction, and thus the sorted order is 
+    maintained, which is the only important thing for the construction of the tree.
+
+Parameters: None
+Returns:    None
+Creator:    John Cox, 5/2017
+------------------------------------------------------------------------------------------------*/
+void main()
+{
+    uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uMaxNumParticleMortonCodes)
+    {
+        return;
+    }
+
+    uint value = AllParticleMortonCodes[threadIndex]._mortonCode;
+    value -= (uMaxNumParticleMortonCodes - threadIndex);
+    AllParticleMortonCodes[threadIndex]._mortonCode = value;
+}

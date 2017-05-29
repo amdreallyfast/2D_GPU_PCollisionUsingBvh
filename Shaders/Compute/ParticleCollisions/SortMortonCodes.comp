@@ -3,7 +3,7 @@
 // - PARALLEL_SORT_WORK_GROUP_SIZE_X
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES SsboBufferBindings.comp
-// REQUIRES IntermediateSortBuffers.comp
+// REQUIRES ParticleMortonCodeBuffer.comp
 // REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
@@ -14,11 +14,12 @@ layout(location = UNIFORM_LOCATION_BIT_NUMBER) uniform uint uBitNumber;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Uses the Radix Sorting algorithm to sort the IntermediateData structures in the "read" 
-    buffer into the "write" buffer from IntermediateSortBuffers using the prefix sums from 
+    Uses the Radix Sorting algorithm to sort the ParticleMortonCode structures in the "read" 
+    buffer into the "write" buffer from ParticleMotronCodeBuffer using the prefix sums from 
     PrefixScanBuffer.
 
     This is part of the Radix Sort algorithm.
+
     Note: As per Radix Sort, the value must remain relative to others with the same value.
     Suppose there is the following data: 0 1 0 0 1 1 0
     The 0s will be gathered to the left and the 1s to the right, but not in just any order.  The 
@@ -31,9 +32,12 @@ Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // Note: Thread count should be the size of the PrefixScanBuffer::PrefixSumsPerWorkGroup 
-    // array.  
     uint threadIndex = gl_GlobalInvocationID.x;
+    if (threadIndex >= uMaxNumParticleMortonCodes)
+    {
+        // no Morton Code to sort
+        return;
+    }
 
     // remember that, during prefix scan, each thread works on 2 items, so the number of data 
     // entries that were scanned per work group is twice the size of a work group, but this 
@@ -44,24 +48,20 @@ void main()
         PrefixSumsPerWorkGroup[threadIndex];
 
     // there are only 0s and 1s, so if they weren't counted in the sum, then they are 0s
-    // Note: I could have used uIntermediateBufferHalfSize instead of uPrefixSumsPerWorkGroupArraySize 
-    // because they must be identical for the index calculations to line up when determining 
-    // which prefix sum is meant for which IntermediateData structure, but I did it this way to 
-    // try to keep the terminology straight.
     uint prefixSumOfZeros = threadIndex - prefixSumOfOnes;
-    uint totalNumberOfZeros = uPrefixSumsPerWorkGroupArraySize - totalNumberOfOnes;
+    uint totalNumberOfZeros = uMaxNumParticleMortonCodes - totalNumberOfOnes;
 
     // this values determines if the value should go with the 0s or with 1s on this sort step
-    uint intermediateDataReadIndex = threadIndex + uIntermediateBufferReadOffset;
-    uint bitVal = (IntermediateDataBuffer[intermediateDataReadIndex]._data >> uBitNumber) & 1;
+    uint sourceIndex = threadIndex + uParticleMortonCodeBufferReadOffset;
+    uint bitVal = (AllParticleMortonCodes[sourceIndex]._data >> uBitNumber) & 1;
 
     // Note: If the value being sorted has a 0 at the current bit, then the order of 0s in the 
     // data set is maintained (as per Radix Sort) by the number of 0s that came before the 
     // current value.  If the value being sorted has a 1 at the current bit, then the order is 
     // maintained by the number of 1s that came before it.
     uint destinationIndex = (bitVal == 0) ? prefixSumOfZeros : (totalNumberOfZeros + prefixSumOfOnes);
-    destinationIndex += uIntermediateBufferWriteOffset;
+    destinationIndex += uParticleMortonCodeBufferWriteOffset;
 
     // do the sort
-    IntermediateDataBuffer[destinationIndex] = IntermediateDataBuffer[intermediateDataReadIndex];
+    AllParticleMortonCodes[destinationIndex] = AllParticleMortonCodes[sourceIndex];
 }

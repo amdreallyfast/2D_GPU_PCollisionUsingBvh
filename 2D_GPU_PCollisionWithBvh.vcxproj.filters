@@ -248,12 +248,6 @@
     <None Include="Shaders\Render\ParticleRender.vert">
       <Filter>Shaders\Render</Filter>
     </None>
-    <None Include="Shaders\Compute\CountNearbyParticles.comp">
-      <Filter>Shaders\Compute</Filter>
-    </None>
-    <None Include="Shaders\Compute\CountNearbyParticlesLimits.comp">
-      <Filter>Shaders\Compute</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleBuffer.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
@@ -309,9 +303,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\MoveParticlesToCopyBuffer.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
@@ -346,6 +337,12 @@
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverAllData.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\ClearWorkGroupSums.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\CopyParticlesToCopyBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>

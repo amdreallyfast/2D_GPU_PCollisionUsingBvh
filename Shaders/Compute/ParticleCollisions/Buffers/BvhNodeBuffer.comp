@@ -25,21 +25,21 @@ Creator:    John Cox, 5/2017
 struct BvhNode
 {
     BoundingBox _boundingBox;
+    int _isLeaf;
+    int _isNull;
+    int _parentIndex;
+    int _threadEntranceCounter;
+    int _leftChildIndex;
+    int _rightChildIndex;
 
+    // debugging
     // TODO: remove
+    int _startIndex;
+    int _endIndex;
+    int _leafSplitIndex;
     int _extraData1;
     int _extraData2;
     int _extraData3;
-
-    int _isLeaf;
-    int _parentIndex;
-    int _startIndex;        // TODO: remove
-    int _endIndex;          // TODO: remove
-    int _leafSplitIndex;    // TODO: remove
-    int _leftChildIndex;
-    int _rightChildIndex;
-    int _threadEntranceCounter;
-    uint _data;
 
     // no padding needed as long as there are no vec* or mat* variables declared (yes, vec2's 
     // included)

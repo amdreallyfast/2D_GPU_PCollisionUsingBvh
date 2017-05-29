@@ -44,13 +44,14 @@ Here is the order of compute shader operations:
 (1) Generate Morton Codes for each particle
 For bits 0-29 in the Morton Codes
     (2) Get bit for prefix scan
-    (3) Parallel prefix scan to create a prefix sum (number of preceding 1s, and thus implicitly the number of preceding 0s)
-    (4) Sort Morton Codes according the prefix sums for the current bit
-(5) Use the sorted Morton Codes to sort particles to the same positions.  This will help avoid data divergeance when accessing the particle buffer during collision resolution.
-(6) Generate the binary radix tree using the sorted Morton Codes
-(7) Populate the leaf nodes with bounding boxes
-(8) Merge the bounding boxes from the leaves up to the root of the tree (might be able to do (7) in the same shader with barrier())
-(9) Have each particle's bounding box (in its corresponding leaf node) traverse the tree and look for possible collisions
-(10) Resolve those collisions.
+    (3) Clear work group sums
+    (4) Parallel prefix scan to create a prefix sum (number of preceding 1s, and thus implicitly the number of preceding 0s)
+    (5) Sort Morton Codes according the prefix sums for the current bit
+(6) Use the sorted Morton Codes to sort particles to the same positions.  This will help avoid data divergeance when accessing the particle buffer during collision resolution.
+(7) Generate the binary radix tree using the sorted Morton Codes
+(8) Populate the leaf nodes with bounding boxes
+(9) Merge the bounding boxes from the leaves up to the root of the tree (might be able to do (7) in the same shader with barrier())
+(10) Have each particle's bounding box (in its corresponding leaf node) traverse the tree and look for possible collisions
+(11) Resolve those collisions.
 
 And that is parallel collision detection.  It's a lot of work to change from O(N^2) -> O(Nlog2N), but it is the only feasible way to perform particle collision when N becomes large.
