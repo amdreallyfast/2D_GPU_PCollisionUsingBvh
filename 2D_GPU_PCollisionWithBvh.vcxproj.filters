@@ -68,7 +68,7 @@
     <ClCompile Include="Source\ShaderControllers\ParticleCollisions.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Buffers\SSBOs\ParticleMortonCodeSsbo.cpp">
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
   </ItemGroup>
@@ -154,17 +154,17 @@
     <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Buffers\ParticleMortonCode.h">
-      <Filter>Include\Buffers</Filter>
-    </ClInclude>
     <ClInclude Include="Include\Buffers\ParticleProperties.h">
       <Filter>Include\Buffers</Filter>
     </ClInclude>
     <ClInclude Include="Include\Buffers\ParticlePotentialCollisions.h">
       <Filter>Include\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="Include\Buffers\SSBOs\ParticleMortonCodeSsbo.h">
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleSortingDataSsbo.h">
       <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\ParticleSortingData.h">
+      <Filter>Include\Buffers</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -291,9 +291,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleMortonCodeBuffer.comp">
-      <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\PrefixScanBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
@@ -309,9 +306,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\ResolveCollisions.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\SortMortonCodes.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\SortParticles.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
@@ -324,25 +318,31 @@
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateMortonCodes.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
-    <None Include="Shaders\Compute\ParticleCollisions\GuaranteeMortonCodeUniqueness.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
-    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverWorkGroupSums.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
-    <None Include="Shaders\Compute\ParticleCollisions\ParallelPrefixScanOverAllData.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\ClearWorkGroupSums.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\CopyParticlesToCopyBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleSortingDataBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateSortingData.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GuaranteeSortingDataUniqueness.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\SortSortingDataWithPrefixSums.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\PrefixScanOverWorkGroupSums.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\PrefixScanOverAllData.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>

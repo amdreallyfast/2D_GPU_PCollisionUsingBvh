@@ -11,13 +11,13 @@ layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
 Description:
     Clears out the PrefixSumsOfWorkGroupSums array.
 
-    This is more than just cleanup.  The ParallelPrefixScan on all the data will only fill out 
+    This is more than just cleanup.  The prefix scan on all the data will only fill out 
     the per-work-group sum for each work group in use, NOT for each work group that is NOT in 
     use.  If the sums of the work groups that are not in use are not cleared, then the 
     subsequent scan of all per-work-group sums will give an erroneous value to 
     PrefixScanBuffer::totalNumberOfOnes.
 
-    Note: This reset cannot be performed in ParallelPrefixScan.comp because there is no 
+    Note: This reset cannot be performed in one of the prefix scan shaders because there is no 
     guaranteed work group launch order.  If I tried to say that, at the beginning of the 
     parallel prefix scan, work group 0's threads will clean out the PrefixSumsOfWorkGroupSums 
     array, it may be that (for example) work group 57 will launch before work group 0, so work 
@@ -26,7 +26,7 @@ Description:
     set to 0 before running the prefix scan is to set them to 0 in a shader that runs prior.
 Parameters: None
 Returns:    None
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {

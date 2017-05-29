@@ -1,10 +1,10 @@
-#include "Include/Buffers/SSBOs/ParticleMortonCodeSsbo.h"
+#include "Include/Buffers/SSBOs/ParticleSortingDataSsbo.h"
 
 #include "ThirdParty/glload/include/glload/gl_4_4.h"
 #include "Shaders/ShaderHeaders/SsboBufferBindings.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
 
-#include "Include/Buffers/ParticleMortonCode.h"
+#include "Include/Buffers/ParticleSortingData.h"
 
 #include <vector>
 
@@ -17,20 +17,20 @@ Parameters:
 Returns:    None
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-ParticleMortonCodeSsbo::ParticleMortonCodeSsbo(unsigned int numItems) :
+ParticleSortingDataSsbo::ParticleSortingDataSsbo(unsigned int numItems) :
     SsboBase(),  // generate buffers
     _numItems(numItems)
 {
     // allocate enough space for these structures to be moved from a "read" section to a 
     // "write" section and back again
-    std::vector<ParticleMortonCode> v(numItems * 2);
+    std::vector<ParticleSortingData> v(numItems * 2);
 
     // now bind this new buffer to the dedicated buffer binding location
-    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_MORTON_CODE_BUFFER_BINDING, _bufferId);
+    glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_SORTING_DATA_BUFFER_BINDING, _bufferId);
 
     // and fill it with new data
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bufferId);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, v.size() * sizeof(ParticleMortonCode), v.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, v.size() * sizeof(ParticleSortingData), v.data(), GL_DYNAMIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
@@ -48,11 +48,11 @@ Returns:
     See Description.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-void ParticleMortonCodeSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
+void ParticleSortingDataSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const
 {
     // the uniform should remain constant after this 
     glUseProgram(computeProgramId);
-    glUniform1ui(UNIFORM_LOCATION_MAX_NUM_PARTICLE_MORTON_CODES, _numItems);
+    glUniform1ui(UNIFORM_LOCATION_MAX_NUM_SORTING_DATA, _numItems);
     glUseProgram(0);
 }
 
@@ -64,7 +64,7 @@ Returns:
     See Description.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-unsigned int ParticleMortonCodeSsbo::NumItems() const
+unsigned int ParticleSortingDataSsbo::NumItems() const
 {
     return _numItems;
 }

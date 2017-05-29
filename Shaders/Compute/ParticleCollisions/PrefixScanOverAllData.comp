@@ -2,7 +2,7 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES SsboBufferBindings.comp
-// REQUIRES PrefixScanBuffer.comp.comp
+// REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
@@ -26,7 +26,7 @@ Description:
     data has not been operated on.  Solution: This part of the prefix scan only works on a 
     single work group's worth of data in the PrefixSumBuffer, specifically 
     PrefixSumsPerWorkGroup.  The rest of the prefix sums will calculated in the second half in
-    ParallelPrefixScanOverWorkGroupSums.comp
+    PrefixScanOverWorkGroupSums.comp
 
     Note: This is a parallel prefix sums algorithm that uses shared memory, a binary tree, and 
     no atomic counters to build up a prefix sum within a work group.  The shared memory is 

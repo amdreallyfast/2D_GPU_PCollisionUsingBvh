@@ -8,7 +8,7 @@ Description:
     controller that used ParticleBuffer had to look up the uniform binding location of 
     uParticleBufferSize independently.
 
-    But not the ShaderStorage class CAN create composite shaders, so buffers are defined in 
+    But now the ShaderStorage class CAN create composite shaders, so buffers are defined in 
     their own .comp files and are accompanied by uniforms specifying their max size.  This demo 
     of the GPU-based parallel sort has multiple shaders that use the info from one buffer to 
     alter another buffer, and then the next shader in the process uses the altered buffer to 
@@ -16,26 +16,24 @@ Description:
     
     Rather than requiring repeat lookup of the same uniforms in different shaders, hard code 
     the uniform binding locations to be constant and unique across whatever shaders they may 
-    end up being used in.
+    end up being used in.  This will reduce coupling by removing the need for lookups of 
+    hard-coded uniform names.
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 
 // ParticleBuffer.comp
 #define UNIFORM_LOCATION_MAX_NUM_PARTICLES 0
 
-// ParticleMortonCodeBuffer.comp
-#define UNIFORM_LOCATION_MAX_NUM_PARTICLE_MORTON_CODES 2
-#define UNIFORM_LOCATION_PARTICLE_MORTON_CODE_BUFFER_READ_OFFSET 3
-#define UNIFORM_LOCATION_PARTICLE_MORTON_CODE_BUFFER_WRITE_OFFSET 4
+// ParticleSortingDataBuffer.comp
+#define UNIFORM_LOCATION_MAX_NUM_SORTING_DATA 2
+#define UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET 3
+#define UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET 4
 
 // PrefixScanBuffer.comp
 #define UNIFORM_LOCATION_ALL_PREFIX_SUMS_SIZE 5
 
 // GetBitForPrefixScans.comp
 #define UNIFORM_LOCATION_BIT_NUMBER 6
-
-// ParallelPrefixScan.comp
-#define UNIFORM_LOCATION_CALCULATE_ALL 7
 
 // PolygonBuffer.comp
 #define UNIFORM_LOCATION_POLYGON_BUFFER_SIZE 8

@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------------------------
 Description:
     This is a set of constants that is useful for avoiding repeat definitions or hard-coded 
-    magic numbers in both ParallelSort.cpp and in ParallelPrefixScan.comp in order to make the 
+    magic numbers in both ParallelSort.cpp and in PrefixScan.comp in order to make the 
     buffer sizes and work group counts and max thread counts all line up.
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
@@ -19,7 +19,7 @@ Creator:    John Cox, 3/2017
 #define PARALLEL_SORT_WORK_GROUP_SIZE_Y 1
 #define PARALLEL_SORT_WORK_GROUP_SIZE_Z 1
 
-// Note: Each thread in the ParallelPrefixScan.comp's algorithm works on 2 data entries.  Define 
+// Note: Each thread in the PrefixScan.comp's algorithm works on 2 data entries.  Define 
 // the number of items per work group such that each work groups' full complement of threads can 
 // have something to work with.
 #define PARALLEL_SORT_ITEMS_PER_WORK_GROUP (PARALLEL_SORT_WORK_GROUP_SIZE_X * 2)

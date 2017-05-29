@@ -1,10 +1,9 @@
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
-// - PARALLEL_SORT_WORK_GROUP_SIZE_X
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES ParticleBuffer.comp
-// REQUIRES ParticleMortonCodeBuffer.comp
+// REQUIRES ParticleSortingDataBuffer.comp
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
@@ -13,8 +12,8 @@ layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
 /*------------------------------------------------------------------------------------------------
 Description:
     This is the end of the line for sorting.  By the time that this shader is called, the
-    ParticleMortonCodeBuffer's last written portion (should be switched to the "read" portion by 
-    now) should contain sorted ParticleMortonCode structures.  Make the ParticleBuffer have this 
+    ParticleSortingDataBuffer's last written portion (should be switched to the "read" portion by 
+    now) should contain sorted ParticleSortingData structures.  Make the ParticleBuffer have this 
     same order.
 
     Note: There is no "swap" in parallel sorting.  All particles were already copied to the 
@@ -23,24 +22,24 @@ Description:
     back to the first half of the ParticleBuffer.
 Parameters: None
 Returns:    None
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uMaxNumParticles) // or uMaxNumParticleMortonCodes
+    if (threadIndex >= uMaxNumParticles) // or uMaxNumParticleSortingData
     {
         return;
     }
 
-    // the Morton Codes are expected to be in the first half of the ParticleMortonCodeBuffer,
+    // the Morton Codes are expected to be in the first half of the ParticleSortingDataBuffer,
     // so the read offset should be 0, but I'm adding it here anyway just in case the sorting 
     // loop is changed to run an odd number of times and therefore cause the sorted data to end 
     // up in the buffer's second half 
-    uint mortonCodeIndex = threadIndex + uParticleMortonCodeBufferReadOffset;
-    uint sourceIndex = ParticleMortonCodeBuffer[mortonCodeIndex]._preSortedParticleIndex;
+    uint mortonCodeIndex = threadIndex + uParticleSortingDataBufferReadOffset;
+    uint sourceIndex = ParticleSortingDataBuffer[mortonCodeIndex]._preSortedParticleIndex;
 
-    // the ParticleMortonCode structure is already sorted, so whatever index it is at now is the 
+    // the ParticleSortingData structure is already sorted, so whatever index it is at now is the 
     // same index where the original data should be 
     AllParticles[threadIndex] = AllParticles[sourceIndex];
 }

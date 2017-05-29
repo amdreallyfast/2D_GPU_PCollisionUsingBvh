@@ -13,7 +13,7 @@ Description:
     sort.
 Parameters: None
 Returns:    None
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {

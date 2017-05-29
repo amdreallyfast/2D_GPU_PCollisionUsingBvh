@@ -97,7 +97,7 @@ Description:
     dealing with dummy data.  This is a pittance compared to the total thread count, so it 
     doesn't seem wasteful anymore.  
 
-    ParallelPrefixScan does its best work on large data sets (100,000+).
+    PrefixScan does its best work on large data sets (100,000+).
 Creator:    John Cox, 3-2017
 ------------------------------------------------------------------------------------------------*/
 
@@ -108,7 +108,7 @@ Description:
     the SSBO.
 Parameters: 
     numDataEntries  How many items the user wants to have.  The only restriction is that it be 
-    less than (due to restrictions in the ParallelPrefixScan) 1024x1024 = 1,048,576.
+    less than (due to restrictions in the PrefixScan) 1024x1024 = 1,048,576.
 Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/

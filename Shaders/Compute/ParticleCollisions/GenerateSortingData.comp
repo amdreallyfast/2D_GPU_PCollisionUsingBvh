@@ -3,7 +3,7 @@
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES ParticleBuffer.comp
-// REQUIRES ParticleMortonCodeBuffer.comp
+// REQUIRES ParticleSortingDataBuffer.comp
 // REQUIRES PositionToMortonCode.comp
 
 // Y and Z work group sizes default to 1
@@ -14,14 +14,13 @@ Description:
     Generates a Morton Code for the current thread's particle's position.
 Parameters: None
 Returns:    None
-Creator:    John Cox, 3/2017
+Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uMaxNumParticles)
+    if (threadIndex >= uMaxNumParticles) // or uMaxNumParticleSortingData
     {
-        // index out of bounds, so don't even try to dereference the particle index
         return;
     }
 
@@ -32,6 +31,6 @@ void main()
         mortonCode = 0xffffffff;
     }
 
-    AllParticleMortonCodes[threadIndex]._mortonCode = mortonCode;
-    AllParticleMortonCodes[threadIndex]._preSortedParticleIndex = int(threadIndex);
+    AllParticleSortingData[threadIndex]._sortingData = mortonCode;
+    AllParticleSortingData[threadIndex]._preSortedParticleIndex = int(threadIndex);
 }

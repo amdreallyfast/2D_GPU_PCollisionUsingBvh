@@ -58,7 +58,7 @@ namespace ShaderControllers
     private:
         unsigned int _particleDataToIntermediateDataProgramId;
         unsigned int _getBitForPrefixScansProgramId;
-        unsigned int _parallelPrefixScanProgramId;
+        unsigned int _PrefixScanProgramId;
         unsigned int _sortIntermediateDataProgramId;
         unsigned int _sortParticlesProgramId;
 

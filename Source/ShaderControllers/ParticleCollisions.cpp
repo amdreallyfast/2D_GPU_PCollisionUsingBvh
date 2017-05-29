@@ -19,58 +19,58 @@ using std::cout;
 using std::endl;
 
 
-void GenerateTestBvh(std::vector<BvhNode> &bvh)
-{
-    bvh.clear();
-
-    int numLeaves = 16;
-    for (int leafCounter = 0; leafCounter < numLeaves; leafCounter++)
-    {
-        bvh.push_back(BvhNode());
-        bvh[leafCounter]._isLeaf = true;
-    }
-    
-    for (int  internalNodeCounter = 0; internalNodeCounter < numLeaves - 1; internalNodeCounter++)
-    {
-        bvh.push_back(BvhNode());
-    }
-
-    //// Test BVH #1
-    //bvh[0]._data = 1;
-    //bvh[1]._data = 2;
-    //bvh[2]._data = 3;
-    //bvh[3]._data = 9;
-    //bvh[4]._data = 9;
-    //bvh[5]._data = 14;
-    //bvh[6]._data = 15;
-    //bvh[7]._data = 16;
-    //bvh[8]._data = 17;
-    //bvh[9]._data = 18;
-    //bvh[10]._data = 20;
-    //bvh[11]._data = 22;
-    //bvh[12]._data = 22;
-    //bvh[13]._data = 26;
-    //bvh[14]._data = 26;
-    //bvh[15]._data = 28;
-
-    // Test BVH #2
-    bvh[0]._data = 1271858;
-    bvh[1]._data = 34211986;
-    bvh[2]._data = 47408388;
-    bvh[3]._data = 75516948;
-    bvh[4]._data = 114443670;
-    bvh[5]._data = 276973568;
-    bvh[6]._data = 306777138;
-    bvh[7]._data = 345188406;
-    bvh[8]._data = 538667040;
-    bvh[9]._data = 549996564;
-    bvh[10]._data = 575677734;
-    bvh[11]._data = 584191158;
-    bvh[12]._data = 637668368;
-    bvh[13]._data = 643326102;
-    bvh[14]._data = 806428982;
-    bvh[15]._data = 815474724;
-}
+//void GenerateTestBvh(std::vector<BvhNode> &bvh)
+//{
+//    bvh.clear();
+//
+//    int numLeaves = 16;
+//    for (int leafCounter = 0; leafCounter < numLeaves; leafCounter++)
+//    {
+//        bvh.push_back(BvhNode());
+//        bvh[leafCounter]._isLeaf = true;
+//    }
+//    
+//    for (int  internalNodeCounter = 0; internalNodeCounter < numLeaves - 1; internalNodeCounter++)
+//    {
+//        bvh.push_back(BvhNode());
+//    }
+//
+//    //// Test BVH #1
+//    //bvh[0]._data = 1;
+//    //bvh[1]._data = 2;
+//    //bvh[2]._data = 3;
+//    //bvh[3]._data = 9;
+//    //bvh[4]._data = 9;
+//    //bvh[5]._data = 14;
+//    //bvh[6]._data = 15;
+//    //bvh[7]._data = 16;
+//    //bvh[8]._data = 17;
+//    //bvh[9]._data = 18;
+//    //bvh[10]._data = 20;
+//    //bvh[11]._data = 22;
+//    //bvh[12]._data = 22;
+//    //bvh[13]._data = 26;
+//    //bvh[14]._data = 26;
+//    //bvh[15]._data = 28;
+//
+//    // Test BVH #2
+//    bvh[0]._data = 1271858;
+//    bvh[1]._data = 34211986;
+//    bvh[2]._data = 47408388;
+//    bvh[3]._data = 75516948;
+//    bvh[4]._data = 114443670;
+//    bvh[5]._data = 276973568;
+//    bvh[6]._data = 306777138;
+//    bvh[7]._data = 345188406;
+//    bvh[8]._data = 538667040;
+//    bvh[9]._data = 549996564;
+//    bvh[10]._data = 575677734;
+//    bvh[11]._data = 584191158;
+//    bvh[12]._data = 637668368;
+//    bvh[13]._data = 643326102;
+//    bvh[14]._data = 806428982;
+//    bvh[15]._data = 815474724;
+//}
 
 
 
@@ -103,25 +103,17 @@ namespace ShaderControllers
         _bvhNodeSsbo(nullptr),
         _bvhGeometrySsbo(nullptr)
     {
+        
+        
+        
+        
+        
+        
+        
+        
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
         std::string shaderKey;
 
-
-        // CopyParticlesToCopyBuffer.comp
-        // GenerateMortonCodes.comp
-        // memory barrier
-        // loop
-        // - ClearWorkGroupSums.comp
-        // - GetBitForPrefixScan.comp
-        // - memory barrier
-        // - ParallelPrefixScanOverAllData.comp
-        // - memory barrier
-        // - ParallelPrefixScanOverWorkGroupSums.comp
-        // - memory barrier
-        // - SortMortonCodes.comp
-        // - memory barrier
-        // SortParticles.comp
-        // GuaranteeMortonCodeUniqueness.comp
 
         // populate leaf nodes with the particles' Morton Codes
         shaderKey = "populate leaf nodes with data";
@@ -527,4 +519,243 @@ namespace ShaderControllers
     {
         return _bvhGeometrySsbo;
     }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        The GLSL version declaration, compute shader work group sizes, 
+        cross-shader uniform locations, and SSBO buffer bindings are used in very compute 
+        shader.  This function puts their assembly into one place.
+    Parameters: 
+        The key to the composite shader that is under construction.
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramHeader(const std::string &shaderKey) const
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that prepares the 
+        ParticleBuffer for the final stage of particle sorting in SortParticles.comp.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramCopyParticlesToCopyBuffer()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "copy particles to copy buffer";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/CopyParticlesToCopyBuffer.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdCopyParticlesToCopyBuffer = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that prepares the 
+        data over which particles will be sorted.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramGenerateSortingData()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "generate sorting data";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PositionToMortonCode.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateSortingData.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdGenerateSortingData = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that resets the 
+        prefix sum for each work group's result to 0.
+
+        Part off the radix sort loop.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramClearWorkGroupSums()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "clear work group sums";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PrefixScanBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/ClearWorkGroupSums.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdClearWorkGroupSums = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that extracts a 
+        single bit from the sorting data for use during the prefix scan.
+
+        Part of the radix sort loop.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramGetBitForPrefixScan()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "get bit for prefix scan";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PrefixScanBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GetBitForPrefixScan.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdGetBitForPrefixScan = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that runs the 
+        first part of the prefix scan. 
+
+        Part of the radix sort loop.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramPrefixScanOverAllData()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "prefix scan over all data";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PrefixScanBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/PrefixScanOverAllData.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdPrefixScanOverAllData = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that runs the
+        second part of the prefix scan.
+
+        Part of the radix sort loop.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramPrefixScanOverWorkGroupSums()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "prefix scan over work group sums";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PrefixScanBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/PrefixScanOverWorkGroupSums.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdPrefixScanOverWorkGroupSums = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that sorts the 
+        sorting data given the results of the prefix scan.
+
+        Part of the radix sort loop.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramSortSortingDataWithPrefixSums()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "sort sorting data with prefix sums";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PrefixScanBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/SortSortingDataWithPrefixSums.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdSortSortingDataWithPrefixSums = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that copies 
+        particles from the second half of the ParticleBuffer to their sorted position in the 
+        first half.  This program is the complement to CopyParticlesToCopyBuffer.comp.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramSortParticles()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "sort particles";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/SortParticles.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdSortParticles = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that modifies the 
+        data over which particles were sorted so that every entry is unique.  This will prevent 
+        depth spikes in the binary radix tree.
+
+        Note: As mentioned in GuaranteeSortingDataUniqueness.comp, this shader CANNOT be 
+        summoned before the sorting is done.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramGuaranteeSortingDataUniqueness() 
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "guarantee sorting data uniqueness";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GuaranteeSortingDataUniqueness.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdGuaranteeSortingDataUniqueness = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
 }

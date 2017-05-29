@@ -61,7 +61,7 @@ namespace ShaderControllers
     ParallelSort::ParallelSort(const ParticleSsbo::SharedConstPtr dataToSort) :
         _particleDataToIntermediateDataProgramId(0),
         _getBitForPrefixScansProgramId(0),
-        _parallelPrefixScanProgramId(0),
+        _PrefixScanProgramId(0),
         _sortIntermediateDataProgramId(0),
         _sortParticlesProgramId(0),
         _particleCopySsbo(nullptr),
@@ -114,10 +114,10 @@ namespace ShaderControllers
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/PrefixScanBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/ParallelPrefixScan.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParallelSort/PrefixScan.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
-        _parallelPrefixScanProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
+        _PrefixScanProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
 
         // and finally sort the "read" array from IntermediateSortBuffers into the "write" array
         shaderKey = "sort intermediate data";
@@ -158,7 +158,7 @@ namespace ShaderControllers
 
         // the PrefixScanBuffer is used in three shaders
         _prefixSumSsbo->ConfigureConstantUniforms(_getBitForPrefixScansProgramId);
-        _prefixSumSsbo->ConfigureConstantUniforms(_parallelPrefixScanProgramId);
+        _prefixSumSsbo->ConfigureConstantUniforms(_PrefixScanProgramId);
         _prefixSumSsbo->ConfigureConstantUniforms(_sortIntermediateDataProgramId);
 
         // see explanation in the PrefixSumSsbo constructor for why there are likely more 
@@ -184,7 +184,7 @@ namespace ShaderControllers
     {
         glDeleteProgram(_particleDataToIntermediateDataProgramId);
         glDeleteProgram(_getBitForPrefixScansProgramId);
-        glDeleteProgram(_parallelPrefixScanProgramId);
+        glDeleteProgram(_PrefixScanProgramId);
         glDeleteProgram(_sortIntermediateDataProgramId);
         glDeleteProgram(_sortParticlesProgramId);
     }
@@ -214,7 +214,7 @@ namespace ShaderControllers
     {
         unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo->NumDataEntries();
         
-        // for ParallelPrefixScan.comp, which works on 2 items per thread
+        // for PrefixScan.comp, which works on 2 items per thread
         int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
         int remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
         numWorkGroupsXByItemsPerWorkGroup += (remainder == 0) ? 0 : 1;
@@ -251,7 +251,7 @@ namespace ShaderControllers
 
             // prefix scan over all values
             // Note: Parallel prefix scan is 2 items per thread.
-            glUseProgram(_parallelPrefixScanProgramId);
+            glUseProgram(_PrefixScanProgramId);
             glUniform1ui(UNIFORM_LOCATION_CALCULATE_ALL, 1);
             glDispatchCompute(numWorkGroupsXByItemsPerWorkGroup, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -331,7 +331,7 @@ namespace ShaderControllers
         // begin
         parallelSortStart = high_resolution_clock::now();
 
-        // for ParallelPrefixScan.comp, which works on 2 items per thread
+        // for PrefixScan.comp, which works on 2 items per thread
         int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
         int remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
         numWorkGroupsXByItemsPerWorkGroup += (remainder == 0) ? 0 : 1;
@@ -377,7 +377,7 @@ namespace ShaderControllers
             // prefix scan over all values
             // Note: Parallel prefix scan is 2 items per thread.
             start = high_resolution_clock::now();
-            glUseProgram(_parallelPrefixScanProgramId);
+            glUseProgram(_PrefixScanProgramId);
             glUniform1ui(UNIFORM_LOCATION_CALCULATE_ALL, 1);
             glDispatchCompute(numWorkGroupsXByItemsPerWorkGroup, numWorkGroupsY, numWorkGroupsZ);
             glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
@@ -458,8 +458,8 @@ namespace ShaderControllers
         //{
         //    unsigned int thisIndex = i;
         //    unsigned int prevIndex = i - 1;
-        //    unsigned int val = checkOriginalData[thisIndex]._mortonCode;
-        //    unsigned int prevVal = checkOriginalData[prevIndex]._mortonCode;
+        //    unsigned int val = checkOriginalData[thisIndex]._sortingData;
+        //    unsigned int prevVal = checkOriginalData[prevIndex]._sortingData;
 
         //    if (checkOriginalData[thisIndex]._isActive == 0)
         //    {

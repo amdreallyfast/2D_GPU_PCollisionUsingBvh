@@ -2,7 +2,7 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES SsboBufferBindings.comp
-// REQUIRES PrefixScanBuffer.comp.comp
+// REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
@@ -12,7 +12,7 @@ shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr;
 /*------------------------------------------------------------------------------------------------
 Description:
     This is the second half of the parallel prefix scan algorithm.  It is the exact same 
-    algorithm as in ParallelPrefixScanOverAllData.comp (see that shader for comments), but it 
+    algorithm as in PrefixScanOverAllData.comp (see that shader for comments), but it 
     needs to work on a different buffer, which in GLSL need to be specified explicitly, so it 
     needs a different shader.
 Parameters: None
