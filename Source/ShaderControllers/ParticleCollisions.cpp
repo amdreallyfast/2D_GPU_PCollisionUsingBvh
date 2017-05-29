@@ -92,119 +92,52 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 3/2017
     --------------------------------------------------------------------------------------------*/
-    ParticleCollisions::ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo) :
+    ParticleCollisions::ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo,
+        const ParticlePropertiesSsbo::SharedConstPtr particlePropertiesSsbo) :
         _numLeaves(particleSsbo->NumParticles()),
-        _populateLeavesWithDataProgramId(0),
-        _generateBinaryRadixTreeProgramId(0),
-        _generateBoundingVolumesProgramId(0),
-        _generateVerticesProgramId(0),
-        _detectCollisionsProgramId(0),
-        _resolveCollisionsProgramId(0),
+
+        _programIdCopyParticlesToCopyBuffer(0),
+        _programIdGenerateSortingData(0),
+        _programIdClearWorkGroupSums(0),
+        _programIdGetBitForPrefixScan(0),
+        _programIdPrefixScanOverAllData(0),
+        _programIdPrefixScanOverWorkGroupSums(0),
+        _programIdSortSortingDataWithPrefixSums(0),
+        _programIdSortParticles(0),
+        _programIdGuaranteeSortingDataUniqueness(0),
+        _programIdGenerateLeafNodeBoundingBoxes(0),
+        _programIdGenerateBinaryRadixTree(0),
+        _programIdMergeBoundingVolumes(0),
+
         _bvhNodeSsbo(nullptr),
         _bvhGeometrySsbo(nullptr)
     {
-        
-        
-        
-        
-        
-        
-        
-        
-        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
-        std::string shaderKey;
+        // the programs used during the parallel sort
+        AssembleProgramCopyParticlesToCopyBuffer();
+        AssembleProgramGenerateSortingData();
+        AssembleProgramClearWorkGroupSums();
+        AssembleProgramGetBitForPrefixScan();
+        AssembleProgramPrefixScanOverAllData();
+        AssembleProgramPrefixScanOverWorkGroupSums();
+        AssembleProgramSortSortingDataWithPrefixSums();
+        AssembleProgramSortParticles();
 
-
-        // populate leaf nodes with the particles' Morton Codes
-        shaderKey = "populate leaf nodes with data";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/PopulateLeafNodesWithData.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _populateLeavesWithDataProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-        // generate all the tree's internal nodes
-        shaderKey = "generate binary radix tree";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBinaryRadixTree.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _generateBinaryRadixTreeProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-        // generate bounding boxes for the leaves, then merge them from the leaves up to the 
-        // root, thus finishing the hierarchy of bounding volumes
-        shaderKey = "generate bounding volumes";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBoundingVolumes.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _generateBoundingVolumesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-        // generate vertices out of the BVH
-        shaderKey = "generate vertices";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PolygonBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBvhVertices.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _generateVerticesProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-        // have each leaf check through the tree for potential collisions and record the one 
-        // with the largest bounding box overlap
-        shaderKey = "detect collisions";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectCollisions.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _detectCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-        // if a particle collided with anything, handle it
-        shaderKey = "resolve collisions";
-        shaderStorageRef.NewCompositeShader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/ResolveCollisions.comp");
-        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
-        shaderStorageRef.LinkShader(shaderKey);
-        _resolveCollisionsProgramId = shaderStorageRef.GetShaderProgram(shaderKey);
-
-
+        // the programs used during BVH construction
+        AssembleProgramGuaranteeSortingDataUniqueness();
+        AssembleProgramGenerateLeafNodeBoundingBoxes();
+        AssembleProgramGenerateBinaryRadixTree();
+        AssembleProgramMergeBoundingVolumes();
 
         // generate the BVH that will be used for all this collision detection
         _bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(particleSsbo->NumParticles());
+
+        // TODO: configure particleSsbo where it will be used
+        // TODO: configure particlePropertiesSsbo where it will be used
+        // TODO: create and configure _particleSortingDataSsbo;
+        // TODO: create and configure _prefixSumSsbo;
+        // TODO: create and configure _bvhNodeSsbo;
+        // TODO: create and configure _bvhGeometrySsbo;
+
 
         //// test buffer
         //_bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(16);
@@ -757,5 +690,88 @@ namespace ShaderControllers
         shaderStorageRef.LinkShader(shaderKey);
         _programIdGuaranteeSortingDataUniqueness = shaderStorageRef.GetShaderProgram(shaderKey);
     }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that generates the 
+        borders for each particle's bounding box.
+
+        Note: Can be run at the same time as GenerateBinaryRadixTree.comp.  They write different 
+        data, so they can be dispatched without a glMemoryBarrier(...) in between them. 
+        
+        (??verify??)
+
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramGenerateLeafNodeBoundingBoxes()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "generate leaf node bounding boxes";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticlePropertiesBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateLeafNodeBoundingBoxes.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdGenerateLeafNodeBoundingBoxes = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that generates the 
+        binary radix tree.
+
+        Note: Can be run at the same time as GenerateLeafNodeBoundingBoxes.comp.  Both are 
+        writing to leaf nodes, but they are writing different data, so one can be dispatched 
+        right after the other without the need for a memory barrier.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramGenerateBinaryRadixTree()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "generate binary radix tree";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/v.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBinaryRadixTree.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdGenerateBinaryRadixTree = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
+        Assembles headers, buffers, and functional .comp files for the shader that takes the 
+        bounding boxes the were made in GenerateLeafNodeBoundingBoxes.comp and merges them up 
+        the tree to the root.  This takes a tree with bounding volumes at the leaves and 
+        generates a bounding volume hierarchy.  All the previous shaders' sorting and tree 
+        generation and supporting duties were to get to this point.
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 5/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramMergeBoundingVolumes()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "merge bounding volumes";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/MergeBoundingBoxes.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdMergeBoundingVolumes = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
 
 }
