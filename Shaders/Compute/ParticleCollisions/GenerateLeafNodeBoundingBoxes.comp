@@ -19,7 +19,7 @@ Creator:    John Cox, 5/2017
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize)
+    if (threadIndex >= uMaxNumParticles)
     {
         return;
     }

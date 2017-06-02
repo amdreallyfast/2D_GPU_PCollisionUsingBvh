@@ -71,6 +71,9 @@
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -165,6 +168,9 @@
     </ClInclude>
     <ClInclude Include="Include\Buffers\ParticleSortingData.h">
       <Filter>Include\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -300,9 +306,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\PopulateLeafNodes.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\ResolveCollisions.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
@@ -344,6 +347,12 @@
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\PrefixScanOverAllData.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateLeafNodeBoundingBoxes.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePropertiesBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

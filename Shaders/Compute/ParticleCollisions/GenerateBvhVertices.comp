@@ -29,7 +29,7 @@ void main()
     // the particles, so this same index can be used for both ParticleBuffer access and 
     // BvhNodeBuffer access
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize)
+    if (threadIndex >= uMaxNumParticles)
     {
         // thread greater than data set size or no leaf was made for this particle
         return;

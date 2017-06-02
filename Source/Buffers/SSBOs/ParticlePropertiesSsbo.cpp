@@ -20,16 +20,17 @@ Creator:    John Cox, 5/2017
 static void GenerateParticleProperties(std::vector<ParticleProperties> &initThis)
 {
     initThis.clear();
+    initThis.resize(ParticleProperties::ParticleType::NUM_PARTICLE_PROPERTIES);
 
     ParticleProperties pp;
 
     // the dud property
-    initThis.push_back(pp);
+    initThis[ParticleProperties::ParticleType::NO_PARTICLE_TYPE] = pp;
 
     // generic
     pp._mass = 0.05f;
     pp._collisionRadius = 0.02f;
-    initThis.push_back(pp);
+    initThis[ParticleProperties::ParticleType::GENERIC] = pp;
 }
 
 

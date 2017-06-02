@@ -27,10 +27,10 @@ namespace ShaderControllers
 
         void DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const;
         void DetectAndResolveWithProfiling(unsigned int numActiveParticles) const;
-        const PolygonSsbo::SharedConstPtr BvhVerticesSsbo() const;
+        const PolygonSsbo &BvhVerticesSsbo() const;
 
     private:
-        unsigned int _numLeaves;
+        unsigned int _numParticles;
 
         // lots of programs for sorting
         unsigned int _programIdCopyParticlesToCopyBuffer;
@@ -50,6 +50,7 @@ namespace ShaderControllers
 
         // TODO: detect collisions, resolve collisions
 
+        // ??should this shader controller be split into more manageable parts? it's a lot of programs...??
         void AssembleProgramHeader(const std::string &shaderKey) const;
         void AssembleProgramCopyParticlesToCopyBuffer();
         void AssembleProgramGenerateSortingData();
@@ -64,8 +65,14 @@ namespace ShaderControllers
         void AssembleProgramGenerateBinaryRadixTree();
         void AssembleProgramMergeBoundingVolumes();
 
+        void SortParticlesWithoutProfiling() const;
+        void SortParticlesWithProfiling() const;
 
+        void GenerateBvhWithoutProfiling() const;
+        void GenerateBvhWithProfiling() const;
 
+        void DetectAndResolveCollisionsWithoutProfiling() const;
+        void DetectAndResolveCollisionsWithProfiling() const;
 
 
         // CopyParticlesToCopyBuffer.comp
@@ -95,12 +102,12 @@ namespace ShaderControllers
 
 
 
-        ParticleSortingDataSsbo::SharedConstPtr _particleSortingDataSsbo;
-        PrefixSumSsbo::SharedConstPtr _prefixSumSsbo;
-        BvhNodeSsbo::SharedConstPtr _bvhNodeSsbo;
-        PolygonSsbo::SharedPtr _bvhGeometrySsbo;
+        ParticleSortingDataSsbo _particleSortingDataSsbo;
+        PrefixSumSsbo _prefixSumSsbo;
+        BvhNodeSsbo _bvhNodeSsbo;
+        PolygonSsbo _bvhGeometrySsbo;
 
         // used for verifying that particle sorting is working
-        ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
+        const ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
     };
 }

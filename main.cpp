@@ -47,6 +47,7 @@
 
 #include "Include/Buffers/Particle.h"
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
+#include "Include/Buffers/SSBOs/ParticlePropertiesSsbo.h"
 #include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Include/ShaderControllers/ParticleReset.h"
 #include "Include/ShaderControllers/ParticleUpdate.h"
@@ -66,10 +67,11 @@ Stopwatch gTimer;
 FreeTypeEncapsulated gTextAtlases;
 
 ParticleSsbo::SharedPtr particleBuffer = nullptr;
+ParticlePropertiesSsbo::SharedPtr particlePropertiesBuffer = nullptr;
 PolygonSsbo::SharedPtr polygonBuffer = nullptr;
 std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
-std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
+//std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
 std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
 std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
@@ -135,6 +137,9 @@ void Init()
     // to happen on the CPU side.
     particleBuffer = std::make_shared<ParticleSsbo>(MAX_PARTICLE_COUNT);
     
+    // mass, collision radius, etc.
+    particlePropertiesBuffer = std::make_shared<ParticlePropertiesSsbo>();
+
     // set up the particle region
     // Note: This mat4 is a convenience for easily moving the particle region center and all 
     // emitters.
@@ -185,20 +190,20 @@ void Init()
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
 
-    // for sorting particles once they've been updated
-    parallelSort = std::make_unique<ShaderControllers::ParallelSort>(particleBuffer);
+    //// for sorting particles once they've been updated
+    //parallelSort = std::make_unique<ShaderControllers::ParallelSort>(particleBuffer);
 
-    // for detecting and resolving collisions once the particles have been sorted
-    particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer);
+    //// for sorting, detecting collisions between, and resolving said collisions between particles
+    //particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer, particlePropertiesBuffer);
 
-    // determines particle color
-    nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
+    //// determines particle color
+    //nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
 
     // for drawing particles
     particleRenderer = std::make_unique<ShaderControllers::RenderParticles>();
 
-    // for drawing non-particle things
-    geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
+    //// for drawing non-particle things
+    //geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
 
     //std::vector<PolygonFace> zOrderCurvePolygonFaces;
     ////zOrderCurvePolygonFaces.clear();
@@ -242,9 +247,9 @@ void UpdateAllTheThings()
     particleResetter->ResetParticles(3);
     particleUpdater->Update(deltaTimeSec);
     //parallelSort->SortWithProfiling();
-    parallelSort->SortWithoutProfiling();
+    //parallelSort->SortWithoutProfiling();
     //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
-    particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
+    //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
     //nearbyParticleCounter->Count();
 
 
@@ -292,7 +297,7 @@ void Display()
 
     particleRenderer->Render(particleBuffer);
     //geometryRenderer->Render(polygonBuffer);
-    geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
+    //geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));
@@ -455,7 +460,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif

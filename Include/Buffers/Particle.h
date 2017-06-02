@@ -29,8 +29,8 @@ struct Particle
 
     // TODO: do "previous position" too (for collision detection with geometry lines or planes)
 
-    glm::vec4 _position;
-    glm::vec4 _velocity;
+    glm::vec4 _pos;
+    glm::vec4 _vel;
 
     // index into the ParticlePropertiesBuffer
     int _particleTypeIndex;

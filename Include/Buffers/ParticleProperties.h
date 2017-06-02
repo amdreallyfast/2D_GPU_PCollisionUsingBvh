@@ -20,8 +20,9 @@ struct ParticleProperties
         (1) it will be used as an index
         (2) it will be used in GLSL shaders, which only have integers and no enums, much less 
         "enum class".
-        
-        So there is no need for strong typing.
+        (3) There is no need to enforce strong typing past initialization, during which these 
+        enums will be used as integers.
+
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
     enum ParticleType
@@ -32,7 +33,8 @@ struct ParticleProperties
         // a division to blow up, but if a particle was created with no type, then I want it to 
         // blow up so that I can fix it.
         NO_PARTICLE_TYPE = 0,
-        GENERIC
+        GENERIC,
+        NUM_PARTICLE_PROPERTIES,
     };
 
     ParticleProperties() :

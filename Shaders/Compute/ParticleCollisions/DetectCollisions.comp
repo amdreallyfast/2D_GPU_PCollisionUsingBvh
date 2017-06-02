@@ -60,7 +60,7 @@ Creator:    John Cox, 4/2017
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize ||
+    if (threadIndex >= uMaxNumParticles ||
         threadIndex >= uNumActiveParticles)
     {
         // no collisions for inactive particles (they were left out of the BVH anyway)

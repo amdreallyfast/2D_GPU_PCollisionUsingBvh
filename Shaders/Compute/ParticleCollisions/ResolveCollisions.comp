@@ -34,7 +34,7 @@ void main()
     // if a particle is inactive, then it is not in the tree and thus is not participating in 
     // collision detection.
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uParticleBufferSize ||
+    if (threadIndex >= uMaxNumParticles ||
         threadIndex >= uNumActiveParticles)
     {
         // no collisions for inactive particles (they were left out of the BVH anyway)

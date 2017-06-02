@@ -9,14 +9,14 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 struct Particle
 {
-    vec4 _position;
-    vec4 _velocity;
+    vec4 _pos;
+    vec4 _vel;
 
     int _particleTypeIndex;
     int _numNearbyParticles;
     int _isActive;
 
-    // vec4s are 16 bytes, +6 individual 4-byte items, so needs 2 bytes padding on the CPU side
+    // vec4s are 16 bytes, +3x 4-byte items, so needs 1 byte padding on the CPU side
 };
 
 // whatever size the user wants

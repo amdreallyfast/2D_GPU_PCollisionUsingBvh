@@ -24,7 +24,7 @@ uniform vec4 uBarEmitterP1;
 uniform vec4 uBarEmitterP2;
 uniform vec4 uBarEmitterEmitDir;
 
-// this value is used to prevent uParticleBufferSize particles from being emitted all at once
+// this value is used to prevent uMaxNumParticles particles from being emitted all at once
 // Note: This is particularly helpful when the particles are spread out on multiple emitters.
 uniform uint uMaxParticleEmitCount;
 
@@ -38,7 +38,7 @@ Creator:    John Cox, 4/2017
 void main()
 {
     uint index = gl_GlobalInvocationID.x;
-    if (index >= uParticleBufferSize)
+    if (index >= uMaxNumParticles)
     {
         return;
     }

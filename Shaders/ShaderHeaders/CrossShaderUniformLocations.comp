@@ -3,10 +3,10 @@ Description:
     This file was created because there are some uniforms that need to be used in multiple 
     shaders.  In previous projects, for example, ParticleBuffer was used by multiple shaders 
     (ParticleReset.comp, ParticleUpdate.comp, ParticleCollisions.comp) and was always 
-    accompanied by the uniform uParticleBufferSize.  This was before the ShaderStorage class was 
+    accompanied by the uniform uMaxNumParticles.  This was before the ShaderStorage class was 
     modified to create composite shaders out of multiple files like it can now, so each compute 
     controller that used ParticleBuffer had to look up the uniform binding location of 
-    uParticleBufferSize independently.
+    uMaxNumParticles independently.
 
     But now the ShaderStorage class CAN create composite shaders, so buffers are defined in 
     their own .comp files and are accompanied by uniforms specifying their max size.  This demo 
