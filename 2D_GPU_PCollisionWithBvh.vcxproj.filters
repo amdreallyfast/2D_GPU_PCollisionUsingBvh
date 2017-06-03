@@ -17,9 +17,6 @@
     <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp">
       <Filter>Source\RenderFrameRate</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp">
-      <Filter>Source\ShaderControllers</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ShaderControllers\ParticleReset.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
@@ -43,9 +40,6 @@
     </ClCompile>
     <ClCompile Include="Source\Buffers\SSBOs\SsboBase.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
-    </ClCompile>
-    <ClCompile Include="Source\ShaderControllers\CountNearbyParticles.cpp">
-      <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp">
       <Filter>Source\Buffers</Filter>
@@ -91,9 +85,6 @@
     <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h">
       <Filter>Include\RenderFrameRate</Filter>
     </ClInclude>
-    <ClInclude Include="Include\ShaderControllers\ParallelSort.h">
-      <Filter>Include\ShaderControllers</Filter>
-    </ClInclude>
     <ClInclude Include="Include\ShaderControllers\ParticleReset.h">
       <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
@@ -120,9 +111,6 @@
     </ClInclude>
     <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h">
       <Filter>Include\Buffers\SSBOs</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ShaderControllers\CountNearbyParticles.h">
-      <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h">
       <Filter>Include\Buffers</Filter>

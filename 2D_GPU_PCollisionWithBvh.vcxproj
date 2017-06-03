@@ -162,12 +162,10 @@
     <ClCompile Include="Source\RenderFrameRate\FreeTypeAtlas.cpp" />
     <ClCompile Include="Source\RenderFrameRate\FreeTypeEncapsulated.cpp" />
     <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp" />
-    <ClCompile Include="Source\ShaderControllers\CountNearbyParticles.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleCollide_old.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleCollisions.cpp" />
     <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp" />
     <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp" />
-    <ClCompile Include="Source\ShaderControllers\ParallelSort.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleReset.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleUpdate.cpp" />
     <ClCompile Include="Source\ShaderControllers\RenderParticles.cpp" />
@@ -195,12 +193,10 @@
     <ClInclude Include="Include\RenderFrameRate\FreeTypeAtlas.h" />
     <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h" />
     <ClInclude Include="Include\RenderFrameRate\Stopwatch.h" />
-    <ClInclude Include="Include\ShaderControllers\CountNearbyParticles.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleCollide_old.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h" />
     <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h" />
     <ClInclude Include="Include\ShaderControllers\RenderGeometry.h" />
-    <ClInclude Include="Include\ShaderControllers\ParallelSort.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleReset.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleUpdate.h" />
     <ClInclude Include="Include\ShaderControllers\RenderParticles.h" />

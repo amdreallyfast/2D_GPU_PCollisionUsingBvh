@@ -51,9 +51,7 @@
 #include "Include/Buffers/PersistentAtomicCounterBuffer.h"
 #include "Include/ShaderControllers/ParticleReset.h"
 #include "Include/ShaderControllers/ParticleUpdate.h"
-#include "Include/ShaderControllers/ParallelSort.h"
 #include "Include/ShaderControllers/ParticleCollisions.h"
-#include "Include/ShaderControllers/CountNearbyParticles.h"
 #include "Include/ShaderControllers/RenderParticles.h"
 #include "Include/ShaderControllers/RenderGeometry.h"
 
@@ -73,7 +71,6 @@ std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
 //std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
 std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
-std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter = nullptr;
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
@@ -196,9 +193,6 @@ void Init()
     // for sorting, detecting collisions between, and resolving said collisions between particles
     particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer, particlePropertiesBuffer);
 
-    //// determines particle color
-    //nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
-
     // for drawing particles
     particleRenderer = std::make_unique<ShaderControllers::RenderParticles>();
 
@@ -245,13 +239,6 @@ void UpdateAllTheThings()
     particleUpdater->Update(deltaTimeSec);
     particleCollisions->DetectAndResolve(true);
     //particleCollisions->DetectAndResolve(false);
-
-
-    //parallelSort->SortWithProfiling();
-    //parallelSort->SortWithoutProfiling();
-    //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());
-    //particleCollisions->DetectAndResolveWithoutProfiling(particleUpdater->NumActiveParticles());
-    //nearbyParticleCounter->Count();
 
 
     ShaderControllers::WaitOnQueuedSynchronization();
@@ -461,7 +448,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif
