@@ -8,6 +8,8 @@
 #include "Include/Buffers/ParticleSortingData.h"
 #include "Include/Buffers/BvhNode.h"
 
+#include "Include/Buffers/Particle.h"
+
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
@@ -116,10 +118,10 @@ namespace ShaderControllers
         
         // Note: For N particles there are N leaves and N-1 internal nodes in the tree, and each 
         // node's bounding box has 4 faces.  
-        _bvhGeometrySsbo(((particleSsbo->NumParticles() * 2) - 1) * 4)
+        _bvhGeometrySsbo(((particleSsbo->NumParticles() * 2) - 1) * 4),
         
-        //// kept around for debugging purposes
-        //_originalParticleSsbo(particleSsbo)
+        // kept around for debugging purposes
+        _originalParticleSsbo(particleSsbo)
     {
         // the programs used during the parallel sort
         AssembleProgramCopyParticlesToCopyBuffer();
@@ -148,6 +150,7 @@ namespace ShaderControllers
         particlePropertiesSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
 
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGenerateSortingData);
+        _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGetBitForPrefixScan);
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdSortSortingDataWithPrefixSums);
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdSortParticles);
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGuaranteeSortingDataUniqueness);
@@ -278,14 +281,13 @@ namespace ShaderControllers
     --------------------------------------------------------------------------------------------*/
     void ParticleCollisions::DetectAndResolve(bool withProfiling) const
     {
-        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
-
         // most shaders work on 1 item per thread
-        int numWorkGroupsX = numItemsInPrefixScanBuffer / WORK_GROUP_SIZE_X;
-        int remainder = numItemsInPrefixScanBuffer % WORK_GROUP_SIZE_X;
+        int numWorkGroupsX = _numParticles / WORK_GROUP_SIZE_X;
+        int remainder = _numParticles % WORK_GROUP_SIZE_X;
         numWorkGroupsX += (remainder == 0) ? 0 : 1;
 
         // the prefix scan works on 2 items per thread
+        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
         int numWorkGroupsXForPrefixSum = numItemsInPrefixScanBuffer / PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
         remainder = numItemsInPrefixScanBuffer % PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
         numWorkGroupsXForPrefixSum += (remainder == 0) ? 0 : 1;
@@ -824,28 +826,56 @@ namespace ShaderControllers
     --------------------------------------------------------------------------------------------*/
     void ParticleCollisions::SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const
     {
-        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
-
         PrepareToSortParticles(numWorkGroupsX);
 
-        // the sorting data are Morton Codes, which are 30 bits
+        // parallel radix sorting algorithm over each bit of the Morton Codes 
+        // Note: MUST sort over all 32 bits in GLSL's uint.  See GenerateSortingData.comp for 
+        // more detail, but the gist is that the sorting data for inactive particles is 
+        // 0xC0000000 for generating the BVH tree.  That is 2x 1s in the 30th and 31st bit, and 
+        // the least significant 30bits are 0s.  Sorting these inactive particles to the back 
+        // therefore requires sorting over all 32 bits (actually, I think that I could get away 
+        // with sorting 31 bits..??should I??)
         bool writeToSecondBuffer = true;
         unsigned int sortingDataReadBufferOffset = 0;
         unsigned int sortingDataWriteBufferOffset = 0;
-        for (unsigned int bitNumber = 0; bitNumber < 30; bitNumber++)
+        for (unsigned int bitNumber = 0; bitNumber < 32; bitNumber++)
         {
-            sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * numItemsInPrefixScanBuffer;
-            sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * numItemsInPrefixScanBuffer;
+            sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * _numParticles;
+            sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * _numParticles;
 
-            PrepareForPrefixScan(numWorkGroupsXPrefixScan, sortingDataReadBufferOffset);
+            PrepareForPrefixScan(bitNumber, sortingDataReadBufferOffset);
             PrefixScanOverParticleSortingData(numWorkGroupsXPrefixScan);
-            SortSortingDataWithPrefixScan(numWorkGroupsX, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
+            SortSortingDataWithPrefixScan(numWorkGroupsX, bitNumber, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
 
             // swap read/write buffers and do it again
             writeToSecondBuffer = !writeToSecondBuffer;
         }
 
-        SortParticlesWithSortedData(numWorkGroupsX, sortingDataReadBufferOffset);
+        // the sorting data's final location is in the "write" half of the sorting data buffer
+        SortParticlesWithSortedData(numWorkGroupsX, sortingDataWriteBufferOffset);
+
+        {
+            unsigned int startingIndex = sortingDataWriteBufferOffset;
+            std::vector<Particle> checkParticleData(_originalParticleSsbo->NumParticles());
+            unsigned int bufferSizeBytes = checkParticleData.size() * sizeof(Particle);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _originalParticleSsbo->BufferId());
+            void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            memcpy(checkParticleData.data(), bufferPtr, bufferSizeBytes);
+            glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+            for (size_t i = 1; i < checkParticleData.size(); i++)
+            {
+                unsigned int thisIndex = i;
+                unsigned int prevIndex = i - 1;
+                unsigned int val = checkParticleData[thisIndex]._numNearbyParticles;
+                unsigned int prevVal = checkParticleData[prevIndex]._numNearbyParticles;
+
+                if (val < prevVal)
+                {
+                    printf("");
+                }
+            }
+        }
 
         // all done
         glUseProgram(0);
@@ -853,9 +883,7 @@ namespace ShaderControllers
 
     void ParticleCollisions::SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const
     {
-        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
-
-        cout << "sorting " << numItemsInPrefixScanBuffer << " items" << endl;
+        cout << "sorting " << _numParticles << " particles" << endl;
 
         // for profiling
         using namespace std::chrono;
@@ -874,21 +902,55 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationPrepareToSort = duration_cast<microseconds>(end - start).count();
 
-        // parallel radix sorting algorithm over each bit of the Morton Codes 
-        // Note: 30 bits -> 30 loops.
+        {
+            std::vector<ParticleSortingData> checkInitialSortingData(_particleSortingDataSsbo.NumItems());
+            unsigned int startingIndex = 0;
+            unsigned int bufferSizeBytes = checkInitialSortingData.size() * sizeof(ParticleSortingData);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSortingDataSsbo.BufferId());
+            void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            memcpy(checkInitialSortingData.data(), bufferPtr, bufferSizeBytes);
+            glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+            //for (size_t i = 0; i < checkInitialSortingData.size(); i++)
+            //{
+            //    unsigned int value = checkInitialSortingData[i]._sortingData;
+            //    if (value != 0xc0000000)
+            //    {
+            //        printf("value 0x%x at index %u\n", value, i);
+            //    }
+            //}
+            printf("\n");
+        }
+
+
+
+
         bool writeToSecondBuffer = true;
         unsigned int sortingDataReadBufferOffset = 0;
         unsigned int sortingDataWriteBufferOffset = 0;
-        for (unsigned int bitNumber = 0; bitNumber < 30; bitNumber++)
+        std::vector<int> checkPrefixScan(_prefixSumSsbo.TotalBufferEntries());
+        for (unsigned int bitNumber = 0; bitNumber < 32; bitNumber++)
         {
-            sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * numItemsInPrefixScanBuffer;
-            sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * numItemsInPrefixScanBuffer;
+            sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * _numParticles;
+            sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * _numParticles;
+
+            unsigned int startingIndex = 0;
+            unsigned int bufferSizeBytes = checkPrefixScan.size() * sizeof(int);
+            void *bufferPtr = nullptr;
 
             start = high_resolution_clock::now();
-            PrepareForPrefixScan(numWorkGroupsXPrefixScan, sortingDataReadBufferOffset);
+            PrepareForPrefixScan(bitNumber, sortingDataReadBufferOffset);
             WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsPrepareForPrefixScan[bitNumber] = duration_cast<microseconds>(end - start).count();
+
+
+            //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _prefixSumSsbo.BufferId());
+            //bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            //memcpy(checkPrefixScan.data(), bufferPtr, bufferSizeBytes);
+            //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+
 
             start = high_resolution_clock::now();
             PrefixScanOverParticleSortingData(numWorkGroupsXPrefixScan);
@@ -896,27 +958,89 @@ namespace ShaderControllers
             end = high_resolution_clock::now();
             durationsPrefixScan[bitNumber] = duration_cast<microseconds>(end - start).count();
 
+
+            //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _prefixSumSsbo.BufferId());
+            //bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            //memcpy(checkPrefixScan.data(), bufferPtr, bufferSizeBytes);
+            //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+
             start = high_resolution_clock::now();
-            SortSortingDataWithPrefixScan(numWorkGroupsX, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
+            SortSortingDataWithPrefixScan(numWorkGroupsX, bitNumber, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
             WaitForComputeToFinish();
             end = high_resolution_clock::now();
             durationsSortSortingData[bitNumber] = duration_cast<microseconds>(end - start).count();
+
+            //{
+            //    std::vector<ParticleSortingData> checkSortingData(_particleSortingDataSsbo.NumItems());
+            //    unsigned int startingIndex = 0;// sortingDataWriteBufferOffset;
+            //    unsigned int bufferSizeBytes = checkSortingData.size() * sizeof(ParticleSortingData);
+            //    glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSortingDataSsbo.BufferId());
+            //    void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            //    memcpy(checkSortingData.data(), bufferPtr, bufferSizeBytes);
+            //    glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+            //    //for (size_t i = 0; i < checkSortingData.size(); i++)
+            //    //{
+            //    //    unsigned int value = checkSortingData[i]._sortingData;
+            //    //    checkSortingData[i]._preSortedParticleIndex = ((value >> bitNumber) & 1);
+            //    //}
+
+            //    for (size_t i = 0; i < checkSortingData.size(); i++)
+            //    {
+            //        if (checkSortingData[i]._preSortedParticleIndex >= 10000)
+            //        {
+            //            printf("");
+            //        }
+            //    }
+
+            //    printf("\n");
+            //}
+
 
             // swap read/write buffers and do it again
             writeToSecondBuffer = !writeToSecondBuffer;
         }
 
+        // wherever the sorting data ended up, that is where the shader should read from
         start = high_resolution_clock::now();
-        SortParticlesWithSortedData(numWorkGroupsX, sortingDataReadBufferOffset);
+        SortParticlesWithSortedData(numWorkGroupsX, sortingDataWriteBufferOffset);
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
         durationParticleSort = duration_cast<microseconds>(end - start).count();
+
+        {
+            unsigned int startingIndex = sortingDataWriteBufferOffset;
+            std::vector<Particle> checkParticleData(_originalParticleSsbo->NumParticles());
+            unsigned int bufferSizeBytes = checkParticleData.size() * sizeof(Particle);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _originalParticleSsbo->BufferId());
+            void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            memcpy(checkParticleData.data(), bufferPtr, bufferSizeBytes);
+            glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+            for (size_t i = 1; i < checkParticleData.size(); i++)
+            {
+                unsigned int thisIndex = i;
+                unsigned int prevIndex = i - 1;
+                unsigned int val = checkParticleData[thisIndex]._numNearbyParticles;
+                unsigned int prevVal = checkParticleData[prevIndex]._numNearbyParticles;
+
+                if (val < prevVal)
+                {
+                    printf("");
+                }
+            }
+
+            printf("");
+        }
+
+
 
         // verify sorted data
         // Note: Only need to copy the first half of the buffer.  This is where the last loop of 
         // the radix sorting algorithm put the sorting data.
         start = high_resolution_clock::now();
-        unsigned int startingIndex = 0;
+        unsigned int startingIndex = sortingDataWriteBufferOffset;
         std::vector<ParticleSortingData> checkSortingData(_particleSortingDataSsbo.NumItems());
         unsigned int bufferSizeBytes = checkSortingData.size() * sizeof(ParticleSortingData);
         glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSortingDataSsbo.BufferId());
@@ -990,8 +1114,10 @@ namespace ShaderControllers
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    void ParticleCollisions::PrepareForPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const
+    void ParticleCollisions::PrepareForPrefixScan(unsigned int bitNumber, unsigned int sortingDataReadOffset) const
     {
+        // Note: The number of work groups for this sorting stage need special handling.  Most shaders operate on 1 item per thread and will require ("num particles" / "work group size X") + 1 work groups to give every data entry (particle, particle sorting, etc.) a thread.  The prefix sum algorithm operates on 2 items per thread and needs special handling (read description block of PrefixSumSsbo for details).  This stage is neither.  Clearing out the work group sums operates on 2 items per thread and requires 1, and exactly 1, work groups.  Getting bits for the prefix sum operates on 1 item per thread and is a function of the size of the prefix scan array.  Deal with these special cases manually.
+
         // Note: The "work group sums" array is the size of a single work group * 2.  This shader
         // should only be dispatched with a single work group.
         glUseProgram(_programIdClearWorkGroupSums);
@@ -999,8 +1125,12 @@ namespace ShaderControllers
         //??need a memory barrier here??
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+        int numWorkGroupsX = _prefixSumSsbo.NumDataEntries() / WORK_GROUP_SIZE_X;
+        int remainder = _prefixSumSsbo.NumDataEntries() % WORK_GROUP_SIZE_X;
+        numWorkGroupsX += (remainder == 0) ? 0 : 1;
         glUseProgram(_programIdGetBitForPrefixScan);
         glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
+        glUniform1ui(UNIFORM_LOCATION_BIT_NUMBER, bitNumber);
         glDispatchCompute(numWorkGroupsX, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
@@ -1011,16 +1141,19 @@ namespace ShaderControllers
         glDispatchCompute(numWorkGroupsX, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
+        // this stage is designed to work with 1 work group, and exactly 1 work group
+        // Note: See PrefixScanBuffer.comp description for details on this second stage.
         glUseProgram(_programIdPrefixScanOverWorkGroupSums);
-        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glDispatchCompute(1, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }
 
-    void ParticleCollisions::SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const
+    void ParticleCollisions::SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int bitNumber, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const
     {
         glUseProgram(_programIdSortSortingDataWithPrefixSums);
         glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
         glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET, sortingDataWriteOffset);
+        glUniform1ui(UNIFORM_LOCATION_BIT_NUMBER, bitNumber);
         glDispatchCompute(numWorkGroupsX, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
     }

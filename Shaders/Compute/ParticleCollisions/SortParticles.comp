@@ -45,4 +45,8 @@ void main()
     // the ParticleSortingData structure is already sorted, so whatever index it is at now is the 
     // same index where the original data should be 
     AllParticles[threadIndex] = AllParticles[sourceIndex];
+    
+    
+    
+    AllParticles[threadIndex]._numNearbyParticles = int(AllParticleSortingData[sortedDataIndex]._sortingData);
 }

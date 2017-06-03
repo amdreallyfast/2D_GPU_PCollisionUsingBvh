@@ -15,6 +15,8 @@ Description:
     algorithm as in PrefixScanOverAllData.comp (see that shader for comments), but it 
     needs to work on a different buffer, which in GLSL need to be specified explicitly, so it 
     needs a different shader.
+
+    See description of PrefixScanBuffer.comp for more detail on why a second stage is needed.
 Parameters: None
 Returns:    None
 Creator:    John Cox, 5/2017
@@ -45,7 +47,7 @@ void main()
 
     if (doubleGroupThreadIndex == 0)
     {
-        totalNumberOfOnes = PrefixSumsOfWorkGroupSums[PREFIX_SCAN_ITEMS_PER_WORK_GROUP - 1];
+        totalNumberOfOnes = fastTempArr[PREFIX_SCAN_ITEMS_PER_WORK_GROUP - 1];
         fastTempArr[PREFIX_SCAN_ITEMS_PER_WORK_GROUP - 1] = 0;
     }
     indexMultiplierDueToDepth >>= 1;

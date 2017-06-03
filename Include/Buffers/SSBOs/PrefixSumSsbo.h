@@ -19,8 +19,8 @@ public:
     using SharedConstPtr = std::shared_ptr<const PrefixSumSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
-    unsigned int NumPerGroupPrefixSums() const;
     unsigned int NumDataEntries() const;
+    unsigned int TotalBufferEntries() const;
 
 private:
     unsigned int _numPerGroupPrefixSums;

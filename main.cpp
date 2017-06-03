@@ -77,7 +77,7 @@ std::shared_ptr<ShaderControllers::CountNearbyParticles> nearbyParticleCounter =
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 50000;
+const unsigned int MAX_PARTICLE_COUNT = 1000000;
 
 
 

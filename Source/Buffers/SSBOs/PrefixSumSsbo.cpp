@@ -172,21 +172,6 @@ void PrefixSumSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) con
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Returns the number of integers that have been allocated for the PrefixSumsOfWorkGroupSums array.  
-    The constructor ensures that this is the size of 1, and only 1, work group's worth of data 
-    for the PrefixSumsOfWorkGroupSums array.
-Parameters: None
-Returns:    
-    See Description.
-Creator:    John Cox, 3/2017
-------------------------------------------------------------------------------------------------*/
-unsigned int PrefixSumSsbo::NumPerGroupPrefixSums() const
-{
-    return _numPerGroupPrefixSums;
-}
-
-/*------------------------------------------------------------------------------------------------
-Description:
     Returns the number of integers that have been allocated for the PrefixSumsPerWorkGroup array.  The 
     constructor ensures that there are enough entries for every item to be part of a work group.  
 Parameters: None
@@ -199,4 +184,17 @@ unsigned int PrefixSumSsbo::NumDataEntries() const
     return _numDataEntries;
 }
 
+/*------------------------------------------------------------------------------------------------
+Description:
+    Returns the total number of integers contained in the PrefixScanBuffer.  See 
+    PrefixScanBuffer.comp for details.
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 3/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int PrefixSumSsbo::TotalBufferEntries() const
+{
+    return _numDataEntries + 1 + _numPerGroupPrefixSums;
+}
 
