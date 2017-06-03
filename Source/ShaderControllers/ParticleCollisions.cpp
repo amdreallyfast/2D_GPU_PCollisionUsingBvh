@@ -1101,14 +1101,14 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationGenerateTree = duration_cast<microseconds>(end - start).count();
 
-        // populate the tree with bounding volumes to finish the BVH
-        start = high_resolution_clock::now();
-        glUseProgram(_programIdMergeBoundingVolumes);
-        glDispatchCompute(numWorkGroupsX, 1, 1);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        WaitForComputeToFinish();
-        end = high_resolution_clock::now();
-        durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
+        //// populate the tree with bounding volumes to finish the BVH
+        //start = high_resolution_clock::now();
+        //glUseProgram(_programIdMergeBoundingVolumes);
+        //glDispatchCompute(numWorkGroupsX, 1, 1);
+        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        //WaitForComputeToFinish();
+        //end = high_resolution_clock::now();
+        //durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
 
         // verify that the binary tree is valid by checking that all parent-child relationships 
         // are reciprocated 
@@ -1161,6 +1161,7 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationVerifyValidTree = duration_cast<microseconds>(end - start).count();
 
+        // TODO: write outputs to stdout and to file
 
     }
 
