@@ -23,9 +23,15 @@ void main()
     {
         return;
     }
-    else if (AllParticles[threadIndex]._isActive == 0)
+    
+    if (AllParticles[threadIndex]._isActive == 0)
     {
+        AllBvhNodes[threadIndex]._isNull = 1;
         return;
+    }
+    else
+    {
+        AllBvhNodes[threadIndex]._isNull = 0;
     }
     
     // create the bounding box for the bounding volume hierarchy

@@ -144,10 +144,9 @@ namespace ShaderControllers
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateSortingData);
         particleSsbo->ConfigureConstantUniforms(_programIdSortParticles);
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
-        // TODO: generate bvh vertices.comp
-        // TODO: collision detection.comp
 
         particlePropertiesSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
+        // TODO: CollisionResolution.comp
 
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGenerateSortingData);
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGetBitForPrefixScan);
@@ -164,8 +163,10 @@ namespace ShaderControllers
         _bvhNodeSsbo.ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
         _bvhNodeSsbo.ConfigureConstantUniforms(_programIdGenerateBinaryRadixTree);
         _bvhNodeSsbo.ConfigureConstantUniforms(_programIdMergeBoundingVolumes);
-        // TODO: collision detection.comp
-        
+        // TODO: CollisionDetection.comp
+
+
+
         //_bvhGeometrySsbo.ConfigureConstantUniforms(_programidgen)
         // TODO: generate bvh vertices.comp
 
@@ -297,10 +298,12 @@ namespace ShaderControllers
         if (withProfiling)
         {
             SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            GenerateBvhWithProfiling(numWorkGroupsX);
         }
         else
         {
             SortParticlesWithoutProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            GenerateBvhWithoutProfiling(numWorkGroupsX);
         }
 
 
@@ -954,12 +957,11 @@ namespace ShaderControllers
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         for (unsigned int i = 1; i < checkSortingData.size(); i++)
         {
+            // start at 1 so that prevIndex isn't out of bounds
             unsigned int thisIndex = i;
             unsigned int prevIndex = i - 1;
             unsigned int val = checkSortingData[thisIndex]._sortingData;
             unsigned int prevVal = checkSortingData[prevIndex]._sortingData;
-
-            // the original data is 0 - N-1, 1 value at a time, so it's ok to hard code 
             if (val < prevVal)
             {
                 printf("value %u at index %u is >= previous value %u and index %u\n", val, i, prevVal, i - 1);
@@ -1023,13 +1025,142 @@ namespace ShaderControllers
         glUseProgram(0);
     }
 
-    void ParticleCollisions::GenerateBvhWithoutProfiling() const
+    void ParticleCollisions::GenerateBvhWithoutProfiling(unsigned int numWorkGroupsX) const
     {
 
     }
 
-    void ParticleCollisions::GenerateBvhWithProfiling() const
+    void ParticleCollisions::GenerateBvhWithProfiling(unsigned int numWorkGroupsX) const
     {
+        cout << "generating BVH for " << _numParticles << " particles" << endl;
+
+        // for profiling
+        using namespace std::chrono;
+        steady_clock::time_point start;
+        steady_clock::time_point end;
+        long long durationPrepData = 0;
+        long long durationGenerateTree = 0;
+        long long durationMergeBoundingBoxes = 0;
+        long long durationVerifyValidTree = 0;
+
+
+        // prep data
+        start = high_resolution_clock::now();
+        glUseProgram(_programIdGuaranteeSortingDataUniqueness);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glUseProgram(_programIdGenerateLeafNodeBoundingBoxes);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationPrepData = duration_cast<microseconds>(end - start).count();
+
+        {
+            unsigned int startingIndex = 0;
+            std::vector<ParticleSortingData> checkSortingData(_particleSortingDataSsbo.NumItems());
+            unsigned int bufferSizeBytes = checkSortingData.size() * sizeof(ParticleSortingData);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSortingDataSsbo.BufferId());
+            void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            memcpy(checkSortingData.data(), bufferPtr, bufferSizeBytes);
+            glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            for (unsigned int i = 1; i < checkSortingData.size(); i++)
+            {
+                unsigned int thisIndex = i;
+                unsigned int prevIndex = i - 1;
+                unsigned int val = checkSortingData[thisIndex]._sortingData;
+                unsigned int prevVal = checkSortingData[prevIndex]._sortingData;
+
+                // this data should already be sorted ("<" check), and it should now be sorted and 
+                // unique ("<=" check)
+                if (val <= prevVal)
+                {
+                    // not unique
+                    printf("");
+                }
+            }
+        }
+
+        {
+            unsigned int startingIndex = 0;
+            std::vector<BvhNode> checkNodeData(_bvhNodeSsbo.NumTotalNodes());
+            unsigned int bufferSizeBytes = checkNodeData.size() * sizeof(BvhNode);
+            glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo.BufferId());
+            void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+            memcpy(checkNodeData.data(), bufferPtr, bufferSizeBytes);
+            glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        }
+
+
+
+        // generate the tree
+        start = high_resolution_clock::now();
+        glUseProgram(_programIdGenerateBinaryRadixTree);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationGenerateTree = duration_cast<microseconds>(end - start).count();
+
+        // populate the tree with bounding volumes to finish the BVH
+        start = high_resolution_clock::now();
+        glUseProgram(_programIdMergeBoundingVolumes);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
+
+        // verify that the binary tree is valid by checking that all parent-child relationships 
+        // are reciprocated 
+        // Note: By virtue of being a binary tree, every node except the root has a parent, and 
+        // that parent also specifies that node as a child exactly once.
+        start = high_resolution_clock::now();
+        unsigned int startingIndex = 0;
+        std::vector<BvhNode> checkBinaryTree(_bvhNodeSsbo.NumTotalNodes());
+        unsigned int bufferSizeBytes = checkBinaryTree.size() * sizeof(BvhNode);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo.BufferId());
+        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkBinaryTree.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        
+        // check the root node (no parent, only children)
+        unsigned int rootnodeindex = _bvhNodeSsbo.NumLeafNodes();
+        const BvhNode &rootnode = checkBinaryTree[rootnodeindex];
+        if ((rootnodeindex != checkBinaryTree[rootnode._leftChildIndex]._parentIndex) &&
+            (rootnodeindex != checkBinaryTree[rootnode._rightChildIndex]._parentIndex))
+        {
+            // root-child relationship not reciprocated
+            printf("");
+        }
+
+        // check all the other nodes
+        for (size_t thisNodeIndex = 0; thisNodeIndex < checkBinaryTree.size(); thisNodeIndex++)
+        {
+            const BvhNode &thisNode = checkBinaryTree[thisNodeIndex];
+
+            if (thisNode._parentIndex == -1)
+            {
+                // skip if it is the root; everyone else should have a parent
+                if (thisNodeIndex != _bvhNodeSsbo.NumLeafNodes())
+                {
+                    // bad: non-root node has a -1 parent
+                    printf("");
+                }
+            }
+            else
+            {
+                if ((thisNodeIndex != checkBinaryTree[thisNode._parentIndex]._leftChildIndex) &&
+                    (thisNodeIndex != checkBinaryTree[thisNode._parentIndex]._rightChildIndex))
+                {
+                    // parent-child relationship not reciprocated
+                    printf("");
+                }
+            }
+        }
+
+        end = high_resolution_clock::now();
+        durationVerifyValidTree = duration_cast<microseconds>(end - start).count();
+
 
     }
 
@@ -1108,11 +1239,6 @@ namespace ShaderControllers
         glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
         glDispatchCompute(numWorkGroupsX, 1, 1);
         glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-    }
-
-    void ParticleCollisions::ConstructBvh(unsigned int numWorkGroupsX) const
-    {
-
     }
 
 }

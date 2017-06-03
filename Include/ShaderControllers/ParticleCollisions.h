@@ -67,8 +67,8 @@ namespace ShaderControllers
         void SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
         void SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
 
-        void GenerateBvhWithoutProfiling() const;
-        void GenerateBvhWithProfiling() const;
+        void GenerateBvhWithoutProfiling(unsigned int numWorkGroupsX) const;
+        void GenerateBvhWithProfiling(unsigned int numWorkGroupsX) const;
 
         void DetectAndResolveCollisionsWithoutProfiling() const;
         void DetectAndResolveCollisionsWithProfiling() const;
@@ -80,9 +80,6 @@ namespace ShaderControllers
         void PrefixScanOverParticleSortingData(unsigned int numWorkGroupsX) const;
         void SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int bitNumber, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const;
         void SortParticlesWithSortedData(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const;
-
-        // BVH construction can be done in one go
-        void ConstructBvh(unsigned int numWorkGroupsX) const;
 
 
 

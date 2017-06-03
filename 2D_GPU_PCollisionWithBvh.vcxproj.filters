@@ -56,9 +56,6 @@
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
-    <ClCompile Include="Source\ShaderControllers\ParticleCollide_old.cpp">
-      <Filter>Source\ShaderControllers</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ShaderControllers\ParticleCollisions.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
@@ -138,9 +135,6 @@
     </ClInclude>
     <ClInclude Include="Include\Buffers\Particle.h">
       <Filter>Include\Buffers</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\ShaderControllers\ParticleCollide_old.h">
-      <Filter>Include\ShaderControllers</Filter>
     </ClInclude>
     <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h">
       <Filter>Include\ShaderControllers</Filter>
@@ -281,7 +275,6 @@
     <None Include="Shaders\Compute\PolygonBuffer.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>

@@ -162,7 +162,6 @@
     <ClCompile Include="Source\RenderFrameRate\FreeTypeAtlas.cpp" />
     <ClCompile Include="Source\RenderFrameRate\FreeTypeEncapsulated.cpp" />
     <ClCompile Include="Source\RenderFrameRate\Stopwatch.cpp" />
-    <ClCompile Include="Source\ShaderControllers\ParticleCollide_old.cpp" />
     <ClCompile Include="Source\ShaderControllers\ParticleCollisions.cpp" />
     <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp" />
     <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp" />
@@ -193,7 +192,6 @@
     <ClInclude Include="Include\RenderFrameRate\FreeTypeAtlas.h" />
     <ClInclude Include="Include\RenderFrameRate\FreeTypeEncapsulated.h" />
     <ClInclude Include="Include\RenderFrameRate\Stopwatch.h" />
-    <ClInclude Include="Include\ShaderControllers\ParticleCollide_old.h" />
     <ClInclude Include="Include\ShaderControllers\ParticleCollisions.h" />
     <ClInclude Include="Include\ShaderControllers\ProfilingWaitToFinish.h" />
     <ClInclude Include="Include\ShaderControllers\RenderGeometry.h" />
@@ -211,7 +209,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\PrefixScanBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ClearWorkGroupSums.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\CopyParticlesToCopyBuffer.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\DetectAndResolveCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp" />
