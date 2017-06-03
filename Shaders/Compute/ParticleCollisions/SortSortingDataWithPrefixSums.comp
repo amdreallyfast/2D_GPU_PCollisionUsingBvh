@@ -6,7 +6,7 @@
 // REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 // also used in GetBitForPrefixScans.comp (different uniform of course because different shader)
 layout(location = UNIFORM_LOCATION_BIT_NUMBER) uniform uint uBitNumber;
@@ -52,7 +52,7 @@ void main()
 
     // this values determines if the value should go with the 0s or with 1s on this sort step
     uint sourceIndex = threadIndex + uParticleSortingDataBufferReadOffset;
-    uint bitVal = (AllParticleSortingData[sourceIndex]._data >> uBitNumber) & 1;
+    uint bitVal = (AllParticleSortingData[sourceIndex]._sortingData >> uBitNumber) & 1;
 
     // Note: If the value being sorted has a 0 at the current bit, then the order of 0s in the 
     // data set is maintained (as per Radix Sort) by the number of 0s that came before the 

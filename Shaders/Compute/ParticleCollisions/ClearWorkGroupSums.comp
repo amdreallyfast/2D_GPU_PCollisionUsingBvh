@@ -5,7 +5,7 @@
 // REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:
@@ -31,7 +31,7 @@ Creator:    John Cox, 5/2017
 void main()
 {
     // Note: This shader should only be dispatched with a single work group that is the size of 
-    // PARALLEL_SORT_WORK_GROUP_SIZE_X.  The PrefixScanBuffer::PrefixSumsOfWorkGroupSums array is
+    // PARALLEL_SORT_WORK_GROUP_SIZE.  The PrefixScanBuffer::PrefixSumsOfWorkGroupSums array is
     // twice this size.  If a larger work group is launched, then there will be memory writes 
     // that are out of bounds.
     PrefixSumsOfWorkGroupSums[(gl_LocalInvocationID.x * 2)] = 0;

@@ -36,7 +36,7 @@ Description:
     the data and give the threads something to chew on.  Like hay for horses.  It's cheap.
 
     In the following examples, work group size = 512, so
-    PARALLEL_SORT_ITEMS_PER_WORK_GROUP = work group size * 2 = 1024.
+    PREFIX_SCAN_ITEMS_PER_WORK_GROUP = work group size * 2 = 1024.
 
     Ex 1: data size = 42
     allocated data  = ((42 / 1024) + (42 % 1024 == 0) ? 0 : 1) * 1024
@@ -122,9 +122,9 @@ PrefixSumSsbo::PrefixSumSsbo(unsigned int numDataEntries) :
     // will give a number of data entries of 0, so the number of work groups calculated in the 
     // ParallelSort compute controller will lso be 0 and the sorting process will go nowhere.  
     // At least it won't crash.
-    _numDataEntries = (numDataEntries / PARALLEL_SORT_ITEMS_PER_WORK_GROUP);
-    _numDataEntries += (numDataEntries % PARALLEL_SORT_ITEMS_PER_WORK_GROUP == 0) ? 0 : 1;
-    _numDataEntries *= PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
+    _numDataEntries = (numDataEntries / PREFIX_SCAN_ITEMS_PER_WORK_GROUP);
+    _numDataEntries += (numDataEntries % PREFIX_SCAN_ITEMS_PER_WORK_GROUP == 0) ? 0 : 1;
+    _numDataEntries *= PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
 
     // use one work group's worth of data for the per-work-group prefix sums
     // Note: The prefix scan of the "per work group sums" is a necessary step in preparation for 
@@ -133,10 +133,10 @@ PrefixSumSsbo::PrefixSumSsbo(unsigned int numDataEntries) :
     // data will also have the prefix scan run on it, so it must be the size of one work group's 
     // worth of data.  
     // Also Note: If the original data set is larger than 
-    // PARALLEL_SORT_ITEMS_PER_WORK_GROUP * PARALLEL_SORT_ITEMS_PER_WORK_GROUP 
+    // PREFIX_SCAN_ITEMS_PER_WORK_GROUP * PREFIX_SCAN_ITEMS_PER_WORK_GROUP 
     // (number of work group sums * amount of data that each work group operates on), then 
-    // PARALLEL_SORT_ITEMS_PER_WORK_GROUP will need to be increased.
-    _numPerGroupPrefixSums = PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
+    // PREFIX_SCAN_ITEMS_PER_WORK_GROUP will need to be increased.
+    _numPerGroupPrefixSums = PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
 
     // the std::vector<...>(...) constructor will set everything to 0
     // Note: The +1 is because of a single uint in the buffer, totalNumberOfOnes.  See 

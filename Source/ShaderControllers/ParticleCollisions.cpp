@@ -5,15 +5,15 @@
 
 // for profiling and checking results
 #include "Include/ShaderControllers/ProfilingWaitToFinish.h"
+#include "Include/Buffers/ParticleSortingData.h"
 #include "Include/Buffers/BvhNode.h"
+
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
 
-#include <iostream>
-#include <fstream>
-
 #include <chrono>
+#include <fstream>
 #include <iostream>
 using std::cout;
 using std::endl;
@@ -116,10 +116,10 @@ namespace ShaderControllers
         
         // Note: For N particles there are N leaves and N-1 internal nodes in the tree, and each 
         // node's bounding box has 4 faces.  
-        _bvhGeometrySsbo(((particleSsbo->NumParticles() * 2) - 1) * 4),
+        _bvhGeometrySsbo(((particleSsbo->NumParticles() * 2) - 1) * 4)
         
-        // kept around for debugging purposes
-        _originalParticleSsbo(particleSsbo)
+        //// kept around for debugging purposes
+        //_originalParticleSsbo(particleSsbo)
     {
         // the programs used during the parallel sort
         AssembleProgramCopyParticlesToCopyBuffer();
@@ -175,7 +175,7 @@ namespace ShaderControllers
         //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo->BufferId());
         //glBufferData(GL_SHADER_STORAGE_BUFFER, testBvh.size() * sizeof(BvhNode), testBvh.data(), GL_DYNAMIC_DRAW);
         //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-
+        printf("");
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -202,78 +202,106 @@ namespace ShaderControllers
         glDeleteProgram(_programIdMergeBoundingVolumes);
     }
 
-    /*--------------------------------------------------------------------------------------------
-    Description:
-        (1) Constructs a binary radix tree using an algorithm that generates all internal nodes 
-        on one pass.  
-        (2) Then constructs the bounding volumes for each node in the tree from the leaves to 
-        the root.
-        (3) Each particle navigates the tree from the root and collects a list of all particles 
-        whose bounding boxes overlap, then calculates a collision between the most overlapped 
-        particles.
-    Parameters: None
-    Returns:    None
-    Creator:    John Cox, 5/2017
-    --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const
-    {
-        //int numWorkGroupsX = (_numLeaves / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
-        //int numWorkGroupsY = 1;
-        //int numWorkGroupsZ = 1;
+    ///*--------------------------------------------------------------------------------------------
+    //Description:
+    //    (1) Constructs a binary radix tree using an algorithm that generates all internal nodes 
+    //    on one pass.  
+    //    (2) Then constructs the bounding volumes for each node in the tree from the leaves to 
+    //    the root.
+    //    (3) Each particle navigates the tree from the root and collects a list of all particles 
+    //    whose bounding boxes overlap, then calculates a collision between the most overlapped 
+    //    particles.
+    //Parameters: None
+    //Returns:    None
+    //Creator:    John Cox, 5/2017
+    //--------------------------------------------------------------------------------------------*/
+    //void ParticleCollisions::DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const
+    //{
+    //    //int numWorkGroupsX = (_numLeaves / WORK_GROUP_SIZE_X) + 1;
+    //    //int numWorkGroupsY = 1;
+    //    //int numWorkGroupsZ = 1;
 
-        //// populate leaves with the particles' Morton Codes
-        //glUseProgram(_populateLeavesWithDataProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    //    //// populate leaves with the particles' Morton Codes
+    //    //glUseProgram(_populateLeavesWithDataProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //// construct the hierarchy
-        //glUseProgram(_generateBinaryRadixTreeProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    //    //// construct the hierarchy
+    //    //glUseProgram(_generateBinaryRadixTreeProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //// merge the bounding boxes of individual leaves (particles) up to the root
-        //glUseProgram(_generateBoundingVolumesProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    //    //// merge the bounding boxes of individual leaves (particles) up to the root
+    //    //glUseProgram(_generateBoundingVolumesProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
 
-        //// generate BVH vertices (optional)
-        //glUseProgram(_generateVerticesProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+    //    //// generate BVH vertices (optional)
+    //    //glUseProgram(_generateVerticesProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
-        //// traverse the tree and detect collisions
-        //glUseProgram(_detectCollisionsProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+    //    //// traverse the tree and detect collisions
+    //    //glUseProgram(_detectCollisionsProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
-        //// resolve any detected collisions
-        //glUseProgram(_resolveCollisionsProgramId);
-        //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-        //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
+    //    //// resolve any detected collisions
+    //    //glUseProgram(_resolveCollisionsProgramId);
+    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
+    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
+    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
 
 
-        //// end collision detection and resolution
-        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-        //glUseProgram(0);
-    }
+    //    //// end collision detection and resolution
+    //    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    //    //glUseProgram(0);
+    //}
 
     /*--------------------------------------------------------------------------------------------
     Description:
         The same BVH generation and traversal algorithms, but with:
         (1) std::chrono calls scattered everywhere
         (2) writing the profiled duration results to stdout and to a tab-delimited text file
+
+        
+        TODO: this description
+        
     Parameters: None
     Returns:    None
-    Creator:    John Cox, 3/2017
+    Creator:    John Cox, 6/2017
     --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::DetectAndResolveWithProfiling(unsigned int numActiveParticles) const
+    void ParticleCollisions::DetectAndResolve(bool withProfiling) const
     {
+        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
+
+        // most shaders work on 1 item per thread
+        int numWorkGroupsX = numItemsInPrefixScanBuffer / WORK_GROUP_SIZE_X;
+        int remainder = numItemsInPrefixScanBuffer % WORK_GROUP_SIZE_X;
+        numWorkGroupsX += (remainder == 0) ? 0 : 1;
+
+        // the prefix scan works on 2 items per thread
+        int numWorkGroupsXForPrefixSum = numItemsInPrefixScanBuffer / PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
+        remainder = numItemsInPrefixScanBuffer % PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
+        numWorkGroupsXForPrefixSum += (remainder == 0) ? 0 : 1;
+
+        if (withProfiling)
+        {
+            SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+        }
+        else
+        {
+            SortParticlesWithoutProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+        }
+
+
+
+
         //cout << "Generating BVH for " << numActiveParticles << " particle leaves" << endl;
 
         //// for profiling
@@ -295,7 +323,7 @@ namespace ShaderControllers
         //// begin
         //generateBvhStart = high_resolution_clock::now();
 
-        //int numWorkGroupsX = (_numLeaves / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
+        //int numWorkGroupsX = (_numLeaves / WORK_GROUP_SIZE_X) + 1;
         //int numWorkGroupsY = 1;
         //int numWorkGroupsZ = 1;
 
@@ -480,7 +508,6 @@ namespace ShaderControllers
     void ParticleCollisions::AssembleProgramHeader(const std::string &shaderKey) const
     {
         ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
-        shaderStorageRef.NewCompositeShader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/Version.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/ShaderHeaders/SsboBufferBindings.comp");
@@ -502,7 +529,7 @@ namespace ShaderControllers
         std::string shaderKey = "copy particles to copy buffer";
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/CopyParticlesToCopyBuffer.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
@@ -524,9 +551,10 @@ namespace ShaderControllers
         std::string shaderKey = "generate sorting data";
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleRegionBoundaries.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/PositionToMortonCode.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/PositionToMortonCode.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateSortingData.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
@@ -671,7 +699,7 @@ namespace ShaderControllers
         std::string shaderKey = "sort particles";
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/SortParticles.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
@@ -726,7 +754,7 @@ namespace ShaderControllers
         std::string shaderKey = "generate leaf node bounding boxes";
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticlePropertiesBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateLeafNodeBoundingBoxes.comp");
@@ -754,7 +782,7 @@ namespace ShaderControllers
         std::string shaderKey = "generate binary radix tree";
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/v.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticleSortingDataBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/GenerateBinaryRadixTree.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
@@ -781,7 +809,7 @@ namespace ShaderControllers
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
-        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/MergeBoundingBoxes.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/MergeBoundingVolumes.comp");
         shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
         shaderStorageRef.LinkShader(shaderKey);
         _programIdMergeBoundingVolumes = shaderStorageRef.GetShaderProgram(shaderKey);
@@ -794,32 +822,11 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::SortParticlesWithoutProfiling() const
+    void ParticleCollisions::SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const
     {
         unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
 
-        // for PrefixScan.comp, which works on 2 items per thread
-        int numWorkGroupsXForPrefixSum = numItemsInPrefixScanBuffer / PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
-        int remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
-        numWorkGroupsXForPrefixSum += (remainder == 0) ? 0 : 1;
-
-        // for other shaders, which work on 1 item per thread
-        int numWorkGroupsXForOther = numItemsInPrefixScanBuffer / PARALLEL_SORT_WORK_GROUP_SIZE_X;
-        remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_WORK_GROUP_SIZE_X;
-        numWorkGroupsXForOther += (remainder == 0) ? 0 : 1;
-
-        // working on a 1D array (X dimension), so these are always 1
-        int numWorkGroupsY = 1;
-        int numWorkGroupsZ = 1;
-
-        glUseProgram(_programIdCopyParticlesToCopyBuffer);
-        glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-        //??need a memory barrier here??
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-        glUseProgram(_programIdGenerateSortingData);
-        glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        PrepareToSortParticles(numWorkGroupsX);
 
         // the sorting data are Morton Codes, which are 30 bits
         bool writeToSecondBuffer = true;
@@ -830,48 +837,122 @@ namespace ShaderControllers
             sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * numItemsInPrefixScanBuffer;
             sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * numItemsInPrefixScanBuffer;
 
-            glUseProgram(_programIdClearWorkGroupSums);
-            glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-            //??need a memory barrier here??
-            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-            glUseProgram(_programIdGetBitForPrefixScan);
-            glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadBufferOffset);
-            glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET, sortingDataWriteBufferOffset);
-            glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-            glUseProgram(_programIdPrefixScanOverAllData);
-            glDispatchCompute(numWorkGroupsXForPrefixSum, numWorkGroupsY, numWorkGroupsZ);
-            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-            glUseProgram(_programIdPrefixScanOverWorkGroupSums);
-            glDispatchCompute(numWorkGroupsXForPrefixSum, numWorkGroupsY, numWorkGroupsZ);
-            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-            glUseProgram(_programIdSortSortingDataWithPrefixSums);
-            glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadBufferOffset);
-            glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET, sortingDataWriteBufferOffset);
-            glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-            glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+            PrepareForPrefixScan(numWorkGroupsXPrefixScan, sortingDataReadBufferOffset);
+            PrefixScanOverParticleSortingData(numWorkGroupsXPrefixScan);
+            SortSortingDataWithPrefixScan(numWorkGroupsX, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
 
             // swap read/write buffers and do it again
             writeToSecondBuffer = !writeToSecondBuffer;
         }
-        
-        glUseProgram(_programIdSortParticles);
-        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadBufferOffset);
-        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET, sortingDataWriteBufferOffset);
-        glDispatchCompute(numWorkGroupsXForOther, numWorkGroupsY, numWorkGroupsZ);
-        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        SortParticlesWithSortedData(numWorkGroupsX, sortingDataReadBufferOffset);
 
         // all done
         glUseProgram(0);
     }
 
-    void ParticleCollisions::SortParticlesWithProfiling() const
+    void ParticleCollisions::SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const
     {
+        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo.NumDataEntries();
 
+        cout << "sorting " << numItemsInPrefixScanBuffer << " items" << endl;
+
+        // for profiling
+        using namespace std::chrono;
+        steady_clock::time_point start;
+        steady_clock::time_point end;
+        long long durationPrepareToSort = 0;
+        long long durationParticleSort = 0;
+        long long durationSortVerification = 0;
+        std::vector<long long> durationsPrepareForPrefixScan(32);
+        std::vector<long long> durationsPrefixScan(32);
+        std::vector<long long> durationsSortSortingData(32);
+
+        start = high_resolution_clock::now();
+        PrepareToSortParticles(numWorkGroupsX);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationPrepareToSort = duration_cast<microseconds>(end - start).count();
+
+        // parallel radix sorting algorithm over each bit of the Morton Codes 
+        // Note: 30 bits -> 30 loops.
+        bool writeToSecondBuffer = true;
+        unsigned int sortingDataReadBufferOffset = 0;
+        unsigned int sortingDataWriteBufferOffset = 0;
+        for (unsigned int bitNumber = 0; bitNumber < 30; bitNumber++)
+        {
+            sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * numItemsInPrefixScanBuffer;
+            sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * numItemsInPrefixScanBuffer;
+
+            start = high_resolution_clock::now();
+            PrepareForPrefixScan(numWorkGroupsXPrefixScan, sortingDataReadBufferOffset);
+            WaitForComputeToFinish();
+            end = high_resolution_clock::now();
+            durationsPrepareForPrefixScan[bitNumber] = duration_cast<microseconds>(end - start).count();
+
+            start = high_resolution_clock::now();
+            PrefixScanOverParticleSortingData(numWorkGroupsXPrefixScan);
+            WaitForComputeToFinish();
+            end = high_resolution_clock::now();
+            durationsPrefixScan[bitNumber] = duration_cast<microseconds>(end - start).count();
+
+            start = high_resolution_clock::now();
+            SortSortingDataWithPrefixScan(numWorkGroupsX, sortingDataReadBufferOffset, sortingDataWriteBufferOffset);
+            WaitForComputeToFinish();
+            end = high_resolution_clock::now();
+            durationsSortSortingData[bitNumber] = duration_cast<microseconds>(end - start).count();
+
+            // swap read/write buffers and do it again
+            writeToSecondBuffer = !writeToSecondBuffer;
+        }
+
+        start = high_resolution_clock::now();
+        SortParticlesWithSortedData(numWorkGroupsX, sortingDataReadBufferOffset);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationParticleSort = duration_cast<microseconds>(end - start).count();
+
+        // verify sorted data
+        // Note: Only need to copy the first half of the buffer.  This is where the last loop of 
+        // the radix sorting algorithm put the sorting data.
+        start = high_resolution_clock::now();
+        unsigned int startingIndex = 0;
+        std::vector<ParticleSortingData> checkSortingData(_particleSortingDataSsbo.NumItems());
+        unsigned int bufferSizeBytes = checkSortingData.size() * sizeof(ParticleSortingData);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particleSortingDataSsbo.BufferId());
+        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkSortingData.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        for (unsigned int i = 1; i < checkSortingData.size(); i++)
+        {
+            unsigned int thisIndex = i;
+            unsigned int prevIndex = i - 1;
+            unsigned int val = checkSortingData[thisIndex]._sortingData;
+            unsigned int prevVal = checkSortingData[prevIndex]._sortingData;
+
+            //if (checkOriginalData[thisIndex]._isActive == 0)
+            //{
+            //    continue;
+            //}
+            //else if (val == 0xffffffff)
+            //{
+            //    // this was extra data that was padded on
+            //    continue;
+            //}
+
+            // the original data is 0 - N-1, 1 value at a time, so it's ok to hard code 
+            if (val < prevVal)
+            {
+                printf("value %u at index %u is >= previous value %u and index %u\n", val, i, prevVal, i - 1);
+            }
+        }
+
+        end = high_resolution_clock::now();
+        durationSortVerification = duration_cast<microseconds>(end - start).count();
+
+
+        // all done
+        glUseProgram(0);
     }
 
     void ParticleCollisions::GenerateBvhWithoutProfiling() const
@@ -893,4 +974,68 @@ namespace ShaderControllers
     {
 
     }
+
+
+
+
+    void ParticleCollisions::PrepareToSortParticles(unsigned int numWorkGroupsX) const
+    {
+        glUseProgram(_programIdCopyParticlesToCopyBuffer);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        //??need a memory barrier here??
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        glUseProgram(_programIdGenerateSortingData);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    void ParticleCollisions::PrepareForPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const
+    {
+        // Note: The "work group sums" array is the size of a single work group * 2.  This shader
+        // should only be dispatched with a single work group.
+        glUseProgram(_programIdClearWorkGroupSums);
+        glDispatchCompute(1, 1, 1);
+        //??need a memory barrier here??
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        glUseProgram(_programIdGetBitForPrefixScan);
+        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    void ParticleCollisions::PrefixScanOverParticleSortingData(unsigned int numWorkGroupsX) const
+    {
+        glUseProgram(_programIdPrefixScanOverAllData);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+
+        glUseProgram(_programIdPrefixScanOverWorkGroupSums);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    void ParticleCollisions::SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const
+    {
+        glUseProgram(_programIdSortSortingDataWithPrefixSums);
+        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
+        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_WRITE_OFFSET, sortingDataWriteOffset);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    void ParticleCollisions::SortParticlesWithSortedData(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const
+    {
+        glUseProgram(_programIdSortParticles);
+        glUniform1ui(UNIFORM_LOCATION_PARTICLE_SORTING_DATA_BUFFER_READ_OFFSET, sortingDataReadOffset);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+    }
+
+    void ParticleCollisions::ConstructBvh(unsigned int numWorkGroupsX) const
+    {
+
+    }
+
 }

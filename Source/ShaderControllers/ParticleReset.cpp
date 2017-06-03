@@ -168,7 +168,7 @@ namespace ShaderControllers
         // where they were when the last particle was reset.  Also, after the "particles per 
         // emitter per frame" limit is reached, the vast majority of the threads will simply 
         // return, so it's actually pretty fast.
-        GLuint numWorkGroupsX = (_totalParticleCount / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
+        GLuint numWorkGroupsX = (_totalParticleCount / WORK_GROUP_SIZE_X) + 1;
         GLuint numWorkGroupsY = 1;
         GLuint numWorkGroupsZ = 1;
 

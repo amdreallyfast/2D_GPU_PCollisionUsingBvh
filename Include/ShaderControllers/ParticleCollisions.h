@@ -25,8 +25,7 @@ namespace ShaderControllers
         ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo, const ParticlePropertiesSsbo::SharedConstPtr particlePropertiesSsbo);
         ~ParticleCollisions();
 
-        void DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const;
-        void DetectAndResolveWithProfiling(unsigned int numActiveParticles) const;
+        void DetectAndResolve(bool withProfiling) const;
         const PolygonSsbo &BvhVerticesSsbo() const;
 
     private:
@@ -65,14 +64,26 @@ namespace ShaderControllers
         void AssembleProgramGenerateBinaryRadixTree();
         void AssembleProgramMergeBoundingVolumes();
 
-        void SortParticlesWithoutProfiling() const;
-        void SortParticlesWithProfiling() const;
+        void SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
+        void SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
 
         void GenerateBvhWithoutProfiling() const;
         void GenerateBvhWithProfiling() const;
 
         void DetectAndResolveCollisionsWithoutProfiling() const;
         void DetectAndResolveCollisionsWithProfiling() const;
+
+
+        // particle sorting needs pre-loop, in-loop, and post-loop stages
+        void PrepareToSortParticles(unsigned int numWorkGroupsX) const;
+        void PrepareForPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const;
+        void PrefixScanOverParticleSortingData(unsigned int numWorkGroupsX) const;
+        void SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const;
+        void SortParticlesWithSortedData(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const;
+
+        // BVH construction can be done in one go
+        void ConstructBvh(unsigned int numWorkGroupsX) const;
+
 
 
         // CopyParticlesToCopyBuffer.comp
@@ -107,7 +118,7 @@ namespace ShaderControllers
         BvhNodeSsbo _bvhNodeSsbo;
         PolygonSsbo _bvhGeometrySsbo;
 
-        // used for verifying that particle sorting is working
-        const ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
+        //// used for verifying that particle sorting is working
+        //const ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
     };
 }

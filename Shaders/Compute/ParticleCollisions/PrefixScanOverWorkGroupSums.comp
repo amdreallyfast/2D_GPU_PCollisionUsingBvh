@@ -5,9 +5,9 @@
 // REQUIRES PrefixScanBuffer.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
-shared uint[PARALLEL_SORT_ITEMS_PER_WORK_GROUP] fastTempArr;
+shared uint[PREFIX_SCAN_ITEMS_PER_WORK_GROUP] fastTempArr;
 
 /*------------------------------------------------------------------------------------------------
 Description:
@@ -29,7 +29,7 @@ void main()
 
     uint indexMultiplierDueToDepth = 1;
 
-    for (uint dataPairs = PARALLEL_SORT_ITEMS_PER_WORK_GROUP >> 1; dataPairs > 0; dataPairs >>= 1)
+    for (uint dataPairs = PREFIX_SCAN_ITEMS_PER_WORK_GROUP >> 1; dataPairs > 0; dataPairs >>= 1)
     {
         barrier();
         if (gl_LocalInvocationID.x < dataPairs)
@@ -45,12 +45,12 @@ void main()
 
     if (doubleGroupThreadIndex == 0)
     {
-        totalNumberOfOnes = PrefixSumsOfWorkGroupSums[PARALLEL_SORT_ITEMS_PER_WORK_GROUP - 1];
-        fastTempArr[PARALLEL_SORT_ITEMS_PER_WORK_GROUP - 1] = 0;
+        totalNumberOfOnes = PrefixSumsOfWorkGroupSums[PREFIX_SCAN_ITEMS_PER_WORK_GROUP - 1];
+        fastTempArr[PREFIX_SCAN_ITEMS_PER_WORK_GROUP - 1] = 0;
     }
     indexMultiplierDueToDepth >>= 1;
 
-    for (uint dataPairs = 1; dataPairs < PARALLEL_SORT_ITEMS_PER_WORK_GROUP; dataPairs *= 2)
+    for (uint dataPairs = 1; dataPairs < PREFIX_SCAN_ITEMS_PER_WORK_GROUP; dataPairs *= 2)
     {
         barrier();
         if (gl_LocalInvocationID.x < dataPairs)

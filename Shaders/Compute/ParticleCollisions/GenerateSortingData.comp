@@ -2,12 +2,12 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES PositionToMortonCode.comp
 // REQUIRES ParticleBuffer.comp
 // REQUIRES ParticleSortingDataBuffer.comp
-// REQUIRES PositionToMortonCode.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:

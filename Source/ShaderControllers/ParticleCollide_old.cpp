@@ -78,7 +78,7 @@ namespace ShaderControllers
         // Note: Add 1 in case there are an odd number of particles.  I want to make sure that 
         // all particles are covered.
         unsigned int halfParticleCount = (_totalParticleCount / 2) + 1;
-        GLuint numWorkGroupsX = (halfParticleCount / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
+        GLuint numWorkGroupsX = (halfParticleCount / WORK_GROUP_SIZE_X) + 1;
         GLuint numWorkGroupsY = 1;
         GLuint numWorkGroupsZ = 1;
 

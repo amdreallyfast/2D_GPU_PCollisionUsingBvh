@@ -85,7 +85,7 @@ namespace ShaderControllers
         // because the particle buffer is a 1-dimensional array
         // Note: +1 because integer division drops the remainder, and I want all the particles 
         // to have a shot.
-        GLuint numWorkGroupsX = (_totalParticleCount / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
+        GLuint numWorkGroupsX = (_totalParticleCount / WORK_GROUP_SIZE_X) + 1;
         GLuint numWorkGroupsY = 1;
         GLuint numWorkGroupsZ = 1;
 

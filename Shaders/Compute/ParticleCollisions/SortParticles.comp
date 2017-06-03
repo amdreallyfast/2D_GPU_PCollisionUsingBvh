@@ -6,7 +6,7 @@
 // REQUIRES ParticleSortingDataBuffer.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 
 /*------------------------------------------------------------------------------------------------
@@ -36,8 +36,11 @@ void main()
     // so the read offset should be 0, but I'm adding it here anyway just in case the sorting 
     // loop is changed to run an odd number of times and therefore cause the sorted data to end 
     // up in the buffer's second half 
-    uint mortonCodeIndex = threadIndex + uParticleSortingDataBufferReadOffset;
-    uint sourceIndex = ParticleSortingDataBuffer[mortonCodeIndex]._preSortedParticleIndex;
+    uint sortedDataIndex = threadIndex + uParticleSortingDataBufferReadOffset;
+    uint sourceIndex = AllParticleSortingData[sortedDataIndex]._preSortedParticleIndex;
+
+    // the unsorted particles are in the second half of the buffer
+    sourceIndex += uMaxNumParticles;
 
     // the ParticleSortingData structure is already sorted, so whatever index it is at now is the 
     // same index where the original data should be 

@@ -75,7 +75,7 @@ namespace ShaderControllers
     {
         glUseProgram(_computeProgramId);
 
-        GLuint numWorkGroupsX = (_totalParticleCount / PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) + 1;
+        GLuint numWorkGroupsX = (_totalParticleCount / WORK_GROUP_SIZE_X) + 1;
         GLuint numWorkGroupsY = 1;
         GLuint numWorkGroupsZ = 1;
         glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);

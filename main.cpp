@@ -193,8 +193,8 @@ void Init()
     //// for sorting particles once they've been updated
     //parallelSort = std::make_unique<ShaderControllers::ParallelSort>(particleBuffer);
 
-    //// for sorting, detecting collisions between, and resolving said collisions between particles
-    //particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer, particlePropertiesBuffer);
+    // for sorting, detecting collisions between, and resolving said collisions between particles
+    particleCollisions = std::make_shared<ShaderControllers::ParticleCollisions>(particleBuffer, particlePropertiesBuffer);
 
     //// determines particle color
     //nearbyParticleCounter = std::make_unique<ShaderControllers::CountNearbyParticles>(particleBuffer);
@@ -224,9 +224,6 @@ void Init()
     gTimer.Start();
 }
 
-#include <chrono>
-#include <iostream>
-
 /*------------------------------------------------------------------------------------------------
 Description:
     Updates particle positions, generates the quad tree for the particles' new positions, and 
@@ -246,6 +243,10 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(3);
     particleUpdater->Update(deltaTimeSec);
+    particleCollisions->DetectAndResolve(true);
+    //particleCollisions->DetectAndResolve(false);
+
+
     //parallelSort->SortWithProfiling();
     //parallelSort->SortWithoutProfiling();
     //particleCollisions->DetectAndResolveWithProfiling(particleUpdater->NumActiveParticles());

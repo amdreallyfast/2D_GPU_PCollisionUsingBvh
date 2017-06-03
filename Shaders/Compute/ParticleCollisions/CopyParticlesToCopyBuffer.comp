@@ -5,7 +5,7 @@
 // REQUIRES ParticleBuffer.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARALLEL_SORT_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:

@@ -215,13 +215,13 @@
 //        unsigned int numItemsInPrefixScanBuffer = _prefixSumSsbo->NumDataEntries();
 //        
 //        // for PrefixScan.comp, which works on 2 items per thread
-//        int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
-//        int remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
+//        int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
+//        int remainder = numItemsInPrefixScanBuffer % PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
 //        numWorkGroupsXByItemsPerWorkGroup += (remainder == 0) ? 0 : 1;
 //
 //        // for other shaders, which work on 1 item per thread
-//        int numWorkGroupsXByWorkGroupSize = numItemsInPrefixScanBuffer / PARALLEL_SORT_WORK_GROUP_SIZE_X;
-//        remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_WORK_GROUP_SIZE_X;
+//        int numWorkGroupsXByWorkGroupSize = numItemsInPrefixScanBuffer / PARALLEL_SORT_WORK_GROUP_SIZE;
+//        remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_WORK_GROUP_SIZE;
 //        numWorkGroupsXByWorkGroupSize += (remainder == 0) ? 0 : 1;
 //
 //        // working on a 1D array (X dimension), so these are always 1
@@ -332,13 +332,13 @@
 //        parallelSortStart = high_resolution_clock::now();
 //
 //        // for PrefixScan.comp, which works on 2 items per thread
-//        int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
-//        int remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_ITEMS_PER_WORK_GROUP;
+//        int numWorkGroupsXByItemsPerWorkGroup = numItemsInPrefixScanBuffer / PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
+//        int remainder = numItemsInPrefixScanBuffer % PREFIX_SCAN_ITEMS_PER_WORK_GROUP;
 //        numWorkGroupsXByItemsPerWorkGroup += (remainder == 0) ? 0 : 1;
 //
 //        // for other shaders, which work on 1 item per thread
-//        int numWorkGroupsXByWorkGroupSize = numItemsInPrefixScanBuffer / PARALLEL_SORT_WORK_GROUP_SIZE_X;
-//        remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_WORK_GROUP_SIZE_X;
+//        int numWorkGroupsXByWorkGroupSize = numItemsInPrefixScanBuffer / PARALLEL_SORT_WORK_GROUP_SIZE;
+//        remainder = numItemsInPrefixScanBuffer % PARALLEL_SORT_WORK_GROUP_SIZE;
 //        numWorkGroupsXByWorkGroupSize += (remainder == 0) ? 0 : 1;
 //
 //        // working on a 1D array (X dimension), so these are always 1

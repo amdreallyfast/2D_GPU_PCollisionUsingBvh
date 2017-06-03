@@ -1,6 +1,6 @@
 // REQUIRES Version.comp
 // REQUIRES ComputeShaderWorkGroupSizes.comp
-// - PARALLEL_SORT_WORK_GROUP_SIZE_X
+// - PARALLEL_SORT_WORK_GROUP_SIZE
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES ParticleBuffer.comp
@@ -9,7 +9,7 @@
 // REQUIRES QuickNormalize.comp
 
 // Y and Z work group sizes default to 1
-layout (local_size_x = PARTICLE_OPERATIONS_WORK_GROUP_SIZE_X) in;
+layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 // unlike SSBOs, atomic counter buffers seem to need a declaration like this and cannot be bound 
 // dynamically as in ParticleSsbo and PolygonSsbo, so declare the atomic counters up front to 

@@ -1,6 +1,6 @@
 /*------------------------------------------------------------------------------------------------
 Description:
-    This file was created because ParticleUpdate.comp and PositionToMortonCode.comp's need to 
+    This file was created because ParticleUpdate.comp and PositionToMortonCode.comp both need to 
     know the particle region boundaries.  The former has needed this for a long time, but I 
     discovered a couple days ago (4-29-2017) that my Morton Code setup was incorrect.  I was 
     normalizing the particles' position vector instead of dividing it by the size of the 
