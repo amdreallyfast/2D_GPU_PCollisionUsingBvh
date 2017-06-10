@@ -160,6 +160,7 @@ namespace ShaderControllers
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
         particleSsbo->ConfigureConstantUniforms(_programIdDetectCollisions);
         particleSsbo->ConfigureConstantUniforms(_programIdResolveCollisions);
+        particleSsbo->ConfigureConstantUniforms(_programIdGenerateVerticesParticleVelocityVectors);
 
         particlePropertiesSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
         particlePropertiesSsbo->ConfigureConstantUniforms(_programIdResolveCollisions);
@@ -184,7 +185,7 @@ namespace ShaderControllers
         _particlePotentialCollisionsSsbo.ConfigureConstantUniforms(_programIdDetectCollisions);
         _particlePotentialCollisionsSsbo.ConfigureConstantUniforms(_programIdResolveCollisions);
 
-        _velocityVectorGeometrySsbo.ConfigureConstantUniforms(_programIdResolveCollisions);
+        _velocityVectorGeometrySsbo.ConfigureConstantUniforms(_programIdGenerateVerticesParticleVelocityVectors);
 
 
         //_bvhGeometrySsbo.ConfigureConstantUniforms(_programidgen)
@@ -312,14 +313,7 @@ namespace ShaderControllers
 
         // regardless of profiling or not, generate geometry to visualize the results
         GenerateGeometry(numWorkGroupsX);
-        WaitForComputeToFinish();
-        unsigned int startingIndex = 0;
-        std::vector<MyVertex> checkResultantGeometry(_velocityVectorGeometrySsbo.NumVertices());
-        unsigned int bufferSizeBytes = checkResultantGeometry.size() * sizeof(MyVertex);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _velocityVectorGeometrySsbo.BufferId());
-        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
-        memcpy(checkResultantGeometry.data(), bufferPtr, bufferSizeBytes);
-        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -1400,7 +1394,17 @@ namespace ShaderControllers
 
         // this geometry buffer will not be used in any shader storage, but it will be used for 
         // rendering
-        glMemoryBarrier(GL_VERTEX_SHADER_BIT);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_SHADER_BIT);
+
+        //// in case of debugging
+        //WaitForComputeToFinish();
+        //unsigned int startingIndex = 0;
+        //std::vector<MyVertex> checkResultantGeometry(_velocityVectorGeometrySsbo.NumVertices());
+        //unsigned int bufferSizeBytes = checkResultantGeometry.size() * sizeof(MyVertex);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _velocityVectorGeometrySsbo.BufferId());
+        //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        //memcpy(checkResultantGeometry.data(), bufferPtr, bufferSizeBytes);
+        //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
     }
 
 }

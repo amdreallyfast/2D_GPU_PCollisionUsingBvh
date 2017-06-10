@@ -14,33 +14,6 @@ layout (local_size_x = WORK_GROUP_SIZE_X) in;
 // BoundingBoxesOverlap(...) umpteen times as this shader runs
 BoundingBox thisThreadNodeBoundingBox;
 
-///*------------------------------------------------------------------------------------------------
-//Description:
-//    Determines if two bounding boxes overlap.  Shocking description, I know.
-//
-//    Note: Returns an area instead a simple boolean because I might want to know which two 
-//    bounding boxes have the greatest overlap.
-//Parameters: 
-//    otherNodeBoundBox   A bounding box copy of the node to compare thisThreadNodeBoundingBox against.
-//Returns:    
-//    The area of the overlap, or 0 if there was no overlap.
-//Creator:    John Cox, 6/2017
-//------------------------------------------------------------------------------------------------*/
-//float OverlappingArea(BoundingBox otherNodeBoundingBox)
-//{
-//    float overlapBoxLeft = max(thisThreadNodeBoundingBox._left, otherNodeBoundingBox._left);
-//    float overlapBoxRight = min(thisThreadNodeBoundingBox._right, otherNodeBoundingBox._right);
-//    float overlapBoxBottom = max(thisThreadNodeBoundingBox._bottom, otherNodeBoundingBox._bottom);
-//    float overlapBoxTop = min(thisThreadNodeBoundingBox._top, otherNodeBoundingBox._top);
-//
-//    float width = overlapBoxRight - overlapBoxLeft;
-//    float height = overlapBoxTop - overlapBoxBottom;
-//
-//    // if either the width or the height did not overlap, return 0
-//    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
-//    return overlapArea;
-//}
-
 
 /*------------------------------------------------------------------------------------------------
 Description:
@@ -194,35 +167,5 @@ void main()
 
     // for color
     AllParticles[threadIndex]._numNearbyParticles = numPotentialCollisions;
-
-//    // for color
-//    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberOfPotentialCollisions;
-//    
-//    if (particleIndexWithGreatestOverlap != -1)
-//    {
-//        // the bounding boxes overlapped, but particles have circular collision regions
-//        float r1 = AllParticles[thisLeafNodeIndex]._collisionRadius;
-//        float r2 = AllParticles[particleIndexWithGreatestOverlap]._collisionRadius;
-//        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
-//
-//        // partial pythagorean theorem so that I don't have to take the square root
-//        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
-//        // component of the position.  It should end up as 0 after the subtraction, but force it to 
-//        // 0 just in case.
-//        vec4 p1Pos = AllParticles[thisLeafNodeIndex]._pos;
-//        vec4 p2Pos = AllParticles[particleIndexWithGreatestOverlap]._pos;
-//        vec4 p1ToP2 = vec4(p2Pos.xyz - p1Pos.xyz, 0.0f);
-//        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
-//    
-//        if (distP1ToP2Sqr > minDistForCollisionSqr)
-//        {
-//            // close, but no cigar
-//            particleIndexWithGreatestOverlap = -1;
-//        }
-//    }
-//    AllParticles[thisLeafNodeIndex]._collideWithThisParticleIndex = particleIndexWithGreatestOverlap;
-//
-//    AllBvhNodes[thisLeafNodeIndex]._extraData1 = numberOfPotentialCollisions;
-
 }
 

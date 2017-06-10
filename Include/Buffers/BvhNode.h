@@ -38,13 +38,7 @@ struct BvhNode
         _parentIndex(-1),
         _threadEntranceCounter(0),
         _leftChildIndex(-1),
-        _rightChildIndex(-1),
-        _startIndex(-1),
-        _endIndex(-1),
-        _leafSplitIndex(-1),
-        _extraData1(-1),
-        _extraData2(-1),
-        _extraData3(-1)
+        _rightChildIndex(-1)
     {
     }
     
@@ -67,15 +61,6 @@ struct BvhNode
     // used when traversing down the tree during collision detection
     int _leftChildIndex;
     int _rightChildIndex;
-
-    // debugging
-    // TODO: remove
-    int _startIndex;
-    int _endIndex;
-    int _leafSplitIndex;
-    int _extraData1;
-    int _extraData2;
-    int _extraData3;
 
     // Note: Lesson learned about buffer padding.  It is only necessary if the structure defines 
     // a vec* (yes, vec2 included; I tested it) or mat*.  The CPU side can declare whatever it 

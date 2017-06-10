@@ -32,15 +32,6 @@ struct BvhNode
     int _leftChildIndex;
     int _rightChildIndex;
 
-    // debugging
-    // TODO: remove
-    int _startIndex;
-    int _endIndex;
-    int _leafSplitIndex;
-    int _extraData1;
-    int _extraData2;
-    int _extraData3;
-
     // no padding needed as long as there are no vec* or mat* variables declared (yes, vec2's 
     // included)
     // Note: If there are, like the Particle structure in ParticleBuffer.comp, then the CPU-side 

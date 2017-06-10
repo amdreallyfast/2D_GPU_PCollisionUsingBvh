@@ -10,7 +10,7 @@ layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Calculates the number of leading bits that the two arguments have in common.  This is a #define macro because it is used in aseveral places and called many times.  This is suspected to be a possible point of execution divergeance.  It is a short function, so it is not difficult to turn it into a macro.
+    Calculates the number of leading bits that the two arguments have in common.  
 
     Ex: 0b00001 and 0b10001
     The common prefix is length 0.  There are three bits in common, but they are not leading 
@@ -57,11 +57,6 @@ Returns:
     See Description.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
-// TODO: try the macro
-//#define LengthOfCommonPrefix(indexA, indexB) \
-//((indexB < 0 || indexB >= uBvhNumberLeaves) ? \
-//-1 \
-//32 - findMSB(AllParticleSortingData[indexA]._sortingData, AllParticleSortingData[indexB]._sortingData);)
 int LengthOfCommonPrefix(int indexA, int indexB)
 {
     // don't need to check 'a' because the thread ID should always be in bounds
@@ -246,14 +241,6 @@ void main()
     // already calculated in FindSplitPosition(...), but it's already returning a value and this 
     // calculation is cheap and it's needed, so do it again
     int otherEndIndex = thisLeafIndex + (range * d);
-
-
-    // TODO: remove
-    AllBvhNodes[thisInternalNodeIndex]._startIndex = thisLeafIndex;
-    AllBvhNodes[thisInternalNodeIndex]._endIndex = otherEndIndex;
-    AllBvhNodes[thisInternalNodeIndex]._leafSplitIndex = splitIndex;
-
-
 
     int leftChildIndex = -12;
     if (min(thisLeafIndex, otherEndIndex) == splitIndex)
