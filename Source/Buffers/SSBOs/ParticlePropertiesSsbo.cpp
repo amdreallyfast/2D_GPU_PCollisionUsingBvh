@@ -65,8 +65,7 @@ Description:
     location found in CrossShaderUniformLocations.comp.
 Parameters: 
     computeProgramId    Self-explanatory.
-Returns:    
-    See Description.
+Returns:    None
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void ParticlePropertiesSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const

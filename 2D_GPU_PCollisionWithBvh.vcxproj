@@ -150,6 +150,7 @@
     <ClCompile Include="Shaders\ShaderStorage.cpp" />
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
@@ -177,6 +178,7 @@
     <ClInclude Include="Include\Buffers\ParticleSortingData.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
     <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSortingDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
@@ -216,6 +218,7 @@
     <None Include="Shaders\Compute\ParticleCollisions\GenerateSortingData.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeSortingDataUniqueness.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\MaxNumPotentialCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\MergeBoundingVolumes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\PrefixScanOverAllData.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\PrefixScanOverWorkGroupSums.comp" />

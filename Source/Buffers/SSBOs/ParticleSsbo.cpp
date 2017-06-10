@@ -11,6 +11,7 @@
 #include "Include/Buffers/Particle.h"
 
 
+// TODO: remove this
 
 // TODO: header
 // I have the rest of this stuff written down.
@@ -218,8 +219,7 @@ Description:
     location found in CrossShaderUniformLocations.comp.
 Parameters: 
     computeProgramId    Self-explanatory.
-Returns:    
-    See Description.
+Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void ParticleSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const

@@ -139,6 +139,9 @@ namespace ShaderControllers
         AssembleProgramGenerateBinaryRadixTree();
         AssembleProgramMergeBoundingVolumes();
 
+        // the programs used for the collisions themselves
+        AssembleProgramDetectCollisions();
+
         // load the buffer size uniforms where the SSBOs will be used
         particleSsbo->ConfigureConstantUniforms(_programIdCopyParticlesToCopyBuffer);
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateSortingData);
@@ -824,6 +827,34 @@ namespace ShaderControllers
 
     /*--------------------------------------------------------------------------------------------
     Description:
+        Assembles headers, buffers, and functional .comp files for the shader that takes leaf 
+        node bounding boxes and figures out which other, if any, leaf node bounding boxes it 
+        overlaps with.  Fills out the ParticlePotentialCollisionsBuffer.
+
+        The whole purpose of creating a BVH was to use this shader for particle-particle 
+        collision detection
+    Parameters: None
+    Returns:    None
+    Creator:    John Cox, 6/2017
+    --------------------------------------------------------------------------------------------*/
+    void ParticleCollisions::AssembleProgramDetectCollisions()
+    {
+        ShaderStorage &shaderStorageRef = ShaderStorage::GetInstance();
+
+        std::string shaderKey = "detect collisions";
+        shaderStorageRef.NewCompositeShader(shaderKey);
+        AssembleProgramHeader(shaderKey);
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/MaxNumPotentialCollisions.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticlePotentialCollisionsBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectCollisions.comp");
+        shaderStorageRef.CompileCompositeShader(shaderKey, GL_COMPUTE_SHADER);
+        shaderStorageRef.LinkShader(shaderKey);
+        _programIdDetectCollisions = shaderStorageRef.GetShaderProgram(shaderKey);
+    }
+
+    /*--------------------------------------------------------------------------------------------
+    Description:
         This method governs the shader dispatches that will result in sorting the ParticleBuffer.
     Parameters: 
         numWorkGroupsX  Expected to be the total particle count divided by work group size.
@@ -910,10 +941,6 @@ namespace ShaderControllers
         {
             sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * _numParticles;
             sortingDataWriteBufferOffset = static_cast<unsigned int>(writeToSecondBuffer) * _numParticles;
-
-            unsigned int startingIndex = 0;
-            unsigned int bufferSizeBytes = checkPrefixScan.size() * sizeof(int);
-            void *bufferPtr = nullptr;
 
             start = high_resolution_clock::now();
             PrepareForPrefixScan(bitNumber, sortingDataReadBufferOffset);
@@ -1101,14 +1128,14 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationGenerateTree = duration_cast<microseconds>(end - start).count();
 
-        //// populate the tree with bounding volumes to finish the BVH
-        //start = high_resolution_clock::now();
-        //glUseProgram(_programIdMergeBoundingVolumes);
-        //glDispatchCompute(numWorkGroupsX, 1, 1);
-        //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-        //WaitForComputeToFinish();
-        //end = high_resolution_clock::now();
-        //durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
+        // populate the tree with bounding volumes to finish the BVH
+        start = high_resolution_clock::now();
+        glUseProgram(_programIdMergeBoundingVolumes);
+        glDispatchCompute(numWorkGroupsX, 1, 1);
+        glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
+        WaitForComputeToFinish();
+        end = high_resolution_clock::now();
+        durationMergeBoundingBoxes = duration_cast<microseconds>(end - start).count();
 
         // verify that the binary tree is valid by checking that all parent-child relationships 
         // are reciprocated 
@@ -1124,7 +1151,7 @@ namespace ShaderControllers
         glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
         
         // check the root node (no parent, only children)
-        unsigned int rootnodeindex = _bvhNodeSsbo.NumLeafNodes();
+        int rootnodeindex = _bvhNodeSsbo.NumLeafNodes();
         const BvhNode &rootnode = checkBinaryTree[rootnodeindex];
         if ((rootnodeindex != checkBinaryTree[rootnode._leftChildIndex]._parentIndex) &&
             (rootnodeindex != checkBinaryTree[rootnode._rightChildIndex]._parentIndex))
@@ -1133,7 +1160,7 @@ namespace ShaderControllers
             printf("");
         }
 
-        // check all the other nodes
+        // check all the other nodes (have parents, leaves don't have children)
         for (size_t thisNodeIndex = 0; thisNodeIndex < checkBinaryTree.size(); thisNodeIndex++)
         {
             const BvhNode &thisNode = checkBinaryTree[thisNodeIndex];
@@ -1160,6 +1187,7 @@ namespace ShaderControllers
 
         end = high_resolution_clock::now();
         durationVerifyValidTree = duration_cast<microseconds>(end - start).count();
+
 
         // TODO: write outputs to stdout and to file
 

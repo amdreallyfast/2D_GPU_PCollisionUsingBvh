@@ -14,7 +14,7 @@ Creator:    John Cox, 5/2017
 class ParticleSortingDataSsbo: public SsboBase
 {
 public:
-    ParticleSortingDataSsbo(unsigned int numItems);
+    ParticleSortingDataSsbo(unsigned int numParticles);
     virtual ~ParticleSortingDataSsbo() = default;
     using SharedPtr = std::shared_ptr<ParticleSortingDataSsbo>;
     using SharedConstPtr = std::shared_ptr<const ParticleSortingDataSsbo>;

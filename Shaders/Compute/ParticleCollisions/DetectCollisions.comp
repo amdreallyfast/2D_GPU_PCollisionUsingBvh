@@ -2,41 +2,78 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
-// REQUIRES ParticleBuffer.comp
 // REQUIRES BvhNodeBuffer.comp
+// REQUIRES ParticlePotentialCollisionsBuffer.comp
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 
+// this is a thread-specific global so that it doesn't have to be copied into 
+// BoundingBoxesOverlap(...) umpteen times as this shader runs
+BoundingBox thisThreadNodeBoundingBox;
 
-// TODO: header
-float OverlappingArea(int node1Index, int node2Index)
+///*------------------------------------------------------------------------------------------------
+//Description:
+//    Determines if two bounding boxes overlap.  Shocking description, I know.
+//
+//    Note: Returns an area instead a simple boolean because I might want to know which two 
+//    bounding boxes have the greatest overlap.
+//Parameters: 
+//    otherNodeBoundBox   A bounding box copy of the node to compare thisThreadNodeBoundingBox against.
+//Returns:    
+//    The area of the overlap, or 0 if there was no overlap.
+//Creator:    John Cox, 6/2017
+//------------------------------------------------------------------------------------------------*/
+//float OverlappingArea(BoundingBox otherNodeBoundingBox)
+//{
+//    float overlapBoxLeft = max(thisThreadNodeBoundingBox._left, otherNodeBoundingBox._left);
+//    float overlapBoxRight = min(thisThreadNodeBoundingBox._right, otherNodeBoundingBox._right);
+//    float overlapBoxBottom = max(thisThreadNodeBoundingBox._bottom, otherNodeBoundingBox._bottom);
+//    float overlapBoxTop = min(thisThreadNodeBoundingBox._top, otherNodeBoundingBox._top);
+//
+//    float width = overlapBoxRight - overlapBoxLeft;
+//    float height = overlapBoxTop - overlapBoxBottom;
+//
+//    // if either the width or the height did not overlap, return 0
+//    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
+//    return overlapArea;
+//}
+
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Determines if two bounding boxes overlap.  Shocking description, I know.
+
+    Note: This is only a potential collision.  Bounding boxes are just boxes, but particles have 
+    a collision radius (circle), so it is possible to have an overlap of two boxes that doesn't 
+    result in the two particles' collision circles overlapping.
+Parameters: 
+    otherNodeBoundBox   A copy of the bounding box of the node to compare 
+                        thisThreadNodeBoundingBox against.
+Returns:    
+    True if they bounding boxes overlap, otherwise false.
+Creator:    John Cox, 6/2017
+------------------------------------------------------------------------------------------------*/
+bool BoundingBoxesOverlap(BoundingBox otherNodeBoundingBox)
 {
-    float overlapBoxLeft = max(
-        AllBvhNodes[node1Index]._boundingBox._left, 
-        AllBvhNodes[node2Index]._boundingBox._left);
-    float overlapBoxRight = min(
-        AllBvhNodes[node1Index]._boundingBox._right, 
-        AllBvhNodes[node2Index]._boundingBox._right);
-    float overlapBoxBottom = max(
-        AllBvhNodes[node1Index]._boundingBox._bottom, 
-        AllBvhNodes[node2Index]._boundingBox._bottom);
-    float overlapBoxTop = min(
-        AllBvhNodes[node1Index]._boundingBox._top, 
-        AllBvhNodes[node2Index]._boundingBox._top);
+    float overlapBoxLeft = max(thisThreadNodeBoundingBox._left, otherNodeBoundingBox._left);
+    float overlapBoxRight = min(thisThreadNodeBoundingBox._right, otherNodeBoundingBox._right);
+    float overlapBoxBottom = max(thisThreadNodeBoundingBox._bottom, otherNodeBoundingBox._bottom);
+    float overlapBoxTop = min(thisThreadNodeBoundingBox._top, otherNodeBoundingBox._top);
 
-    float width = overlapBoxRight - overlapBoxLeft;
-    float height = overlapBoxTop - overlapBoxBottom;
-    float overlapArea = (width < 0.0f || height < 0.0f) ? 0.0f : width * height;
-    return overlapArea;
+    bool horizontalIntersection = (overlapBoxRight - overlapBoxLeft) > 0.0f;
+    bool verticalIntersection = (overlapBoxTop - overlapBoxBottom) > 0.0f;
+    return horizontalIntersection && verticalIntersection;
 }
 
 
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Navigates the Bounding Volume Hierarchy (BVH) and finds overlapping collision boxes.  When there are thousands of particles on-screen at a time, there may be many bounding box overlaps for any one particle.  The priorty collision will be the bounding box with the greatest overlap.
+    Navigates the Bounding Volume Hierarchy (BVH) and finds overlapping collision boxes.  When 
+    there are thousands of particles on-screen at a time, there may be many bounding box 
+    overlaps for any one particle.  These are dumped into the ParticlePotentialCollisionsBuffer.
 
     Influence for the tree traversal comes from here, specifically the section entitled
     "Minimizing Divergence":
@@ -59,124 +96,132 @@ Creator:    John Cox, 4/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
+    // Note: Alternate max thread count uParticlePotentialCollisionsBufferSize.  Both are the 
+    // equivalent of the number of particles.
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uMaxNumParticles ||
-        threadIndex >= uNumActiveParticles)
+    if (threadIndex >= uBvhNumberLeaves)
     {
-        // no collisions for inactive particles (they were left out of the BVH anyway)
+        return;
+    }
+    else if (AllBvhNodes[threadIndex]._isNull == 1)
+    {
+        // this is a node for an inactive particle
         return;
     }
 
-    AllParticles[threadIndex]._numberOfNearbyParticles = 0;
+    // set the global
+    thisThreadNodeBoundingBox = AllBvhNodes[threadIndex]._boundingBox;
 
-    // because OverlappingArea(...) takes signed integers for indices, which in turn is because 
-    // all the BVH's nodes use signed integers for indices
+    // work with a local copy (fast memory), then write that to the 
+    // ParticlePotentialCollisionsBuffer when finished
+    ParticlePotentialCollisions potentialCollisions;
+
+    // because indices in the BVH nodes are all signed integers
     int thisLeafNodeIndex = int(threadIndex);
-
-    int numberOfPotentialCollisions = 0;
-    float areaOfGreatestOverlap = 0.0f;
-    int particleIndexWithGreatestOverlap = -1;
 
     // iterative traversal of the tree requires keeping track of the depth yourself
     int topOfStackIndex = 0;
-    // TODO: ??would not initializing this speed it up??
     const int MAX_STACK_SIZE = 64;
     int nodeStack[MAX_STACK_SIZE];
     nodeStack[topOfStackIndex++] = -1;  // "top of stack"
 
-    // start at root internal node    
+    // start at root internal node and dive through the internal nodes in the tree to find leaf 
+    // nodes that intersect with the bounding box for this thread's particle
     // Note: By definition of the BVH's construction, all bounding boxes are contained within 
     // the root node's bounding box, so don't bother checking for overlap with the root.
     int currentNodeIndex = int(uBvhNumberLeaves);
     do
     {
-        // check for overlap with leaf node (another particle) on the left
+        // check for overlap with node on the left
+        // Note: Even inactive particles have valid bounding boxes.  Ignore other results if 
+        // the node is for an inactive particle.
         int leftChildIndex = AllBvhNodes[currentNodeIndex]._leftChildIndex;
-        float overlapAreaLeft = OverlappingArea(thisLeafNodeIndex, leftChildIndex);
-        bool overlapLeft = (overlapAreaLeft > 0.0f);
+        BvhNode leftChild = AllBvhNodes[leftChildIndex];
+        bool leftIsNotNull = (leftChild._isNull == 0);
+        bool leftOverlap = BoundingBoxesOverlap(leftChild._boundingBox);
         bool leftChildIsNotSelf = (leftChildIndex != thisLeafNodeIndex);
-        bool leftChildIsLeaf = (AllBvhNodes[leftChildIndex]._isLeaf == 1);
-        if (overlapLeft && leftChildIsNotSelf && leftChildIsLeaf)
+        bool leftChildIsLeaf = (leftChild._isLeaf == 1);
+        if (leftIsNotNull && leftOverlap && leftChildIsNotSelf && leftChildIsLeaf)
         {
-            numberOfPotentialCollisions++;
-            particleIndexWithGreatestOverlap = leftChildIndex;
-            break;
-            if (overlapAreaLeft > areaOfGreatestOverlap)
+            potentialCollisions._particleIndexes[potentialCollisions._numPotentialCollisions++] = leftChildIndex;
+            if (potentialCollisions._numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
             {
-                areaOfGreatestOverlap = overlapAreaLeft;
-                particleIndexWithGreatestOverlap = leftChildIndex;
+                // just start running over the last entry
+                potentialCollisions._numPotentialCollisions--;
             }
         }
 
         // repeat for the right branch
         int rightChildIndex = AllBvhNodes[currentNodeIndex]._rightChildIndex;
-        float overlapAreaRight = OverlappingArea(thisLeafNodeIndex, rightChildIndex);
-        bool overlapRight = (overlapAreaRight > 0.0f);
+        BvhNode rightChild = AllBvhNodes[rightChildIndex];
+        bool rightIsNotNull = (rightChild._isNull == 0);
+        bool rightOverlap = BoundingBoxesOverlap(rightChild._boundingBox);
         bool rightChildIsNotSelf = (rightChildIndex != thisLeafNodeIndex);
-        bool rightChildIsLeaf = (AllBvhNodes[rightChildIndex]._isLeaf == 1);
-        if (overlapRight && rightChildIsNotSelf && rightChildIsLeaf)
+        bool rightChildIsLeaf = (rightChild._isLeaf == 1);
+        if (rightIsNotNull && rightOverlap && rightChildIsNotSelf && rightChildIsLeaf)
         {
-            numberOfPotentialCollisions++;
-            particleIndexWithGreatestOverlap = rightChildIndex;
-            break;
-            if (overlapAreaRight > areaOfGreatestOverlap)
+            potentialCollisions._particleIndexes[potentialCollisions._numPotentialCollisions++] = rightChildIndex;
+            if (potentialCollisions._numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
             {
-                areaOfGreatestOverlap = overlapAreaRight;
-                particleIndexWithGreatestOverlap = rightChildIndex;
+                // just start running over the last entry
+                potentialCollisions._numPotentialCollisions--;
             }
         }
 
         // next node
-        // Note: By virtue of the BVH's construction, the only nodes with child indices of 
-        // -1 will be leaf nodes.  Leaf checks were already done, so no need to perform 
-        // "child index == -1" checks.
-        bool traverseLeft = (overlapLeft && !leftChildIsLeaf);
-        bool traverseRight = (overlapRight && !rightChildIsLeaf);
+        bool traverseLeft = (leftIsNotNull && leftOverlap && !leftChildIsLeaf);
+        bool traverseRight = (rightIsNotNull && rightOverlap && !rightChildIsLeaf);
         if (!traverseLeft && !traverseRight)
         {
-            // children must be leaves, non-overlapping, or both; pop the top of the stack
+            // both children children must be leaves, non-overlapping, or both, so pop the top 
+            // of the stack
             currentNodeIndex = nodeStack[--topOfStackIndex];
         }
         else 
         {
-            // at least one of the nodes is not a leaf
+            // at least one of the nodes is not a leaf (internal node) and there is an overlap 
+            // with its bounding box
             currentNodeIndex = traverseLeft ? leftChildIndex : rightChildIndex;
             if (traverseLeft && traverseRight)
             {
-                // neither is a leaf;  already traversing left, so push the right index
+                // neither is a leaf and there is an overlap with both; already traversing left, 
+                // so push the right index
                 nodeStack[topOfStackIndex++] = rightChildIndex;
             }
         }
     } while (currentNodeIndex != -1 && topOfStackIndex < MAX_STACK_SIZE);
 
-    // for color
-    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberOfPotentialCollisions;
-    
-    if (particleIndexWithGreatestOverlap != -1)
-    {
-        // the bounding boxes overlapped, but particles have circular collision regions
-        float r1 = AllParticles[thisLeafNodeIndex]._collisionRadius;
-        float r2 = AllParticles[particleIndexWithGreatestOverlap]._collisionRadius;
-        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
+    // copy the local version to global memory
+    AllParticlePotentialCollisions[threadIndex] = potentialCollisions;
 
-        // partial pythagorean theorem so that I don't have to take the square root
-        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
-        // component of the position.  It should end up as 0 after the subtraction, but force it to 
-        // 0 just in case.
-        vec4 p1Pos = AllParticles[thisLeafNodeIndex]._pos;
-        vec4 p2Pos = AllParticles[particleIndexWithGreatestOverlap]._pos;
-        vec4 p1ToP2 = vec4(p2Pos.xyz - p1Pos.xyz, 0.0f);
-        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
-    
-        if (distP1ToP2Sqr > minDistForCollisionSqr)
-        {
-            // close, but no cigar
-            particleIndexWithGreatestOverlap = -1;
-        }
-    }
-    AllParticles[thisLeafNodeIndex]._collideWithThisParticleIndex = particleIndexWithGreatestOverlap;
-
-    AllBvhNodes[thisLeafNodeIndex]._extraData1 = numberOfPotentialCollisions;
+//    // for color
+//    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberOfPotentialCollisions;
+//    
+//    if (particleIndexWithGreatestOverlap != -1)
+//    {
+//        // the bounding boxes overlapped, but particles have circular collision regions
+//        float r1 = AllParticles[thisLeafNodeIndex]._collisionRadius;
+//        float r2 = AllParticles[particleIndexWithGreatestOverlap]._collisionRadius;
+//        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
+//
+//        // partial pythagorean theorem so that I don't have to take the square root
+//        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
+//        // component of the position.  It should end up as 0 after the subtraction, but force it to 
+//        // 0 just in case.
+//        vec4 p1Pos = AllParticles[thisLeafNodeIndex]._pos;
+//        vec4 p2Pos = AllParticles[particleIndexWithGreatestOverlap]._pos;
+//        vec4 p1ToP2 = vec4(p2Pos.xyz - p1Pos.xyz, 0.0f);
+//        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+//    
+//        if (distP1ToP2Sqr > minDistForCollisionSqr)
+//        {
+//            // close, but no cigar
+//            particleIndexWithGreatestOverlap = -1;
+//        }
+//    }
+//    AllParticles[thisLeafNodeIndex]._collideWithThisParticleIndex = particleIndexWithGreatestOverlap;
+//
+//    AllBvhNodes[thisLeafNodeIndex]._extraData1 = numberOfPotentialCollisions;
 
 }
 

@@ -47,7 +47,9 @@ namespace ShaderControllers
         unsigned int _programIdGenerateBinaryRadixTree;
         unsigned int _programIdMergeBoundingVolumes;
 
-        // TODO: detect collisions, resolve collisions
+        // all that for the coup de grace
+        unsigned int _programIdDetectCollisions;
+        unsigned int _programIdResolveCollisions;
 
         // ??should this shader controller be split into more manageable parts? it's a lot of programs...??
         void AssembleProgramHeader(const std::string &shaderKey) const;
@@ -63,6 +65,7 @@ namespace ShaderControllers
         void AssembleProgramGenerateLeafNodeBoundingBoxes();
         void AssembleProgramGenerateBinaryRadixTree();
         void AssembleProgramMergeBoundingVolumes();
+        void AssembleProgramDetectCollisions();
 
         void SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
         void SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;

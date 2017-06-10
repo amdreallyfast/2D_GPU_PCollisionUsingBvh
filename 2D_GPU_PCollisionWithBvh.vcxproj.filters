@@ -65,6 +65,9 @@
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -152,6 +155,9 @@
       <Filter>Include\Buffers</Filter>
     </ClInclude>
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.h">
       <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
   </ItemGroup>
@@ -334,6 +340,9 @@
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePropertiesBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\MaxNumPotentialCollisions.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>

@@ -67,8 +67,7 @@ Description:
     location found in CrossShaderUniformLocations.comp.
 Parameters: 
     computeProgramId    Self-explanatory.
-Returns:    
-    See Description.
+Returns:    None
 Creator:    John Cox, 3/2017
 ------------------------------------------------------------------------------------------------*/
 void PolygonSsbo::ConfigureConstantUniforms(unsigned int computeProgramId) const

@@ -15,8 +15,8 @@ Description:
     root, merging bounding boxes as they go.  Only one thread is allowed to do the merging of 
     two child nodes at a time, so the number of active threads decreases as they go up the 
     chain.  This shouldn't be much of a performance problem though because the algorithm is 
-    simple and fast and only goes through approximately log2N iterations as long as the binary 
-    radix tree doesn't have to deal with duplicate values.
+    simple and fast and only goes through approximately log2N iterations in a balanced binary 
+    tree.
     
     Note: log2N is ~16 for N = 50,000 leaves and is ~20 for N = 1,000,000 leaves.
     
@@ -51,7 +51,7 @@ void main()
         // tree.  This is a binary tree, and a binary tree should have exactly two leaves per 
         // node.  A third increment, or a fourth, or more would mean that the node has more than 
         // two other nodes referencing it as their parent.  This is problem with tree 
-        // construction.
+        // construction, not bounding box merging.
         if (atomicAdd(AllBvhNodes[nodeIndex]._threadEntranceCounter, 1) == 0)
         {
             return;
@@ -62,11 +62,14 @@ void main()
         BoundingBox leftBb = AllBvhNodes[leftChildIndex]._boundingBox;
         BoundingBox rightBb = AllBvhNodes[rightChildIndex]._boundingBox;
 
-        AllBvhNodes[nodeIndex]._boundingBox._left = min(leftBb._left, rightBb._left);
-        AllBvhNodes[nodeIndex]._boundingBox._right = max(leftBb._right, rightBb._right);
-        AllBvhNodes[nodeIndex]._boundingBox._bottom = min(leftBb._bottom, rightBb._bottom);
-        AllBvhNodes[nodeIndex]._boundingBox._top = max(leftBb._top, rightBb._top);
+        BoundingBox thisBb;
+        thisBb._left = min(leftBb._left, rightBb._left);
+        thisBb._right = max(leftBb._right, rightBb._right);
+        thisBb._bottom = min(leftBb._bottom, rightBb._bottom);
+        thisBb._top = max(leftBb._top, rightBb._top);
+        AllBvhNodes[nodeIndex]._boundingBox = thisBb;
 
+        // next
         nodeIndex = AllBvhNodes[nodeIndex]._parentIndex;
     }
 }
