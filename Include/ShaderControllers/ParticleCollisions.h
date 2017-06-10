@@ -8,6 +8,7 @@
 #include "Include/Buffers/SSBOs/ParticleSortingDataSsbo.h"
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
 #include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
+#include "Include/Buffers/SSBOs/ParticlePotentialCollisionsSsbo.h"
 #include "Include/Buffers/SSBOs/PolygonSsbo.h"
 
 namespace ShaderControllers
@@ -73,16 +74,22 @@ namespace ShaderControllers
         void GenerateBvhWithoutProfiling(unsigned int numWorkGroupsX) const;
         void GenerateBvhWithProfiling(unsigned int numWorkGroupsX) const;
 
-        void DetectAndResolveCollisionsWithoutProfiling() const;
-        void DetectAndResolveCollisionsWithProfiling() const;
+        void DetectAndResolveCollisionsWithoutProfiling(unsigned int numWorkGroupsX) const;
+        void DetectAndResolveCollisionsWithProfiling(unsigned int numWorkGroupsX) const;
 
-
-        // particle sorting needs pre-loop, in-loop, and post-loop stages
+        // the "without profiling" and "with profiling" go through these same steps
         void PrepareToSortParticles(unsigned int numWorkGroupsX) const;
         void PrepareForPrefixScan(unsigned int bitNumber, unsigned int sortingDataReadOffset) const;
         void PrefixScanOverParticleSortingData(unsigned int numWorkGroupsX) const;
         void SortSortingDataWithPrefixScan(unsigned int numWorkGroupsX, unsigned int bitNumber, unsigned int sortingDataReadOffset, unsigned int sortingDataWriteOffset) const;
         void SortParticlesWithSortedData(unsigned int numWorkGroupsX, unsigned int sortingDataReadOffset) const;
+        void PrepareForBinaryTree(unsigned int numWorkGroupsX) const;
+        void GenerateBinaryRadixTree(unsigned int numWorkGroupsX) const;
+        void MergeNodesIntoBvh(unsigned int numWorkGroupsX) const;
+        void DetectCollisions(unsigned int numWorkGroupsX) const;
+        void ResolveCollisions(unsigned int numWorkGroupsX) const;
+
+
 
 
 
@@ -116,6 +123,7 @@ namespace ShaderControllers
         ParticleSortingDataSsbo _particleSortingDataSsbo;
         PrefixSumSsbo _prefixSumSsbo;
         BvhNodeSsbo _bvhNodeSsbo;
+        ParticlePotentialCollisionsSsbo _particlePotentialCollisionsSsbo;
         PolygonSsbo _bvhGeometrySsbo;
 
         // used for verifying that particle sorting is working
