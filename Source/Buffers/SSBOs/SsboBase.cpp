@@ -59,6 +59,8 @@ SsboBase::~SsboBase()
 
 /*------------------------------------------------------------------------------------------------
 Description:
+    // TODO: ??make this pure virtual??
+
     This is a convenience method for setting constant values, like buffer sizes, that must be 
     set for the same SSBO in multiple shaders.  This is not unusual in the parallel sort 
     algorithm, which has multiple sets, and in each step data may be taken from one buffer, have 

@@ -1,19 +1,6 @@
 // REQUIRES SsboBufferBindings.comp
-//  PREFIX_SCAN_BUFFER_BINDING
 // REQUIRES CrossShaderUniformLocations
-//  UNIFORM_LOCATION_PARTICLE_BUFFER_SIZE
-
-/*-----------------------------------------------------------------------------------------------
-Description:
-    Stores all info necessary to draw a single vertex.  This is used for drawing the quad tree's 
-    wireframe.
-Creator: John Cox (6-12-2016)
------------------------------------------------------------------------------------------------*/
-struct MyVertex
-{
-    vec4 _pos;
-    vec4 _normal;
-};
+// REQUIRES MyVertex.comp
 
 /*-----------------------------------------------------------------------------------------------
 Description:

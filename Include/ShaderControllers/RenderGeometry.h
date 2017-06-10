@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Include/Buffers/SSBOs/PolygonSsbo.h"
+#include "Include/Buffers/SSBOs/VertexSsboBase.h"
 
 namespace ShaderControllers
 {
@@ -16,7 +16,7 @@ namespace ShaderControllers
         RenderGeometry();
         ~RenderGeometry();
 
-        void Render(const PolygonSsbo::SharedConstPtr &ssboToRender) const;
+        void Render(const VertexSsboBase &ssboToRender) const;
 
     private:
         unsigned int _renderProgramId;

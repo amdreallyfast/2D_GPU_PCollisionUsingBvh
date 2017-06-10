@@ -65,14 +65,14 @@ FreeTypeEncapsulated gTextAtlases;
 
 ParticleSsbo::SharedPtr particleBuffer = nullptr;
 ParticlePropertiesSsbo::SharedPtr particlePropertiesBuffer = nullptr;
-PolygonSsbo::SharedPtr polygonBuffer = nullptr;
+//PolygonSsbo::SharedPtr polygonBuffer = nullptr;   // TODO: remove polygon buffer
 std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
 std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 5000;
+const unsigned int MAX_PARTICLE_COUNT = 2;
 
 
 /*------------------------------------------------------------------------------------------------
@@ -130,7 +130,7 @@ void GenerateParticleEmitters()
     // two thin bars emitting at each other so that the particles are guaranteed to collide
 
     // bar on the left and emitting right
-    glm::vec2 bar1P1(-0.8f, -0.01f);
+    glm::vec2 bar1P1(-0.8f, -0.00f);
     glm::vec2 bar1P2(-0.8f, +0.01f);
     glm::vec2 emitDir1(+1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
@@ -139,7 +139,7 @@ void GenerateParticleEmitters()
 
     // bar on the right and emitting left
     glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.01f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.01f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.00f);
     glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
     barEmitter2->SetTransform(windowSpaceTransform);
@@ -224,8 +224,8 @@ void Init()
     // for drawing particles
     particleRenderer = std::make_unique<ShaderControllers::RenderParticles>();
 
-    //// for drawing non-particle things
-    //geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
+    // for drawing non-particle things
+    geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
 
     //std::vector<PolygonFace> zOrderCurvePolygonFaces;
     ////zOrderCurvePolygonFaces.clear();
@@ -254,7 +254,7 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(10);
+    particleResetter->ResetParticles(1);
     particleUpdater->Update(deltaTimeSec);
     particleCollisions->DetectAndResolve(true);
     //particleCollisions->DetectAndResolve(false);
@@ -303,8 +303,8 @@ void Display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     particleRenderer->Render(particleBuffer);
-    //geometryRenderer->Render(polygonBuffer);
-    //geometryRenderer->Render(particleCollisions->BvhVerticesSsbo());
+    //geometryRenderer->Render(polygonBuffer);  // TODO: remove
+    geometryRenderer->Render(particleCollisions->ParticleVelocityVectorSsbo());
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));

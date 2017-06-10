@@ -153,10 +153,12 @@
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PrefixSumSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\SsboBase.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\VertexSsboBase.cpp" />
     <ClCompile Include="Source\OpenGlErrorHandling.cpp" />
     <ClCompile Include="Source\Particles\ParticleEmitterBar.cpp" />
     <ClCompile Include="Source\Particles\ParticleEmitterPoint.cpp" />
@@ -181,10 +183,12 @@
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSortingDataSsbo.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\VertexSsboBase.h" />
     <ClInclude Include="Include\Geometry\MyVertex.h" />
     <ClInclude Include="Include\Geometry\PolygonFace.h" />
     <ClInclude Include="Include\OpenGlErrorHandling.h" />
@@ -203,19 +207,22 @@
     <ClInclude Include="Shaders\ShaderStorage.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\Compute\MyVertex.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePotentialCollisionsBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePropertiesBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleSortingDataBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleVelocityVectorGeometryBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\PrefixScanBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\ClearWorkGroupSums.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\CopyParticlesToCopyBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\DetectCollisions.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateLeafNodeBoundingBoxes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateSortingData.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesBoundingBoxes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleVelocityVectors.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeSortingDataUniqueness.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\MaxNumPotentialCollisions.comp" />
@@ -228,11 +235,11 @@
     <None Include="Shaders\Compute\ParticleRegionBoundaries.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetBarEmitter.comp" />
     <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp" />
-    <None Include="Shaders\Compute\ParticleReset\QuickNormalize.comp" />
     <None Include="Shaders\Compute\ParticleReset\Random.comp" />
     <None Include="Shaders\Compute\ParticleUpdate.comp" />
     <None Include="Shaders\Compute\PolygonBuffer.comp" />
     <None Include="Shaders\Compute\PositionToMortonCode.comp" />
+    <None Include="Shaders\Compute\QuickNormalize.comp" />
     <None Include="Shaders\Render\FreeType.frag" />
     <None Include="Shaders\Render\FreeType.vert" />
     <None Include="Shaders\Render\Geometry.frag" />

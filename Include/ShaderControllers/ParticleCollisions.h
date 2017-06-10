@@ -9,7 +9,8 @@
 #include "Include/Buffers/SSBOs/ParticleSsbo.h"
 #include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
 #include "Include/Buffers/SSBOs/ParticlePotentialCollisionsSsbo.h"
-#include "Include/Buffers/SSBOs/PolygonSsbo.h"
+#include "Include/Buffers/SSBOs/ParticleVelocityVectorGeometrySsbo.h"
+
 
 namespace ShaderControllers
 {
@@ -27,7 +28,7 @@ namespace ShaderControllers
         ~ParticleCollisions();
 
         void DetectAndResolve(bool withProfiling) const;
-        const PolygonSsbo &BvhVerticesSsbo() const;
+        const VertexSsboBase &ParticleVelocityVectorSsbo() const;
 
     private:
         unsigned int _numParticles;
@@ -50,7 +51,10 @@ namespace ShaderControllers
 
         // all that for the coup de grace
         unsigned int _programIdDetectCollisions;
-        //unsigned int _programIdResolveCollisions;
+        unsigned int _programIdResolveCollisions;
+
+        // for drawing pretty things
+        unsigned int _programIdGenerateVerticesParticleVelocityVectors;
 
         void AssembleProgramHeader(const std::string &shaderKey) const;
         void AssembleProgramCopyParticlesToCopyBuffer();
@@ -66,6 +70,9 @@ namespace ShaderControllers
         void AssembleProgramGenerateBinaryRadixTree();
         void AssembleProgramMergeBoundingVolumes();
         void AssembleProgramDetectCollisions();
+        void AssembleProgramResolveCollisions();
+        void AssembleProgramGenerateVerticesParticleVelocityVectors();
+
 
         void SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
         void SortParticlesWithProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
@@ -88,12 +95,15 @@ namespace ShaderControllers
         void DetectCollisions(unsigned int numWorkGroupsX) const;
         void ResolveCollisions(unsigned int numWorkGroupsX) const;
 
+        // for drawing pretty things
+        void GenerateGeometry(unsigned int numWorkGroupsX) const;
+
         // buffers for sorting, BVH generation, and anything else that's necessary
         ParticleSortingDataSsbo _particleSortingDataSsbo;
         PrefixSumSsbo _prefixSumSsbo;
         BvhNodeSsbo _bvhNodeSsbo;
         ParticlePotentialCollisionsSsbo _particlePotentialCollisionsSsbo;
-        PolygonSsbo _bvhGeometrySsbo;
+        ParticleVelocityVectorGeometrySsbo _velocityVectorGeometrySsbo;
 
         // used for verifying that particle sorting is working
         const ParticleSsbo::SharedConstPtr _originalParticleSsbo; 

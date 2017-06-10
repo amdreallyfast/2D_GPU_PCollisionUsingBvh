@@ -2,12 +2,12 @@
 // REQUIRES ComputeShaderWorkGroupSizes.comp
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
+// REQUIRES ParticlePotentialCollisionsBuffer.comp
+// REQUIRES ParticlePropertiesBuffer.comp
 // REQUIRES ParticleBuffer.comp
-
 
 // Y and Z work group sizes default to 1
 layout (local_size_x = WORK_GROUP_SIZE_X) in;
-
 
 
 /*------------------------------------------------------------------------------------------------
@@ -29,45 +29,110 @@ Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 void main()
 {
-    // Note: By definition of the BVH's construction, only active particles are counted.  This 
-    // means that there is no need to check if any collision candidates are active.  Conversely, 
-    // if a particle is inactive, then it is not in the tree and thus is not participating in 
-    // collision detection.
     uint threadIndex = gl_GlobalInvocationID.x;
-    if (threadIndex >= uMaxNumParticles ||
-        threadIndex >= uNumActiveParticles)
+    if (threadIndex >= uMaxNumParticles)
     {
-        // no collisions for inactive particles (they were left out of the BVH anyway)
         return;
     }
-
-    // this value is set at the end of DetectCollisions.comp
-    // Note: DetectCollisions.comp also performs a check to make sure that the two particles' 
-    // collision spheres intersect, not just their bounding boxes.
-    int otherGuyIndex = AllParticles[threadIndex]._collideWithThisParticleIndex;
-    if (otherGuyIndex == -1)
+    else if (AllParticles[threadIndex]._isActive == 0)
     {
         return;
     }
 
-    // local copies will be easier to work with
     Particle p1 = AllParticles[threadIndex];
-    Particle p2 = AllParticles[otherGuyIndex];
+    ParticleProperties p1Properties = AllParticleProperties[p1._particleTypeIndex];
+
+    // TODO: position shift
+    vec4 p1NetDeltaVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
+
+    // make a local copy for easier access
+    ParticlePotentialCollisions collisionCandidates = AllParticlePotentialCollisions[threadIndex];
+
+    // go through all the collision candidates, and if necessary calculate collision results
+    for (int particleIndexCounter = 0; 
+        particleIndexCounter > collisionCandidates._numPotentialCollisions; 
+        particleIndexCounter++)
+    {
+        int p2Index = collisionCandidates._particleIndexes[particleIndexCounter];
+        Particle p2 = AllParticles[p2Index];
+        ParticleProperties p2Properties = AllParticleProperties[p2._particleTypeIndex];
+
+        // check for actual collision
+        // Note: The bounding boxes overlapped, but particles have circular collision regions.
+        float r1 = p1Properties._collisionRadius;
+        float r2 = p2Properties._collisionRadius;
+        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
+
+        // partial pythagorean theorem so that I don't have to take the square root
+        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
+        // component of the position.  It should end up as 0 after the subtraction, but force it to 
+        // 0 just in case.
+        vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
+        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+
+        if (distP1ToP2Sqr > minDistForCollisionSqr)
+        {
+            // close, but no cigar
+            continue;
+        }
+
+        // didn't continue, so there is a collision
+        // Note: I don't have an intuitive understanding of these calculations, but they work.  
+        // If I understood it better, then I could write better comments and variable names, but 
+        // I don't, so I'm keeping it the way that I found it in the gamasutra article, or at 
+        // least as much as I can given that it is math and pseudocode.
+        vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
+        float a1 = dot(p1._vel, p1ToP2);
+        float a2 = dot(p2._vel, p1ToP2);
+        float fraction = (2.0f * (a1 - a2)) / (p1Properties._mass + p2Properties._mass);
+        vec4 p1DeltaVelocity = (-1.0f) * (fraction * p2Properties._mass * normalizedLineOfContact);
+        
+        // if there are multiple collisions, this may end up with a very high velocity (
+        // collisions from one side) or a very low velocity (collisions from all sides), but 
+        // most likely it will be somewhere in the middle
+        p1NetDeltaVelocity += p1DeltaVelocity;
+    }
     
-    // Note: I don't have an intuitive understanding of these calculations, but they work.  If I 
-    // understood it better, then I could write better comments and variable names, but I don't, 
-    // so I'm keeping it the way that I found it in the gamasutra article, or at least as much 
-    // as I can given that it is math and pseudocode.
-    vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
-    vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
-    float a1 = dot(p1._vel, p1ToP2);
-    float a2 = dot(p2._vel, p1ToP2);
-    float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
-    vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
-    vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
-    
-    // write results back to global memory
-    //??how to only have one thread handle both conditions without a race condition? atomicAdd(...) on a dedicated member? should I even other? what if the other particle had a better collision with someone else??
-    AllParticles[threadIndex]._vel = p1VelocityPrime;
-    AllParticles[otherGuyIndex]._vel = p2VelocityPrime;
+    //if (collisionCandidates._numPotentialCollisions != 0)
+    //{
+    //    AllParticles[threadIndex]._vel *= -1.0f;
+    //}
+    AllParticles[threadIndex]._vel += p1NetDeltaVelocity;
+
+
+    //
+    //if 
+    //
+    //
+    //
+    //
+    //// this value is set at the end of DetectCollisions.comp
+    //// Note: DetectCollisions.comp also performs a check to make sure that the two particles' 
+    //// collision spheres intersect, not just their bounding boxes.
+    //int otherGuyIndex = AllParticles[threadIndex]._collideWithThisParticleIndex;
+    //if (otherGuyIndex == -1)
+    //{
+    //    return;
+    //}
+    //
+    //// local copies will be easier to work with
+    //Particle p1 = AllParticles[threadIndex];
+    //Particle p2 = AllParticles[otherGuyIndex];
+    //
+    //// Note: I don't have an intuitive understanding of these calculations, but they work.  If I 
+    //// understood it better, then I could write better comments and variable names, but I don't, 
+    //// so I'm keeping it the way that I found it in the gamasutra article, or at least as much 
+    //// as I can given that it is math and pseudocode.
+    //vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
+    //vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
+    //float a1 = dot(p1._vel, p1ToP2);
+    //float a2 = dot(p2._vel, p1ToP2);
+    //float fraction = (2.0f * (a1 - a2)) / (p1._mass + p2._mass);
+    //vec4 p1VelocityPrime = p1._vel - (fraction * p2._mass * normalizedLineOfContact);
+    //vec4 p2VelocityPrime = p2._vel + (fraction * p1._mass * normalizedLineOfContact);
+    //
+    //// write results back to global memory
+    ////??how to only have one thread handle both conditions without a race condition? atomicAdd(...) on a dedicated member? should I even other? what if the other particle had a better collision /with /someone else??
+    //AllParticles[threadIndex]._vel = p1VelocityPrime;
+    //AllParticles[otherGuyIndex]._vel = p2VelocityPrime;
 }

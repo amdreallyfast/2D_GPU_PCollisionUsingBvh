@@ -53,11 +53,11 @@ namespace ShaderControllers
     Returns:    None
     Creator:    John Cox, 5/2017
     --------------------------------------------------------------------------------------------*/
-    void RenderGeometry::Render(const PolygonSsbo::SharedConstPtr &ssboToRender) const
+    void RenderGeometry::Render(const VertexSsboBase &ssboToRender) const
     {
         glUseProgram(_renderProgramId);
-        glBindVertexArray(ssboToRender->VaoId());
-        glDrawArrays(ssboToRender->DrawStyle(), 0, ssboToRender->NumVertices());
+        glBindVertexArray(ssboToRender.VaoId());
+        glDrawArrays(ssboToRender.DrawStyle(), 0, ssboToRender.NumVertices());
         glBindVertexArray(0);
         glUseProgram(0);
     }

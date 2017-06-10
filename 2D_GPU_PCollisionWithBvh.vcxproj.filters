@@ -68,6 +68,12 @@
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\VertexSsboBase.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -158,6 +164,12 @@
       <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\VertexSsboBase.h">
       <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
   </ItemGroup>
@@ -260,9 +272,6 @@
     <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp">
       <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleReset\QuickNormalize.comp">
-      <Filter>Shaders\Compute\ParticleReset</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleReset\Random.comp">
       <Filter>Shaders\Compute\ParticleReset</Filter>
     </None>
@@ -305,9 +314,6 @@
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateBvhVertices.comp">
-      <Filter>Shaders\Compute\ParticleCollisions</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
@@ -342,6 +348,21 @@
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\MaxNumPotentialCollisions.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\QuickNormalize.comp">
+      <Filter>Shaders\Compute</Filter>
+    </None>
+    <None Include="Shaders\Compute\MyVertex.comp">
+      <Filter>Shaders\Compute</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleVelocityVectorGeometryBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesBoundingBoxes.comp">
+      <Filter>Shaders\Compute\ParticleCollisions</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleVelocityVectors.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>

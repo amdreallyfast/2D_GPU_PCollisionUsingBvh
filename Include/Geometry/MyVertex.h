@@ -11,6 +11,21 @@ struct MyVertex
 {
     /*-------------------------------------------------------------------------------------------
     Description:
+        Does nothing.  The GLM objects have their own constructors.  The only reason this exists 
+        is to allow a default constructor.
+    Parameters:
+        pos     The particle's position in window space.  
+        normal  Self-explanatory.
+    Returns:    None
+    Creator: John Cox, 9-25-2016
+    -------------------------------------------------------------------------------------------*/
+    MyVertex()
+    {
+
+    }
+
+    /*-------------------------------------------------------------------------------------------
+    Description:
         Ensures that the object starts object with initialized values.
     Parameters:
         pos     The particle's position in window space.  
@@ -24,6 +39,8 @@ struct MyVertex
     {
 
     }
+
+
 
     // even though this is a 2D program at this time (and still is as of 5-3-2017), vec4s were 
     // chosen because it is easier than trying to match GLSL's 16-bytes-per-variable with arrays 
