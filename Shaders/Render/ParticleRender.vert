@@ -1,5 +1,5 @@
-// REQUIRES Versoin.comp
-// REQUIRES CountNearbyParticlesLimits.comp
+// REQUIRES Version.comp
+// REQUIRES MaxNumPotentialCollisions.comp
 
 // Note: The vec2's are in window space (both X and Y on the range [-1,+1])
 // Also Note: The vec2s are provided as vec4s on the CPU side and specified as such in the 
@@ -44,38 +44,34 @@ void main()
 
         // min/mid/max possible nearby particles
         float min = 0;
-        float mid = 10;
-        float max = 20;
+        float mid = MAX_NUM_POTENTIAL_COLLISIONS * 0.5f;
+        float max = MAX_NUM_POTENTIAL_COLLISIONS;
 
-
-////        if (collideWithThisParticleIndex == -1)
-////        //if (numberOfNearbyParticles == -1)
-////        {
-////            //particleColor = vec4(1.0f, 1.0f, 1.0f, 1.0f);
-////            particleColor = white;
-////        }
-////        else
-//        {
-////            particleColor  = red;
-//            float blendValue = float(numberOfNearbyParticles);
-//            float fractionLowToMid = (blendValue - min) / (mid - min);
-//            fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
-//    
-//            float fractionMidToHigh = (blendValue - mid) / (max - mid);
-//            fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
-//    
-//            // cast boolean to float (1.0f == true, 0.0f == false)
-//            // Note: There are two possible linear blends: blue->green and green->red.  This color 
-//            // blending is not like blending three points on a triangle, but it is three points on a 
-//            // 1-dimensional number line, so need to differentiate between two linear blends.
-//            float pressureIsLow = float(blendValue < mid);
-//            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
-//            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
-//            particleColor = 
-//                (pressureIsLow * lowToMidPressureColor) + 
-//                ((1 - pressureIsLow) * midToHighPressureColor);
-//        }
-        particleColor = white;
+        if (numNearbyParticles == 0)
+        {
+            particleColor = white;
+        }
+        else
+        {
+            particleColor  = red;
+            float blendValue = float(numNearbyParticles);
+            float fractionLowToMid = (blendValue - min) / (mid - min);
+            fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
+  
+            float fractionMidToHigh = (blendValue - mid) / (max - mid);
+            fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
+  
+            // cast boolean to float (1.0f == true, 0.0f == false)
+            // Note: There are two possible linear blends: blue->green and green->red.  This color 
+            // blending is not like blending three points on a triangle, but it is three points on a 
+            // 1-dimensional number line, so need to differentiate between two linear blends.
+            float pressureIsLow = float(blendValue < mid);
+            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
+            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
+            particleColor = 
+                (pressureIsLow * lowToMidPressureColor) + 
+                ((1 - pressureIsLow) * midToHighPressureColor);
+        }
 
         // Note: The W position seems to be used as a scaling factor (I must have forgotten this 
         // from the graphical math; it's been awhile since I examined it in detail).  If I do any 

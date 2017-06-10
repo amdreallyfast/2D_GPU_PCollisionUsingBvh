@@ -48,3 +48,16 @@ void ParticlePotentialCollisionsSsbo::ConfigureConstantUniforms(unsigned int com
     glUniform1ui(UNIFORM_LOCATION_PARTICLE_POTENTIAL_COLLISIONS_BUFFER_SIZE, _numItems);
     glUseProgram(0);
 }
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    A simple getter for the value that was passed in on creation.
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 6/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int ParticlePotentialCollisionsSsbo::NumItems() const
+{
+    return _numItems;
+}

@@ -7,6 +7,12 @@
 // Y and Z work group sizes default to 1
 layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
+
+
+
+// TODO: ??could this shader be removed if PrefixScanOverWorkGroupSums used a 0-initializer for the "fast shared temp array"??
+
+
 /*------------------------------------------------------------------------------------------------
 Description:
     Clears out the PrefixSumsOfWorkGroupSums array.

@@ -18,6 +18,7 @@ public:
     using SharedConstPtr = std::shared_ptr<const ParticlePotentialCollisionsSsbo>;
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
+    unsigned int NumItems() const;
 
 private:
     unsigned int _numItems;

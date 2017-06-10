@@ -8,7 +8,6 @@
 layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 
-
 /*------------------------------------------------------------------------------------------------
 Description:
     This shader generates bounding boxes for each of the leaves, then works up the tree to the 

@@ -3,6 +3,7 @@
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations.comp
 // REQUIRES BvhNodeBuffer.comp
+// REQUIRES ParticleBuffer.comp
 // REQUIRES ParticlePotentialCollisionsBuffer.comp
 
 // Y and Z work group sizes default to 1
@@ -114,7 +115,8 @@ void main()
 
     // work with a local copy (fast memory), then write that to the 
     // ParticlePotentialCollisionsBuffer when finished
-    ParticlePotentialCollisions potentialCollisions;
+    int numPotentialCollisions = 0;
+    int particleIndexes[MAX_NUM_POTENTIAL_COLLISIONS] = int[MAX_NUM_POTENTIAL_COLLISIONS](-1);
 
     // because indices in the BVH nodes are all signed integers
     int thisLeafNodeIndex = int(threadIndex);
@@ -143,12 +145,9 @@ void main()
         bool leftChildIsLeaf = (leftChild._isLeaf == 1);
         if (leftIsNotNull && leftOverlap && leftChildIsNotSelf && leftChildIsLeaf)
         {
-            potentialCollisions._particleIndexes[potentialCollisions._numPotentialCollisions++] = leftChildIndex;
-            if (potentialCollisions._numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
-            {
-                // just start running over the last entry
-                potentialCollisions._numPotentialCollisions--;
-            }
+            // if there are too many collisions, run over the last entry
+            numPotentialCollisions -= (numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS) ? 1 : 0;
+            particleIndexes[numPotentialCollisions++] = leftChildIndex;
         }
 
         // repeat for the right branch
@@ -160,12 +159,9 @@ void main()
         bool rightChildIsLeaf = (rightChild._isLeaf == 1);
         if (rightIsNotNull && rightOverlap && rightChildIsNotSelf && rightChildIsLeaf)
         {
-            potentialCollisions._particleIndexes[potentialCollisions._numPotentialCollisions++] = rightChildIndex;
-            if (potentialCollisions._numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
-            {
-                // just start running over the last entry
-                potentialCollisions._numPotentialCollisions--;
-            }
+            // if there are too many collisions, run over the last entry
+            numPotentialCollisions -= (numPotentialCollisions == MAX_NUM_POTENTIAL_COLLISIONS) ? 1 : 0;
+            particleIndexes[numPotentialCollisions++] = rightChildIndex;
         }
 
         // next node
@@ -192,7 +188,12 @@ void main()
     } while (currentNodeIndex != -1 && topOfStackIndex < MAX_STACK_SIZE);
 
     // copy the local version to global memory
-    AllParticlePotentialCollisions[threadIndex] = potentialCollisions;
+    // Note: GLSL is nice to treat arrays as objects.  It makes copying easier.
+    AllParticlePotentialCollisions[threadIndex]._numPotentialCollisions = numPotentialCollisions;
+    AllParticlePotentialCollisions[threadIndex]._particleIndexes = particleIndexes;
+
+    // for color
+    AllParticles[threadIndex]._numNearbyParticles = numPotentialCollisions;
 
 //    // for color
 //    AllParticles[thisLeafNodeIndex]._numberOfNearbyParticles = numberOfPotentialCollisions;

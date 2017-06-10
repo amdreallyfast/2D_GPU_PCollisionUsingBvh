@@ -55,7 +55,6 @@
 #include "Include/ShaderControllers/RenderParticles.h"
 #include "Include/ShaderControllers/RenderGeometry.h"
 
-
 // for the frame rate counter (and other profiling)
 #include "Include/ShaderControllers/ProfilingWaitToFinish.h"
 #include "Include/RenderFrameRate/FreeTypeEncapsulated.h"
@@ -69,13 +68,83 @@ ParticlePropertiesSsbo::SharedPtr particlePropertiesBuffer = nullptr;
 PolygonSsbo::SharedPtr polygonBuffer = nullptr;
 std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
-//std::shared_ptr<ShaderControllers::ParallelSort> parallelSort = nullptr;
 std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
 const unsigned int MAX_PARTICLE_COUNT = 5000;
 
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    Generates and assigns the particle emitters that will be used by the ParticleReset compute 
+    controller.  This function was created to clean up Init().
+
+    Note: I considered taking an argument to the ParticleReset compute controller, but I decided 
+    that, since the controller is already a global, I'll just use that.
+Parameters: None
+Returns:    None
+Creator:    John Cox, 6/2017
+------------------------------------------------------------------------------------------------*/
+void GenerateParticleEmitters()
+{
+    // used in the capricioius event that I want to rotate everything.  
+    //glm::mat4 windowSpaceTransform = glm::rotate(glm::mat4(), 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    //windowSpaceTransform *= glm::translate(glm::mat4(), glm::vec3(-0.1f, -0.05f, 0.0f));
+    glm::mat4 windowSpaceTransform = glm::rotate(glm::mat4(), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+    windowSpaceTransform *= glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
+
+    float particleMinVel = 0.1f;
+    float particleMaxVel = 1.0f;
+
+    //// bar on the left and emitting up and right
+    //glm::vec2 bar1P1(-0.8f, -0.8f);
+    //glm::vec2 bar1P2(-0.8f, -0.4f);
+    //glm::vec2 emitDir1(+1.0f, +0.6f);
+    //ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
+    //barEmitter1->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(barEmitter1);
+
+    //// bar on the right and emitting up and left
+    //glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.8f);
+    //glm::vec2 bar2P2 = glm::vec2(+0.8f, -0.4f);
+    //glm::vec2 emitDir2 = glm::vec2(-1.0f, +1.2f);
+    //ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
+    //barEmitter2->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(barEmitter2);
+
+    //// bar on the top and emitting down
+    //glm::vec2 bar3P1 = glm::vec2(-0.2f, +0.8f);
+    //glm::vec2 bar3P2 = glm::vec2(+0.2f, +0.8f);
+    //glm::vec2 emitDir3 = glm::vec2(-0.2f, -1.0f);
+    //ParticleEmitterBar::SHARED_PTR barEmitter3 = std::make_shared<ParticleEmitterBar>(bar3P1, bar3P2, emitDir3, particleMinVel, particleMaxVel);
+    //barEmitter3->SetTransform(windowSpaceTransform);
+    //particleResetter->AddEmitter(barEmitter3);
+
+    ////// a point emitter in the center putting particles out in all directions
+    ////glm::vec2 point1Pos = glm::vec2(0.0f, 0.0f);
+    ////ParticleEmitterPoint::SHARED_PTR pointEmitter1 = std::make_shared<ParticleEmitterPoint>(point1Pos, particleMinVel, particleMaxVel);
+    ////pointEmitter1->SetTransform(windowSpaceTransform);
+    ////particleResetter->AddEmitter(pointEmitter1);
+
+    // two thin bars emitting at each other so that the particles are guaranteed to collide
+
+    // bar on the left and emitting right
+    glm::vec2 bar1P1(-0.8f, -0.01f);
+    glm::vec2 bar1P2(-0.8f, +0.01f);
+    glm::vec2 emitDir1(+1.0f, +0.0f);
+    ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
+    barEmitter1->SetTransform(windowSpaceTransform);
+    particleResetter->AddEmitter(barEmitter1);
+
+    // bar on the right and emitting left
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.01f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.01f);
+    glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.0f);
+    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
+    barEmitter2->SetTransform(windowSpaceTransform);
+    particleResetter->AddEmitter(barEmitter2);
+}
 
 
 /*------------------------------------------------------------------------------------------------
@@ -137,52 +206,11 @@ void Init()
     // mass, collision radius, etc.
     particlePropertiesBuffer = std::make_shared<ParticlePropertiesSsbo>();
 
-    // set up the particle region
-    // Note: This mat4 is a convenience for easily moving the particle region center and all 
-    // emitters.
-    //glm::mat4 windowSpaceTransform = glm::rotate(glm::mat4(), 45.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    //windowSpaceTransform *= glm::translate(glm::mat4(), glm::vec3(-0.1f, -0.05f, 0.0f));
-    glm::mat4 windowSpaceTransform = glm::rotate(glm::mat4(), 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-    windowSpaceTransform *= glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
-
     // for resetting particles
     // Note: Put the bar emitters across from each and spraying particles toward each other and 
     // up so that the particles collide near the middle with a slight upward velocity.
     particleResetter = std::make_unique<ShaderControllers::ParticleReset>(particleBuffer);
-
-    float particleMinVel = 0.1f;
-    float particleMaxVel = 1.0f;
-
-    // bar on the left and emitting up and right
-    glm::vec2 bar1P1(-0.8f, -0.8f);
-    glm::vec2 bar1P2(-0.8f, -0.4f);
-    glm::vec2 emitDir1(+1.0f, +0.6f);
-    ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
-    barEmitter1->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter1);
-
-    // bar on the right and emitting up and left
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.8f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, -0.4f);
-    glm::vec2 emitDir2 = glm::vec2(-1.0f, +1.2f);
-    ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
-    barEmitter2->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter2);
-
-    // bar on the top and emitting down
-    glm::vec2 bar3P1 = glm::vec2(-0.2f, +0.8f); 
-    glm::vec2 bar3P2 = glm::vec2(+0.2f, +0.8f);
-    glm::vec2 emitDir3 = glm::vec2(-0.2f, -1.0f);
-    ParticleEmitterBar::SHARED_PTR barEmitter3 = std::make_shared<ParticleEmitterBar>(bar3P1, bar3P2, emitDir3, particleMinVel, particleMaxVel);
-    barEmitter3->SetTransform(windowSpaceTransform);
-    particleResetter->AddEmitter(barEmitter3);
-
-    //// a point emitter in the center putting particles out in all directions
-    //glm::vec2 point1Pos = glm::vec2(0.0f, 0.0f);
-    //ParticleEmitterPoint::SHARED_PTR pointEmitter1 = std::make_shared<ParticleEmitterPoint>(point1Pos, particleMinVel, particleMaxVel);
-    //pointEmitter1->SetTransform(windowSpaceTransform);
-    //particleResetter->AddEmitter(pointEmitter1);
-
+    GenerateParticleEmitters();
 
     // for moving particles
     particleUpdater = std::make_unique<ShaderControllers::ParticleUpdate>(particleBuffer);
@@ -205,15 +233,6 @@ void Init()
     //polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
     //polygonBuffer->ConfigureRender(GL_LINES);
 
-
-
-    //// for profiling 
-    //// Note: The first call uploads all the buffers before sorting, so the numbers are screwed a 
-    //// bit.  They are already loaded on the second call, so that call runs more like what it 
-    //// would run in real time.
-    //parallelSort->SortWithProfiling();
-    //parallelSort->SortWithProfiling();
-
     // the timer will be used for framerate calculations
     gTimer.Start();
 }
@@ -235,7 +254,7 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(3);
+    particleResetter->ResetParticles(10);
     particleUpdater->Update(deltaTimeSec);
     particleCollisions->DetectAndResolve(true);
     //particleCollisions->DetectAndResolve(false);

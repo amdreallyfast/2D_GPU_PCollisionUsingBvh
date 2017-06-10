@@ -7,9 +7,8 @@
 #include "Include/ShaderControllers/ProfilingWaitToFinish.h"
 #include "Include/Buffers/ParticleSortingData.h"
 #include "Include/Buffers/BvhNode.h"
-
+#include "Include/Buffers/ParticlePotentialCollisions.h"
 #include "Include/Buffers/Particle.h"
-
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
@@ -150,9 +149,10 @@ namespace ShaderControllers
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateSortingData);
         particleSsbo->ConfigureConstantUniforms(_programIdSortParticles);
         particleSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
+        particleSsbo->ConfigureConstantUniforms(_programIdDetectCollisions);
 
         particlePropertiesSsbo->ConfigureConstantUniforms(_programIdGenerateLeafNodeBoundingBoxes);
-        // TODO: CollisionResolution.comp
+        //particlePropertiesSsbo->ConfigureConstantUniforms(_programIdResolveCollisions);
 
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGenerateSortingData);
         _particleSortingDataSsbo.ConfigureConstantUniforms(_programIdGetBitForPrefixScan);
@@ -172,7 +172,7 @@ namespace ShaderControllers
         _bvhNodeSsbo.ConfigureConstantUniforms(_programIdDetectCollisions);
 
         _particlePotentialCollisionsSsbo.ConfigureConstantUniforms(_programIdDetectCollisions);
-
+        //_particlePotentialCollisionsSsbo.ConfigureConstantUniforms(_programIdResolveCollisions);
 
 
         //_bvhGeometrySsbo.ConfigureConstantUniforms(_programidgen)
@@ -213,67 +213,6 @@ namespace ShaderControllers
         glDeleteProgram(_programIdGenerateBinaryRadixTree);
         glDeleteProgram(_programIdMergeBoundingVolumes);
     }
-
-    ///*--------------------------------------------------------------------------------------------
-    //Description:
-    //    (1) Constructs a binary radix tree using an algorithm that generates all internal nodes 
-    //    on one pass.  
-    //    (2) Then constructs the bounding volumes for each node in the tree from the leaves to 
-    //    the root.
-    //    (3) Each particle navigates the tree from the root and collects a list of all particles 
-    //    whose bounding boxes overlap, then calculates a collision between the most overlapped 
-    //    particles.
-    //Parameters: None
-    //Returns:    None
-    //Creator:    John Cox, 5/2017
-    //--------------------------------------------------------------------------------------------*/
-    //void ParticleCollisions::DetectAndResolveWithoutProfiling(unsigned int numActiveParticles) const
-    //{
-    //    //int numWorkGroupsX = (_numLeaves / WORK_GROUP_SIZE_X) + 1;
-    //    //int numWorkGroupsY = 1;
-    //    //int numWorkGroupsZ = 1;
-
-    //    //// populate leaves with the particles' Morton Codes
-    //    //glUseProgram(_populateLeavesWithDataProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    //    //// construct the hierarchy
-    //    //glUseProgram(_generateBinaryRadixTreeProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    //    //// merge the bounding boxes of individual leaves (particles) up to the root
-    //    //glUseProgram(_generateBoundingVolumesProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT);
-
-    //    //// generate BVH vertices (optional)
-    //    //glUseProgram(_generateVerticesProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-
-    //    //// traverse the tree and detect collisions
-    //    //glUseProgram(_detectCollisionsProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-
-    //    //// resolve any detected collisions
-    //    //glUseProgram(_resolveCollisionsProgramId);
-    //    //glUniform1ui(UNIFORM_LOCATION_NUMBER_ACTIVE_PARTICLES, numActiveParticles);
-    //    //glDispatchCompute(numWorkGroupsX, numWorkGroupsY, numWorkGroupsZ);
-    //    //glMemoryBarrier(GL_SHADER_STORAGE_BARRIER_BIT | GL_VERTEX_ATTRIB_ARRAY_BARRIER_BIT);
-
-
-    //    //// end collision detection and resolution
-    //    //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-    //    //glUseProgram(0);
-    //}
 
     /*--------------------------------------------------------------------------------------------
     Description:
@@ -346,8 +285,10 @@ namespace ShaderControllers
 
         if (withProfiling)
         {
-            SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
-            GenerateBvhWithProfiling(numWorkGroupsX);
+            //SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            //GenerateBvhWithProfiling(numWorkGroupsX);
+            SortParticlesWithoutProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            GenerateBvhWithoutProfiling(numWorkGroupsX);
             DetectAndResolveCollisionsWithProfiling(numWorkGroupsX);
         }
         else
@@ -712,6 +653,7 @@ namespace ShaderControllers
         shaderStorageRef.NewCompositeShader(shaderKey);
         AssembleProgramHeader(shaderKey);
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/BvhNodeBuffer.comp");
+        shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/MaxNumPotentialCollisions.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/Buffers/ParticlePotentialCollisionsBuffer.comp");
         shaderStorageRef.AddPartialShaderFile(shaderKey, "Shaders/Compute/ParticleCollisions/DetectCollisions.comp");
@@ -1047,8 +989,8 @@ namespace ShaderControllers
         {
             long long totalSortingTime = durationPrepData + durationGenerateTree + durationMergeBoundingBoxes;
 
-            cout << "total sorting time: " << totalSortingTime << "\tmicroseconds" << endl;
-            outFile << "total sorting time: " << totalSortingTime << "\tmicroseconds" << endl;
+            cout << "total BVH generation time: " << totalSortingTime << "\tmicroseconds" << endl;
+            outFile << "total BVH generation time: " << totalSortingTime << "\tmicroseconds" << endl;
 
             cout << "prep data: " << durationPrepData << "\tmicroseconds" << endl;
             outFile << "prep data: " << durationPrepData << "\tmicroseconds" << endl;
@@ -1113,6 +1055,27 @@ namespace ShaderControllers
         WaitForComputeToFinish();
         end = high_resolution_clock::now();
         durationDetectCollisions = duration_cast<microseconds>(end - start).count();
+
+        unsigned int startingIndex = 0;
+        std::vector<ParticlePotentialCollisions> checkPotentialCollisions(_particlePotentialCollisionsSsbo.NumItems());
+        unsigned int bufferSizeBytes = checkPotentialCollisions.size() * sizeof(ParticlePotentialCollisions);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particlePotentialCollisionsSsbo.BufferId());
+        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkPotentialCollisions.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+        int maxCollisions = 0;
+        int indexOfMaxCollisions = 0;
+        for (size_t i = 0; i < checkPotentialCollisions.size(); i++)
+        {
+            int thisParticleCollisions = checkPotentialCollisions[i]._numPotentialCollisions;
+            //if (thisParticleCollisions != 0)
+            //if (thisParticleCollisions == (MAX_NUM_POTENTIAL_COLLISIONS - 1))
+            if (thisParticleCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
+            {
+                printf("");
+            }
+        }
 
         // nothing to verify, so just report the results
         // Note: Write the results to a tab-delimited text file so that I can dump them into an 

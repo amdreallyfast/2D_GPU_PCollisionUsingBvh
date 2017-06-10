@@ -50,7 +50,7 @@ namespace ShaderControllers
 
         // all that for the coup de grace
         unsigned int _programIdDetectCollisions;
-        unsigned int _programIdResolveCollisions;
+        //unsigned int _programIdResolveCollisions;
 
         // ??should this shader controller be split into more manageable parts? it's a lot of programs...??
         void AssembleProgramHeader(const std::string &shaderKey) const;
