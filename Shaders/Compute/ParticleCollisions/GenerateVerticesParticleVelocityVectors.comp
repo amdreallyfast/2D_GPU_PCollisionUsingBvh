@@ -23,7 +23,6 @@ void main()
     uint threadIndex = gl_GlobalInvocationID.x;
     if (threadIndex >= uMaxNumParticles)
     {
-        AllParticleVelocityVectorVertices[(threadIndex * 2)]._pos = vec4(13.0f, 13.0f, 13.0f, 13.0f);
         return;
     }
 
@@ -38,11 +37,4 @@ void main()
 
     AllParticleVelocityVectorVertices[(threadIndex * 2)] = start;
     AllParticleVelocityVectorVertices[(threadIndex * 2) + 1] = end;
-
-    //float threadNumber = float(threadIndex);
-    //start._pos = vec4(-0.5f + threadNumber, -0.5f + threadNumber, 0.0f, 0.0f);
-    //end._pos = vec4(-0.6f + threadNumber, -0.6f + threadNumber, 0.0f, 0.0f);
-    //AllParticleVelocityVectorVertices[(threadIndex * 2)] = start;
-    //AllParticleVelocityVectorVertices[(threadIndex * 2) + 1] = end;
-
 }

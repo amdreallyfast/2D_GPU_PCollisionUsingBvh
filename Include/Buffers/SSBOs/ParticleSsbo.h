@@ -18,7 +18,7 @@ Creator:    John Cox, 3/2017
 class ParticleSsbo : public SsboBase
 {
 public:
-    ParticleSsbo(unsigned int numItems);
+    ParticleSsbo(unsigned int numParticles);
     virtual ~ParticleSsbo() = default;
     using SharedPtr = std::shared_ptr<ParticleSsbo>;
     using SharedConstPtr = std::shared_ptr<const ParticleSsbo>;

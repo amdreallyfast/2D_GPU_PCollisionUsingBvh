@@ -10,6 +10,7 @@
 #include "Include/Buffers/ParticlePotentialCollisions.h"
 #include "Include/Buffers/Particle.h"
 #include "Include/Geometry/MyVertex.h"
+#include "Include/Buffers/ParticleProperties.h"
 
 #include "Shaders/ShaderHeaders/ComputeShaderWorkGroupSizes.comp"
 #include "Shaders/ShaderHeaders/CrossShaderUniformLocations.comp"
@@ -190,6 +191,23 @@ namespace ShaderControllers
 
         //_bvhGeometrySsbo.ConfigureConstantUniforms(_programidgen)
         // TODO: generate bvh vertices.comp
+
+
+        //unsigned int startingIndex = 0;
+        //std::vector<ParticleProperties> checkParticlePropertiesBuffer(particlePropertiesSsbo->NumProperties());
+        //unsigned int bufferSizeBytes = checkParticlePropertiesBuffer.size() * sizeof(ParticleProperties);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, particlePropertiesSsbo->BufferId());
+        //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        //memcpy(checkParticlePropertiesBuffer.data(), bufferPtr, bufferSizeBytes);
+        //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
+        unsigned int startingIndex = 0;
+        std::vector<Particle> checkParticleBuffer(particleSsbo->NumParticles());
+        unsigned int bufferSizeBytes = checkParticleBuffer.size() * sizeof(Particle);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, particleSsbo->BufferId());
+        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkParticleBuffer.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
 
 

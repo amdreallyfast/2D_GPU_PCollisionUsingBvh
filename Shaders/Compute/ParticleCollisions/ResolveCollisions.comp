@@ -50,47 +50,52 @@ void main()
 
     // go through all the collision candidates, and if necessary calculate collision results
     for (int particleIndexCounter = 0; 
-        particleIndexCounter > collisionCandidates._numPotentialCollisions; 
+        particleIndexCounter < collisionCandidates._numPotentialCollisions; 
         particleIndexCounter++)
     {
-        int p2Index = collisionCandidates._particleIndexes[particleIndexCounter];
-        Particle p2 = AllParticles[p2Index];
-        ParticleProperties p2Properties = AllParticleProperties[p2._particleTypeIndex];
+        p1NetDeltaVelocity.y += 0.1f;
 
-        // check for actual collision
-        // Note: The bounding boxes overlapped, but particles have circular collision regions.
-        float r1 = p1Properties._collisionRadius;
-        float r2 = p2Properties._collisionRadius;
-        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
-
-        // partial pythagorean theorem so that I don't have to take the square root
-        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
-        // component of the position.  It should end up as 0 after the subtraction, but force it to 
-        // 0 just in case.
-        vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
-        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
-
-        if (distP1ToP2Sqr > minDistForCollisionSqr)
-        {
-            // close, but no cigar
-            continue;
-        }
-
-        // didn't continue, so there is a collision
-        // Note: I don't have an intuitive understanding of these calculations, but they work.  
-        // If I understood it better, then I could write better comments and variable names, but 
-        // I don't, so I'm keeping it the way that I found it in the gamasutra article, or at 
-        // least as much as I can given that it is math and pseudocode.
-        vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
-        float a1 = dot(p1._vel, p1ToP2);
-        float a2 = dot(p2._vel, p1ToP2);
-        float fraction = (2.0f * (a1 - a2)) / (p1Properties._mass + p2Properties._mass);
-        vec4 p1DeltaVelocity = (-1.0f) * (fraction * p2Properties._mass * normalizedLineOfContact);
-        
-        // if there are multiple collisions, this may end up with a very high velocity (
-        // collisions from one side) or a very low velocity (collisions from all sides), but 
-        // most likely it will be somewhere in the middle
-        p1NetDeltaVelocity += p1DeltaVelocity;
+//        int p2Index = collisionCandidates._particleIndexes[particleIndexCounter];
+//        Particle p2 = AllParticles[p2Index];
+//        ParticleProperties p2Properties = AllParticleProperties[p2._particleTypeIndex];
+//
+//        // check for actual collision
+//        // Note: The bounding boxes overlapped, but particles have circular collision regions.
+//        float r1 = p1Properties._collisionRadius;
+//        float r2 = p2Properties._collisionRadius;
+//        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
+//
+//        // partial pythagorean theorem so that I don't have to take the square root
+//        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
+//        // component of the position.  It should end up as 0 after the subtraction, but force it to 
+//        // 0 just in case.
+//        vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
+//        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
+//
+//        if (distP1ToP2Sqr > minDistForCollisionSqr)
+//        {
+//            // close, but no cigar
+//            continue;
+//        }
+//
+//        // didn't continue, so there is a collision
+//        // Note: I don't have an intuitive understanding of these calculations, but they work.  
+//        // If I understood it better, then I could write better comments and variable names, but 
+//        // I don't, so I'm keeping it the way that I found it in the gamasutra article, or at 
+//        // least as much as I can given that it is math and pseudocode.
+//        vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
+//
+//        //p1NetDeltaVelocity += normalizedLineOfContact;
+//
+//        float a1 = dot(p1._vel, p1ToP2);
+//        float a2 = dot(p2._vel, p1ToP2);
+//        float fraction = (2.0f * (a1 - a2)) / (p1Properties._mass + p2Properties._mass);
+//        vec4 p1DeltaVelocity = (-1.0f) * (fraction * p2Properties._mass * normalizedLineOfContact);
+//        
+//        // if there are multiple collisions, this may end up with a very high velocity (
+//        // collisions from one side) or a very low velocity (collisions from all sides), but 
+//        // most likely it will be somewhere in the middle
+//        p1NetDeltaVelocity += p1DeltaVelocity;
     }
     
     //if (collisionCandidates._numPotentialCollisions != 0)

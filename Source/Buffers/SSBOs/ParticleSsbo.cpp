@@ -178,14 +178,14 @@ Description:
     Uploads the initialized particles to the SSBOs newly allocated buffer memory.
 
 Parameters: 
-    numItems    However many instances of Particle the user wants to store.
+    numParticles    However many instances of Particle the user wants to store.
 Returns:    None
 Creator:    John Cox, 4/2017
 ------------------------------------------------------------------------------------------------*/
-ParticleSsbo::ParticleSsbo(unsigned int numItems) :
+ParticleSsbo::ParticleSsbo(unsigned int numParticles) :
     SsboBase()  // generate buffers
 {
-    std::vector<Particle> v(numItems);
+    std::vector<Particle> v(numParticles);
     InitializeWithRandomData(v);
     InitializeParticleTypes(v);
 
@@ -195,11 +195,11 @@ ParticleSsbo::ParticleSsbo(unsigned int numItems) :
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 
     // members of this class only (ParticleSsbo), not for base class members. 
-    _numVertices = numItems;
-    _numParticles = numItems;
+    _numVertices = numParticles;
+    _numParticles = numParticles;
 
     // the second half has no need for initial data
-    v.resize(numItems * 2);
+    v.resize(numParticles * 2);
 
     // now bind this new buffer to the dedicated buffer binding location
     glBindBufferBase(GL_SHADER_STORAGE_BUFFER, PARTICLE_BUFFER_BINDING, _bufferId);
@@ -266,50 +266,50 @@ void ParticleSsbo::ConfigureRender()
     unsigned int bufferStartOffset = 0;
     unsigned int bytesPerStep = sizeof(Particle);
     unsigned int sizeOfItem = 0;
-    unsigned int numItems = 0;
+    unsigned int numParticles = 0;
 
     // position
     GLenum itemType = GL_FLOAT;
     sizeOfItem = sizeof(Particle::_pos);
-    numItems = sizeOfItem / sizeof(float);
+    numParticles = sizeOfItem / sizeof(float);
     glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
+    glVertexAttribPointer(vertexArrayIndex, numParticles, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
     // velocity
     itemType = GL_FLOAT;
     sizeOfItem = sizeof(Particle::_vel);
-    numItems = sizeOfItem / sizeof(float);
+    numParticles = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribPointer(vertexArrayIndex, numItems, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
+    glVertexAttribPointer(vertexArrayIndex, numParticles, itemType, GL_FALSE, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
     // particle type index
     itemType = GL_INT;
     sizeOfItem = sizeof(Particle::_particleTypeIndex);
-    numItems = sizeOfItem / sizeof(float);
+    numParticles = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
+    glVertexAttribIPointer(vertexArrayIndex, numParticles, itemType, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
     // number of nearby particles
     itemType = GL_INT;
     sizeOfItem = sizeof(Particle::_numNearbyParticles);
-    numItems = sizeOfItem / sizeof(float);
+    numParticles = sizeOfItem / sizeof(float);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
+    glVertexAttribIPointer(vertexArrayIndex, numParticles, itemType, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
     // "is active" flag
     itemType = GL_INT;
     sizeOfItem = sizeof(Particle::_isActive);
-    numItems = sizeof(Particle::_isActive) / sizeof(int);
+    numParticles = sizeof(Particle::_isActive) / sizeof(int);
     vertexArrayIndex++;
     glEnableVertexAttribArray(vertexArrayIndex);
-    glVertexAttribIPointer(vertexArrayIndex, numItems, itemType, bytesPerStep, (void *)bufferStartOffset);
+    glVertexAttribIPointer(vertexArrayIndex, numParticles, itemType, bytesPerStep, (void *)bufferStartOffset);
     bufferStartOffset += sizeOfItem;
 
     // cleanup

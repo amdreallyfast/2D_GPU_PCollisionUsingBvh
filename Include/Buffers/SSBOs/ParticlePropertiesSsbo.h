@@ -18,6 +18,8 @@ public:
 
     void ConfigureConstantUniforms(unsigned int computeProgramId) const override;
 
+    unsigned int NumProperties() const;
+
 private:
     unsigned int _numProperties;
 };

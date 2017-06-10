@@ -29,7 +29,7 @@ static void GenerateParticleProperties(std::vector<ParticleProperties> &initThis
 
     // generic
     pp._mass = 0.05f;
-    pp._collisionRadius = 0.005f;
+    pp._collisionRadius = 0.1f;
     initThis[ParticleProperties::ParticleType::GENERIC] = pp;
 }
 
@@ -74,4 +74,17 @@ void ParticlePropertiesSsbo::ConfigureConstantUniforms(unsigned int computeProgr
     glUseProgram(computeProgramId);
     glUniform1ui(UNIFORM_LOCATION_NUM_PARTICLE_PROPERTIES, _numProperties);
     glUseProgram(0);
+}
+
+/*------------------------------------------------------------------------------------------------
+Description:
+    A simple getter for the value that was generated on creation.
+Parameters: None
+Returns:    
+    See Description.
+Creator:    John Cox, 6/2017
+------------------------------------------------------------------------------------------------*/
+unsigned int ParticlePropertiesSsbo::NumProperties() const
+{
+    return _numProperties;
 }

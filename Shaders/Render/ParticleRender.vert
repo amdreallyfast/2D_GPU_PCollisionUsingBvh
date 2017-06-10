@@ -54,23 +54,23 @@ void main()
         else
         {
             particleColor  = red;
-            float blendValue = float(numNearbyParticles);
-            float fractionLowToMid = (blendValue - min) / (mid - min);
-            fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
-  
-            float fractionMidToHigh = (blendValue - mid) / (max - mid);
-            fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
-  
-            // cast boolean to float (1.0f == true, 0.0f == false)
-            // Note: There are two possible linear blends: blue->green and green->red.  This color 
-            // blending is not like blending three points on a triangle, but it is three points on a 
-            // 1-dimensional number line, so need to differentiate between two linear blends.
-            float pressureIsLow = float(blendValue < mid);
-            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
-            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
-            particleColor = 
-                (pressureIsLow * lowToMidPressureColor) + 
-                ((1 - pressureIsLow) * midToHighPressureColor);
+//            float blendValue = float(numNearbyParticles);
+//            float fractionLowToMid = (blendValue - min) / (mid - min);
+//            fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
+//  
+//            float fractionMidToHigh = (blendValue - mid) / (max - mid);
+//            fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
+//  
+//            // cast boolean to float (1.0f == true, 0.0f == false)
+//            // Note: There are two possible linear blends: blue->green and green->red.  This color 
+//            // blending is not like blending three points on a triangle, but it is three points on a 
+//            // 1-dimensional number line, so need to differentiate between two linear blends.
+//            float pressureIsLow = float(blendValue < mid);
+//            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
+//            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
+//            particleColor = 
+//                (pressureIsLow * lowToMidPressureColor) + 
+//                ((1 - pressureIsLow) * midToHighPressureColor);
         }
 
         // Note: The W position seems to be used as a scaling factor (I must have forgotten this 
