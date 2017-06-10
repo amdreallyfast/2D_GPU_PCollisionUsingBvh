@@ -52,7 +52,6 @@ namespace ShaderControllers
         unsigned int _programIdDetectCollisions;
         //unsigned int _programIdResolveCollisions;
 
-        // ??should this shader controller be split into more manageable parts? it's a lot of programs...??
         void AssembleProgramHeader(const std::string &shaderKey) const;
         void AssembleProgramCopyParticlesToCopyBuffer();
         void AssembleProgramGenerateSortingData();
@@ -89,37 +88,7 @@ namespace ShaderControllers
         void DetectCollisions(unsigned int numWorkGroupsX) const;
         void ResolveCollisions(unsigned int numWorkGroupsX) const;
 
-
-
-
-
-        // CopyParticlesToCopyBuffer.comp
-        // GenerateSortingData.comp
-        // memory barrier
-        // loop
-        // - ClearWorkGroupSums.comp
-        // - GetBitForPrefixScan.comp
-        // - memory barrier
-        // - PrefixScanOverAllData.comp
-        // - memory barrier
-        // - PrefixScanOverWorkGroupSums.comp
-        // - memory barrier
-        // - SortSortingDataWithPrefixSums.comp
-        // - memory barrier
-        // SortParticles.comp
-        // GuaranteeSortingDataUniqueness.comp
-
-        // TODO: verify uniqueness!
-
-        // memory barrier
-        // GenerateLeafNodeBoundingBoxes.comp
-        // GenerateBinaryRadixTree.comp
-        // memory barrier
-        // MergeBoundingVolumes.comp
-        // memory barrier
-
-
-
+        // buffers for sorting, BVH generation, and anything else that's necessary
         ParticleSortingDataSsbo _particleSortingDataSsbo;
         PrefixSumSsbo _prefixSumSsbo;
         BvhNodeSsbo _bvhNodeSsbo;

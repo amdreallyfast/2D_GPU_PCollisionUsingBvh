@@ -62,6 +62,5 @@ void main()
     destinationIndex += uParticleSortingDataBufferWriteOffset;
 
     // do the sort
-    //AllParticleSortingData[sourceIndex]._preSortedParticleIndex = int(destinationIndex);
     AllParticleSortingData[destinationIndex] = AllParticleSortingData[sourceIndex];
 }

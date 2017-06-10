@@ -285,10 +285,10 @@ namespace ShaderControllers
 
         if (withProfiling)
         {
-            //SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
-            //GenerateBvhWithProfiling(numWorkGroupsX);
-            SortParticlesWithoutProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
-            GenerateBvhWithoutProfiling(numWorkGroupsX);
+            SortParticlesWithProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            GenerateBvhWithProfiling(numWorkGroupsX);
+            //SortParticlesWithoutProfiling(numWorkGroupsX, numWorkGroupsXForPrefixSum);
+            //GenerateBvhWithoutProfiling(numWorkGroupsX);
             DetectAndResolveCollisionsWithProfiling(numWorkGroupsX);
         }
         else
@@ -749,7 +749,6 @@ namespace ShaderControllers
         bool writeToSecondBuffer = true;
         unsigned int sortingDataReadBufferOffset = 0;
         unsigned int sortingDataWriteBufferOffset = 0;
-        std::vector<int> checkPrefixScan(_prefixSumSsbo.TotalBufferEntries());
         for (unsigned int bitNumber = 0; bitNumber < totalBitCount; bitNumber++)
         {
             sortingDataReadBufferOffset = static_cast<unsigned int>(!writeToSecondBuffer) * _numParticles;
@@ -1056,26 +1055,26 @@ namespace ShaderControllers
         end = high_resolution_clock::now();
         durationDetectCollisions = duration_cast<microseconds>(end - start).count();
 
-        unsigned int startingIndex = 0;
-        std::vector<ParticlePotentialCollisions> checkPotentialCollisions(_particlePotentialCollisionsSsbo.NumItems());
-        unsigned int bufferSizeBytes = checkPotentialCollisions.size() * sizeof(ParticlePotentialCollisions);
-        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particlePotentialCollisionsSsbo.BufferId());
-        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
-        memcpy(checkPotentialCollisions.data(), bufferPtr, bufferSizeBytes);
-        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        //unsigned int startingIndex = 0;
+        //std::vector<ParticlePotentialCollisions> checkPotentialCollisions(_particlePotentialCollisionsSsbo.NumItems());
+        //unsigned int bufferSizeBytes = checkPotentialCollisions.size() * sizeof(ParticlePotentialCollisions);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _particlePotentialCollisionsSsbo.BufferId());
+        //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        //memcpy(checkPotentialCollisions.data(), bufferPtr, bufferSizeBytes);
+        //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-        int maxCollisions = 0;
-        int indexOfMaxCollisions = 0;
-        for (size_t i = 0; i < checkPotentialCollisions.size(); i++)
-        {
-            int thisParticleCollisions = checkPotentialCollisions[i]._numPotentialCollisions;
-            //if (thisParticleCollisions != 0)
-            //if (thisParticleCollisions == (MAX_NUM_POTENTIAL_COLLISIONS - 1))
-            if (thisParticleCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
-            {
-                printf("");
-            }
-        }
+        //int maxCollisions = 0;
+        //int indexOfMaxCollisions = 0;
+        //for (size_t i = 0; i < checkPotentialCollisions.size(); i++)
+        //{
+        //    int thisParticleCollisions = checkPotentialCollisions[i]._numPotentialCollisions;
+        //    //if (thisParticleCollisions != 0)
+        //    //if (thisParticleCollisions == (MAX_NUM_POTENTIAL_COLLISIONS - 1))
+        //    if (thisParticleCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
+        //    {
+        //        printf("");
+        //    }
+        //}
 
         // nothing to verify, so just report the results
         // Note: Write the results to a tab-delimited text file so that I can dump them into an 

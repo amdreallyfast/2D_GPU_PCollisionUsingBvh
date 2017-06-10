@@ -41,8 +41,6 @@ Creator:    John Cox, 5/2017
 void main()
 {
     uint threadIndex = gl_GlobalInvocationID.x;
-    //PrefixSumsPerWorkGroup[threadIndex] = 1;
-
     if (threadIndex >= uMaxNumParticleSortingData)
     {
         PrefixSumsPerWorkGroup[threadIndex] = 0;

@@ -9,6 +9,7 @@ layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
 shared uint[PREFIX_SCAN_ITEMS_PER_WORK_GROUP] fastTempArr;
 
+
 /*------------------------------------------------------------------------------------------------
 Description:
     This is the second half of the parallel prefix scan algorithm.  It is the exact same 
