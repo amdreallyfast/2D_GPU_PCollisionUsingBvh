@@ -150,6 +150,7 @@
     <ClCompile Include="Shaders\ShaderStorage.cpp" />
     <ClCompile Include="Source\Buffers\PersistentAtomicCounterBuffer.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\BvhNodeSsbo.cpp" />
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleBoundingBoxGeometrySsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp" />
@@ -173,6 +174,7 @@
     <ClCompile Include="Source\ShaderControllers\RenderParticles.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Include\Buffers\BoundingBox.h" />
     <ClInclude Include="Include\Buffers\BvhNode.h" />
     <ClInclude Include="Include\Buffers\Particle.h" />
     <ClInclude Include="Include\Buffers\ParticlePotentialCollisions.h" />
@@ -180,6 +182,7 @@
     <ClInclude Include="Include\Buffers\ParticleSortingData.h" />
     <ClInclude Include="Include\Buffers\PersistentAtomicCounterBuffer.h" />
     <ClInclude Include="Include\Buffers\SSBOs\BvhNodeSsbo.h" />
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleBoundingBoxGeometrySsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePotentialCollisionsSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSortingDataSsbo.h" />
@@ -207,9 +210,12 @@
     <ClInclude Include="Shaders\ShaderStorage.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\Compute\MyVertex.comp" />
+    <None Include="Shaders\Compute\GeometryStuff\BoundingBox.comp" />
+    <None Include="Shaders\Compute\GeometryStuff\MyVertex.comp" />
+    <None Include="Shaders\Compute\GeometryStuff\PolygonFace.comp" />
     <None Include="Shaders\Compute\ParticleBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleBoundingBoxGeometryBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePotentialCollisionsBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticlePropertiesBuffer.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleSortingDataBuffer.comp" />
@@ -221,7 +227,7 @@
     <None Include="Shaders\Compute\ParticleCollisions\GenerateBinaryRadixTree.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateLeafNodeBoundingBoxes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateSortingData.comp" />
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesBoundingBoxes.comp" />
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleBoundingBoxes.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleVelocityVectors.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GetBitForPrefixScan.comp" />
     <None Include="Shaders\Compute\ParticleCollisions\GuaranteeSortingDataUniqueness.comp" />

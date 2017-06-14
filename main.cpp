@@ -303,8 +303,8 @@ void Display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     particleRenderer->Render(particleBuffer);
-    //geometryRenderer->Render(polygonBuffer);  // TODO: remove
     geometryRenderer->Render(particleCollisions->ParticleVelocityVectorSsbo());
+    geometryRenderer->Render(particleCollisions->ParticleBoundingBoxSsbo());
 
     // draw the frame rate once per second in the lower left corner
     glUseProgram(ShaderStorage::GetInstance().GetShaderProgram("freetype"));

@@ -5,7 +5,7 @@
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    This generates and maintains an array of lines for each particle's velocity vectors.  This 
+    This generates and maintains an SSBO of lines for each particle's velocity vectors.  This 
     is used to visualize the result of particle collisions.
 Creator:    John Cox, 6/2017
 ------------------------------------------------------------------------------------------------*/

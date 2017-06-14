@@ -1,10 +1,12 @@
 // REQUIRES SsboBufferBindings.comp
 // REQUIRES CrossShaderUniformLocations
 
-
 /*------------------------------------------------------------------------------------------------
 Description:   
     A convenience structure for BvhNode.
+
+    Note: This is a lightweight structure meant for the BVH only and should not be confused with 
+    the structure in BoundingBox.comp, which is intended for drawing.
 Creator:    John Cox, 5/2017
 ------------------------------------------------------------------------------------------------*/
 struct BoundingBox

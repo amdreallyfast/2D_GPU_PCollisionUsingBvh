@@ -74,6 +74,9 @@
     <ClCompile Include="Source\Buffers\SSBOs\VertexSsboBase.cpp">
       <Filter>Source\Buffers\SSBOs</Filter>
     </ClCompile>
+    <ClCompile Include="Source\Buffers\SSBOs\ParticleBoundingBoxGeometrySsbo.cpp">
+      <Filter>Source\Buffers\SSBOs</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Shaders\ShaderStorage.h">
@@ -172,6 +175,12 @@
     <ClInclude Include="Include\Buffers\SSBOs\VertexSsboBase.h">
       <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
+    <ClInclude Include="Include\Buffers\SSBOs\ParticleBoundingBoxGeometrySsbo.h">
+      <Filter>Include\Buffers\SSBOs</Filter>
+    </ClInclude>
+    <ClInclude Include="Include\Buffers\BoundingBox.h">
+      <Filter>Include\Buffers</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Shaders">
@@ -233,6 +242,9 @@
     </Filter>
     <Filter Include="Shaders\Compute\ParticleCollisions\Buffers">
       <UniqueIdentifier>{62ed8b57-f22b-4b39-bf4b-08a6c3fbe938}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shaders\Compute\GeometryStuff">
+      <UniqueIdentifier>{fe34ff65-a146-4aba-bfae-55ef765a8e50}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -353,16 +365,25 @@
     <None Include="Shaders\Compute\QuickNormalize.comp">
       <Filter>Shaders\Compute</Filter>
     </None>
-    <None Include="Shaders\Compute\MyVertex.comp">
-      <Filter>Shaders\Compute</Filter>
-    </None>
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleVelocityVectorGeometryBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesBoundingBoxes.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleVelocityVectors.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
-    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleVelocityVectors.comp">
+    <None Include="Shaders\Compute\ParticleCollisions\Buffers\ParticleBoundingBoxGeometryBuffer.comp">
+      <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>
+    </None>
+    <None Include="Shaders\Compute\GeometryStuff\MyVertex.comp">
+      <Filter>Shaders\Compute\GeometryStuff</Filter>
+    </None>
+    <None Include="Shaders\Compute\GeometryStuff\PolygonFace.comp">
+      <Filter>Shaders\Compute\GeometryStuff</Filter>
+    </None>
+    <None Include="Shaders\Compute\GeometryStuff\BoundingBox.comp">
+      <Filter>Shaders\Compute\GeometryStuff</Filter>
+    </None>
+    <None Include="Shaders\Compute\ParticleCollisions\GenerateVerticesParticleBoundingBoxes.comp">
       <Filter>Shaders\Compute\ParticleCollisions</Filter>
     </None>
   </ItemGroup>

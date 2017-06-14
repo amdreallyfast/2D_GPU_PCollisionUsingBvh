@@ -10,6 +10,7 @@
 #include "Include/Buffers/SSBOs/PrefixSumSsbo.h"
 #include "Include/Buffers/SSBOs/ParticlePotentialCollisionsSsbo.h"
 #include "Include/Buffers/SSBOs/ParticleVelocityVectorGeometrySsbo.h"
+#include "Include/Buffers/SSBOs/ParticleBoundingBoxGeometrySsbo.h"
 
 
 namespace ShaderControllers
@@ -29,6 +30,7 @@ namespace ShaderControllers
 
         void DetectAndResolve(bool withProfiling) const;
         const VertexSsboBase &ParticleVelocityVectorSsbo() const;
+        const VertexSsboBase &ParticleBoundingBoxSsbo() const;
 
     private:
         unsigned int _numParticles;
@@ -55,6 +57,7 @@ namespace ShaderControllers
 
         // for drawing pretty things
         unsigned int _programIdGenerateVerticesParticleVelocityVectors;
+        unsigned int _programIdGenerateVerticesParticleBoundingBoxes;
 
         void AssembleProgramHeader(const std::string &shaderKey) const;
         void AssembleProgramCopyParticlesToCopyBuffer();
@@ -72,6 +75,7 @@ namespace ShaderControllers
         void AssembleProgramDetectCollisions();
         void AssembleProgramResolveCollisions();
         void AssembleProgramGenerateVerticesParticleVelocityVectors();
+        void AssembleProgramGenerateVerticesParticleBoundingBoxes();
 
 
         void SortParticlesWithoutProfiling(unsigned int numWorkGroupsX, unsigned int numWorkGroupsXPrefixScan) const;
@@ -104,6 +108,7 @@ namespace ShaderControllers
         BvhNodeSsbo _bvhNodeSsbo;
         ParticlePotentialCollisionsSsbo _particlePotentialCollisionsSsbo;
         ParticleVelocityVectorGeometrySsbo _velocityVectorGeometrySsbo;
+        ParticleBoundingBoxGeometrySsbo _boundingBoxGeometrySsbo;
 
         // used for verifying that particle sorting is working
         const ParticleSsbo::SharedConstPtr _originalParticleSsbo; 
