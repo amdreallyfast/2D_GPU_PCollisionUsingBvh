@@ -72,7 +72,7 @@ std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = null
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 2;
+const unsigned int MAX_PARTICLE_COUNT = 1000;
 
 
 /*------------------------------------------------------------------------------------------------
@@ -130,16 +130,16 @@ void GenerateParticleEmitters()
     // two thin bars emitting at each other so that the particles are guaranteed to collide
 
     // bar on the left and emitting right
-    glm::vec2 bar1P1(-0.8f, -0.00f);
-    glm::vec2 bar1P2(-0.8f, +0.01f);
+    glm::vec2 bar1P1(-0.8f, -0.1f);
+    glm::vec2 bar1P2(-0.8f, +0.1f);
     glm::vec2 emitDir1(+1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
     barEmitter1->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter1);
 
     // bar on the right and emitting left
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.01f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.00f);
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.1f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
     glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
     barEmitter2->SetTransform(windowSpaceTransform);
@@ -256,7 +256,7 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(1);
     particleUpdater->Update(deltaTimeSec);
-    particleCollisions->DetectAndResolve(true);
+    particleCollisions->DetectAndResolve(false);
     //particleCollisions->DetectAndResolve(false);
 
 
@@ -467,7 +467,7 @@ int main(int argc, char *argv[])
     glutInitContextProfile(GLUT_CORE_PROFILE);
 
     // enable this for automatic message reporting (see OpenGlErrorHandling.cpp)
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     glutInitContextFlags(GLUT_DEBUG);
 #endif

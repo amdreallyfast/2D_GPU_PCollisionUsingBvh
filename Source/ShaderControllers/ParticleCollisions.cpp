@@ -1204,6 +1204,14 @@ namespace ShaderControllers
         //memcpy(checkPotentialCollisions.data(), bufferPtr, bufferSizeBytes);
         //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
+        //unsigned int startingIndex = 0;
+        //std::vector<Particle> checkPostCollisionParticles(_originalParticleSsbo->NumParticles());
+        //unsigned int bufferSizeBytes = checkPostCollisionParticles.size() * sizeof(Particle);
+        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _originalParticleSsbo->BufferId());
+        //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        //memcpy(checkPostCollisionParticles.data(), bufferPtr, bufferSizeBytes);
+        //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+
         //int maxCollisions = 0;
         //int indexOfMaxCollisions = 0;
         //for (size_t i = 0; i < checkPotentialCollisions.size(); i++)

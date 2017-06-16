@@ -67,7 +67,7 @@ void main()
 
         // Note: The W component should be 0 after the subtraction, but orce it to 0 just in case so it doesn't mess up the square of the magnitude.
         // ??Also Note: what happens if I do p2 - p1??
-        vec4 lineOfContact = vec4(p1._pos.xyz - p2._pos.xyz, 0.0f);
+        vec4 lineOfContact = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
         float distSqr = dot(lineOfContact, lineOfContact);
         if (distSqr > minDistForCollisionSqr)
         {
@@ -84,9 +84,9 @@ void main()
         // Note: This comes from the Gamasutra article's conservation of momentum combined with breakdowns of the velocity vectors along the line of contact.  It is referred to in the end as "optimizedP", but it is no longer momentum.  It saddens me that the term P, which referred to momentum, is now used to describe velocity/mass, which is the 
         // TODO: inverse mass, calculate P, then multiply by the appropriate inverse mass
         float massFraction = (p1Properties._mass / (p1Properties._mass + p2Properties._mass));
-        float deltaMomentum = massFraction * (2.0f * (p1VelOnLineOfContact - p2VelOnLineOfContact));
+        float deltaMomentum = massFraction * (2.0f * (p2VelOnLineOfContact - p1VelOnLineOfContact));
         
-        p1NetDeltaVelocity += ((-1.0f) * deltaMomentum * normalizedLineOfContact);
+        p1NetDeltaVelocity += (deltaMomentum * normalizedLineOfContact);
         
 
 
