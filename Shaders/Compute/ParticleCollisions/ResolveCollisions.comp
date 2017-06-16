@@ -53,37 +53,49 @@ void main()
         particleIndexCounter < collisionCandidates._numPotentialCollisions; 
         particleIndexCounter++)
     {
-        p1NetDeltaVelocity.y += 0.1f;
+        //p1NetDeltaVelocity.y += 0.1f;
 
-//        int p2Index = collisionCandidates._particleIndexes[particleIndexCounter];
-//        Particle p2 = AllParticles[p2Index];
-//        ParticleProperties p2Properties = AllParticleProperties[p2._particleTypeIndex];
-//
-//        // check for actual collision
-//        // Note: The bounding boxes overlapped, but particles have circular collision regions.
-//        float r1 = p1Properties._collisionRadius;
-//        float r2 = p2Properties._collisionRadius;
-//        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
-//
-//        // partial pythagorean theorem so that I don't have to take the square root
-//        // Note: Only pluck out the positional information for these calculations.  Ignore the W 
-//        // component of the position.  It should end up as 0 after the subtraction, but force it to 
-//        // 0 just in case.
-//        vec4 p1ToP2 = vec4(p2._pos.xyz - p1._pos.xyz, 0.0f);
-//        float distP1ToP2Sqr = dot(p1ToP2, p1ToP2);
-//
-//        if (distP1ToP2Sqr > minDistForCollisionSqr)
-//        {
-//            // close, but no cigar
-//            continue;
-//        }
-//
+        int p2Index = collisionCandidates._particleIndexes[particleIndexCounter];
+        Particle p2 = AllParticles[p2Index];
+        ParticleProperties p2Properties = AllParticleProperties[p2._particleTypeIndex];
+
+        // check for actual collision
+        // Note: The bounding boxes overlapped, but particles have circular collision regions.
+        float r1 = p1Properties._collisionRadius;
+        float r2 = p2Properties._collisionRadius;
+        float minDistForCollisionSqr = (r1 + r2) * (r1 + r2);
+
+        // Note: The W component should be 0 after the subtraction, but orce it to 0 just in case so it doesn't mess up the square of the magnitude.
+        // ??Also Note: what happens if I do p2 - p1??
+        vec4 lineOfContact = vec4(p1._pos.xyz - p2._pos.xyz, 0.0f);
+        float distSqr = dot(lineOfContact, lineOfContact);
+        if (distSqr > minDistForCollisionSqr)
+        {
+            // close, but no cigar
+            continue;
+        }
+
+        // Note: Momentum will only be exchanged along the line of contact.  Dot products will be taken to find the magnitudes of each particles' velocity along the line of contact, so normalize this line of contact.
+        // Also Note: The velocities along the line of contact are called "a1" and "a2", respectively, in the Gamasutra article.  Because overly simplified variable names are apparently par for the course :(.
+        vec4 normalizedLineOfContact = lineOfContact * inversesqrt(distSqr);
+        float p1VelOnLineOfContact = dot(p1._vel, normalizedLineOfContact);
+        float p2VelOnLineOfContact = dot(p2._vel, normalizedLineOfContact);
+
+        // Note: This comes from the Gamasutra article's conservation of momentum combined with breakdowns of the velocity vectors along the line of contact.  It is referred to in the end as "optimizedP", but it is no longer momentum.  It saddens me that the term P, which referred to momentum, is now used to describe velocity/mass, which is the 
+        // TODO: inverse mass, calculate P, then multiply by the appropriate inverse mass
+        float massFraction = (p1Properties._mass / (p1Properties._mass + p2Properties._mass));
+        float deltaMomentum = massFraction * (2.0f * (p1VelOnLineOfContact - p2VelOnLineOfContact));
+        
+        p1NetDeltaVelocity += ((-1.0f) * deltaMomentum * normalizedLineOfContact);
+        
+
+
 //        // didn't continue, so there is a collision
 //        // Note: I don't have an intuitive understanding of these calculations, but they work.  
 //        // If I understood it better, then I could write better comments and variable names, but 
 //        // I don't, so I'm keeping it the way that I found it in the gamasutra article, or at 
 //        // least as much as I can given that it is math and pseudocode.
-//        vec4 normalizedLineOfContact = p1ToP2 * inversesqrt(dot(p1ToP2, p1ToP2));
+//        
 //
 //        //p1NetDeltaVelocity += normalizedLineOfContact;
 //
