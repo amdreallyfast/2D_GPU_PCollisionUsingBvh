@@ -22,62 +22,6 @@ using std::cout;
 using std::endl;
 
 
-//void GenerateTestBvh(std::vector<BvhNode> &bvh)
-//{
-//    bvh.clear();
-//
-//    int numLeaves = 16;
-//    for (int leafCounter = 0; leafCounter < numLeaves; leafCounter++)
-//    {
-//        bvh.push_back(BvhNode());
-//        bvh[leafCounter]._isLeaf = true;
-//    }
-//    
-//    for (int  internalNodeCounter = 0; internalNodeCounter < numLeaves - 1; internalNodeCounter++)
-//    {
-//        bvh.push_back(BvhNode());
-//    }
-//
-//    //// Test BVH #1
-//    //bvh[0]._data = 1;
-//    //bvh[1]._data = 2;
-//    //bvh[2]._data = 3;
-//    //bvh[3]._data = 9;
-//    //bvh[4]._data = 9;
-//    //bvh[5]._data = 14;
-//    //bvh[6]._data = 15;
-//    //bvh[7]._data = 16;
-//    //bvh[8]._data = 17;
-//    //bvh[9]._data = 18;
-//    //bvh[10]._data = 20;
-//    //bvh[11]._data = 22;
-//    //bvh[12]._data = 22;
-//    //bvh[13]._data = 26;
-//    //bvh[14]._data = 26;
-//    //bvh[15]._data = 28;
-//
-//    // Test BVH #2
-//    bvh[0]._data = 1271858;
-//    bvh[1]._data = 34211986;
-//    bvh[2]._data = 47408388;
-//    bvh[3]._data = 75516948;
-//    bvh[4]._data = 114443670;
-//    bvh[5]._data = 276973568;
-//    bvh[6]._data = 306777138;
-//    bvh[7]._data = 345188406;
-//    bvh[8]._data = 538667040;
-//    bvh[9]._data = 549996564;
-//    bvh[10]._data = 575677734;
-//    bvh[11]._data = 584191158;
-//    bvh[12]._data = 637668368;
-//    bvh[13]._data = 643326102;
-//    bvh[14]._data = 806428982;
-//    bvh[15]._data = 815474724;
-//}
-
-
-
-
 namespace ShaderControllers
 {
     /*--------------------------------------------------------------------------------------------
@@ -213,15 +157,6 @@ namespace ShaderControllers
         //memcpy(checkParticleBuffer.data(), bufferPtr, bufferSizeBytes);
         //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-
-
-        //// test buffer
-        //_bvhNodeSsbo = std::make_shared<BvhNodeSsbo>(16);
-        //std::vector<BvhNode> testBvh;
-        //GenerateTestBvh(testBvh);
-        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _bvhNodeSsbo->BufferId());
-        //glBufferData(GL_SHADER_STORAGE_BUFFER, testBvh.size() * sizeof(BvhNode), testBvh.data(), GL_DYNAMIC_DRAW);
-        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         printf("");
     }
 
@@ -304,10 +239,11 @@ namespace ShaderControllers
                         
                         If false, then everything is performed as fast as possible (no timing or 
                         forced waiting or writing to stdout)
+        generateGeometry    Self-explanatory.
     Returns:    None
     Creator:    John Cox, 6/2017
     --------------------------------------------------------------------------------------------*/
-    void ParticleCollisions::DetectAndResolve(bool withProfiling) const
+    void ParticleCollisions::DetectAndResolve(bool withProfiling, bool generateGeometry) const
     {
         // most shaders work on 1 item per thread
         int numWorkGroupsX = _numParticles / WORK_GROUP_SIZE_X;
@@ -337,9 +273,11 @@ namespace ShaderControllers
             DetectAndResolveCollisionsWithoutProfiling(numWorkGroupsX);
         }
 
-        // regardless of profiling or not, generate geometry to visualize the results
-        GenerateGeometry(numWorkGroupsX);
-
+        if (generateGeometry)
+        {
+            // visualize the results
+            GenerateGeometry(numWorkGroupsX);
+        }
     }
 
     /*--------------------------------------------------------------------------------------------
@@ -1211,19 +1149,6 @@ namespace ShaderControllers
         //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
         //memcpy(checkPostCollisionParticles.data(), bufferPtr, bufferSizeBytes);
         //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-
-        //int maxCollisions = 0;
-        //int indexOfMaxCollisions = 0;
-        //for (size_t i = 0; i < checkPotentialCollisions.size(); i++)
-        //{
-        //    int thisParticleCollisions = checkPotentialCollisions[i]._numPotentialCollisions;
-        //    //if (thisParticleCollisions != 0)
-        //    //if (thisParticleCollisions == (MAX_NUM_POTENTIAL_COLLISIONS - 1))
-        //    if (thisParticleCollisions == MAX_NUM_POTENTIAL_COLLISIONS)
-        //    {
-        //        printf("");
-        //    }
-        //}
 
         // nothing to verify, so just report the results
         // Note: Write the results to a tab-delimited text file so that I can dump them into an 

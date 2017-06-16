@@ -65,7 +65,6 @@ FreeTypeEncapsulated gTextAtlases;
 
 ParticleSsbo::SharedPtr particleBuffer = nullptr;
 ParticlePropertiesSsbo::SharedPtr particlePropertiesBuffer = nullptr;
-//PolygonSsbo::SharedPtr polygonBuffer = nullptr;   // TODO: remove polygon buffer
 std::shared_ptr<ShaderControllers::ParticleReset> particleResetter = nullptr;
 std::shared_ptr<ShaderControllers::ParticleUpdate> particleUpdater = nullptr;
 std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = nullptr;
@@ -127,19 +126,19 @@ void GenerateParticleEmitters()
     ////pointEmitter1->SetTransform(windowSpaceTransform);
     ////particleResetter->AddEmitter(pointEmitter1);
 
-    // two thin bars emitting at each other so that the particles are guaranteed to collide
+    // two thick bars emitting at each other
 
     // bar on the left and emitting right
-    glm::vec2 bar1P1(-0.8f, -0.1f);
-    glm::vec2 bar1P2(-0.8f, +0.1f);
+    glm::vec2 bar1P1(-0.8f, -0.3f);
+    glm::vec2 bar1P2(-0.8f, +0.3f);
     glm::vec2 emitDir1(+1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter1 = std::make_shared<ParticleEmitterBar>(bar1P1, bar1P2, emitDir1, particleMinVel, particleMaxVel);
     barEmitter1->SetTransform(windowSpaceTransform);
     particleResetter->AddEmitter(barEmitter1);
 
     // bar on the right and emitting left
-    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.1f);
-    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.1f);
+    glm::vec2 bar2P1 = glm::vec2(+0.8f, -0.3f);
+    glm::vec2 bar2P2 = glm::vec2(+0.8f, +0.3f);
     glm::vec2 emitDir2 = glm::vec2(-1.0f, +0.0f);
     ParticleEmitterBar::SHARED_PTR barEmitter2 = std::make_shared<ParticleEmitterBar>(bar2P1, bar2P2, emitDir2, particleMinVel, particleMaxVel);
     barEmitter2->SetTransform(windowSpaceTransform);
@@ -227,12 +226,6 @@ void Init()
     // for drawing non-particle things
     geometryRenderer = std::make_unique<ShaderControllers::RenderGeometry>();
 
-    //std::vector<PolygonFace> zOrderCurvePolygonFaces;
-    ////zOrderCurvePolygonFaces.clear();
-    //GenerateZOrderCurveGeometry(&zOrderCurvePolygonFaces);
-    //polygonBuffer = std::make_shared<PolygonSsbo>(zOrderCurvePolygonFaces);
-    //polygonBuffer->ConfigureRender(GL_LINES);
-
     // the timer will be used for framerate calculations
     gTimer.Start();
 }
@@ -256,7 +249,7 @@ void UpdateAllTheThings()
 
     particleResetter->ResetParticles(1);
     particleUpdater->Update(deltaTimeSec);
-    particleCollisions->DetectAndResolve(false);
+    particleCollisions->DetectAndResolve(false, false);
     //particleCollisions->DetectAndResolve(false);
 
 

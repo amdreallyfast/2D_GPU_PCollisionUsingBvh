@@ -25,6 +25,13 @@ void main()
     {
         return;
     }
+    else if (AllParticles[threadIndex]._isActive == 0)
+    {
+        MyVertex nullVertex;
+        AllParticleVelocityVectorVertices[(threadIndex * 2)] = nullVertex;
+        AllParticleVelocityVectorVertices[(threadIndex * 2) + 1] = nullVertex;
+        return;
+    }
 
     Particle p = AllParticles[threadIndex];
     MyVertex start;

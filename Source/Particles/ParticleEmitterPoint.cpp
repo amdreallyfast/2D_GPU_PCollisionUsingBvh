@@ -42,8 +42,8 @@ void ParticleEmitterPoint::SetTransform(const glm::mat4 &emitterTransform)
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    A simple getter for the emitter's position.  It is used by ParticlePolygonComputeUpdater.cpp
-    to tell the compute shader where this point emitter's base position is.
+    A simple getter for the emitter's position.  It is used to tell a compute shader controller 
+    where this point emitter's base position is.
 Parameters: None
 Returns:    
     A vec4 that is the emitter's position.

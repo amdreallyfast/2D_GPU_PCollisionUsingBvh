@@ -10,7 +10,6 @@ Creator:    John Cox, 5/2017
 struct ParticleProperties
 {
     float _mass;
-    //float _inverseMass;     // because some collision calculations divide by mass
     float _collisionRadius;
 };
 

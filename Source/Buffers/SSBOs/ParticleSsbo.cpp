@@ -11,101 +11,6 @@
 #include "Include/Buffers/Particle.h"
 
 
-// TODO: remove this
-
-// TODO: header
-// I have the rest of this stuff written down.
-static void GenerateTestParticlesForBvhGeneration(std::vector<Particle> &initThese)
-{
-    initThese.clear();
-
-    // make them active, give them position, but no velocity
-    Particle p;
-    p._isActive = true;
-
-    // P0
-    p._pos = glm::vec4(0.12f, 0.05f, 0.0f, 1.0f);
-    //p._sortingData = 1271858;
-    initThese.push_back(p);
-
-    // P1
-    p._pos = glm::vec4(0.04f, 0.32f, 0.0f, 1.0f);
-    //p._sortingData = 34211986;
-    initThese.push_back(p);
-
-    // P2
-    p._pos = glm::vec4(0.24f, 0.43f, 0.0f, 1.0f);
-    //p._sortingData = 47408388;
-    initThese.push_back(p);
-
-    // P3
-    p._pos = glm::vec4(0.40f, 0.01f, 0.0f, 1.0f);
-    //p._sortingData = 75516948;
-    initThese.push_back(p);
-
-    // P4
-    p._pos = glm::vec4(0.49f, 0.39f, 0.0f, 1.0f);
-    //p._sortingData = 114443670;
-    initThese.push_back(p);
-
-    // P5
-    p._pos = glm::vec4(0.18f, 0.50f, 0.0f, 1.0f);
-    //p._sortingData = 276973568;
-    initThese.push_back(p);
-
-    // P6
-    p._pos = glm::vec4(0.01f, 0.98f, 0.0f, 1.0f);
-    //p._sortingData = 306777138;
-    initThese.push_back(p);
-
-    // P7
-    p._pos = glm::vec4(0.48f, 0.55f, 0.0f, 1.0f);
-    //p._sortingData = 345188406;
-    initThese.push_back(p);
-
-    // P8
-    p._pos = glm::vec4(0.62f, 0.11f, 0.0f, 1.0f);
-    //p._sortingData = 538667040;
-    initThese.push_back(p);
-
-    // P9
-    p._pos = glm::vec4(0.65f, 0.19f, 0.0f, 1.0f);
-    //p._sortingData = 549996564;
-    initThese.push_back(p);
-
-    // P10
-    p._pos = glm::vec4(0.57f, 0.40f, 0.0f, 1.0f);
-    //p._sortingData = 575677734;
-    initThese.push_back(p);
-
-    // P11
-    p._pos = glm::vec4(0.73f, 0.39f, 0.0f, 1.0f);
-    //p._sortingData = 584191158;
-    initThese.push_back(p);
-
-    // P12
-    p._pos = glm::vec4(0.79f, 0.26f, 0.0f, 1.0f);
-    //p._sortingData = 637668368;
-    initThese.push_back(p);
-
-    // P13
-    p._pos = glm::vec4(0.83f, 0.46f, 0.0f, 1.0f);
-    //p._sortingData = 643326102;
-    initThese.push_back(p);
-
-    // P14
-    p._pos = glm::vec4(0.57f, 0.55f, 0.0f, 1.0f);
-    //p._sortingData = 806428982;
-    initThese.push_back(p);
-
-    // P15
-    p._pos = glm::vec4(0.73f, 0.61f, 0.0f, 1.0f);
-    //p._sortingData = 815474724;
-    initThese.push_back(p);
-
-
-}
-
 /*------------------------------------------------------------------------------------------------
 Description:
     Particle resetting on the GPU requires several random numbers.  GLSL doesn't have GPU 
@@ -188,9 +93,6 @@ ParticleSsbo::ParticleSsbo(unsigned int numParticles) :
     std::vector<Particle> v(numParticles);
     InitializeWithRandomData(v);
     InitializeParticleTypes(v);
-
-    //// test buffer
-    //GenerateTestParticlesForBvhGeneration(v);
 
     // each particle is 1 vertex, so for particles, "num vertices" == "num items"
     // Note: This can't be set in the class initializer list.  The class initializer list is for 

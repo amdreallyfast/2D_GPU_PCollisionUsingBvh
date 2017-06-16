@@ -24,11 +24,10 @@ namespace ShaderControllers
     class ParticleCollisions
     {
     public:
-        //??is the particle SSBO really necessary??
         ParticleCollisions(const ParticleSsbo::SharedConstPtr particleSsbo, const ParticlePropertiesSsbo::SharedConstPtr particlePropertiesSsbo);
         ~ParticleCollisions();
 
-        void DetectAndResolve(bool withProfiling) const;
+        void DetectAndResolve(bool withProfiling, bool generateGeometry) const;
         const VertexSsboBase &ParticleVelocityVectorSsbo() const;
         const VertexSsboBase &ParticleBoundingBoxSsbo() const;
 

@@ -44,6 +44,8 @@ struct ParticleProperties
 
     }
 
+    // Note: Do NOT attempt "inverse mass".  
+    // Ex: 1/(0.05 + 0.05) != (1/0.05) + (1/0.05).
     float _mass;
     float _collisionRadius;
 };

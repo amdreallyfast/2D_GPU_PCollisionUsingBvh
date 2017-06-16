@@ -29,6 +29,8 @@ void main()
     }
     else if (AllParticles[threadIndex]._isActive == 0)
     {
+        BoundingBox nullBb;
+        AllParticleBoundingBoxes[threadIndex] = nullBb;
         return;
     }
 

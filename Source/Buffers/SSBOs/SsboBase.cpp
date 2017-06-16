@@ -136,9 +136,11 @@ unsigned int SsboBase::NumVertices() const
 
 /*------------------------------------------------------------------------------------------------
 Description:
-    Define in derived class if the SSBO's data will be used during rendering.  Particle and 
-    polygon SSBOs, for examble, need to override and define this method, while BvhNodeSsbo and 
-    ParticleSortingDataSsbo do not.
+    Define in derived class if the SSBO's data will be used during rendering.  
+    Example: ParticleSsbo and VertexSsboBase.
+    
+    Counter example: BvhNodeSsbo and ParticleSortingDataSsbo do not draw and therefore do not 
+    override this.
 
     Note: This method cannot be const because the the user needs to record the draw style.
 Parameters: None

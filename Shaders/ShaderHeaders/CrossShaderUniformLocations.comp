@@ -38,9 +38,6 @@ Creator:    John Cox, 3/2017
 // GetBitForPrefixScans.comp
 #define UNIFORM_LOCATION_BIT_NUMBER 6
 
-// PolygonBuffer.comp
-#define UNIFORM_LOCATION_POLYGON_BUFFER_SIZE 8
-
 // ParticleUpdate.comp; PositiontoMortonCode.comp
 #define UNIFORM_LOCATION_PARTICLE_REGION_ORIGIN_X 9
 #define UNIFORM_LOCATION_PARTICLE_REGION_ORIGIN_Y 10

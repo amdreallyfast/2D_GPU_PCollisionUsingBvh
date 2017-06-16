@@ -47,9 +47,6 @@
     <ClCompile Include="Source\ShaderControllers\RenderGeometry.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
-    <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp">
-      <Filter>Source\Buffers\SSBOs</Filter>
-    </ClCompile>
     <ClCompile Include="Source\ShaderControllers\ProfilingWaitToFinish.cpp">
       <Filter>Source\ShaderControllers</Filter>
     </ClCompile>
@@ -126,9 +123,6 @@
     </ClInclude>
     <ClInclude Include="Include\ShaderControllers\RenderGeometry.h">
       <Filter>Include\ShaderControllers</Filter>
-    </ClInclude>
-    <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h">
-      <Filter>Include\Buffers\SSBOs</Filter>
     </ClInclude>
     <ClInclude Include="Include\Geometry\MyVertex.h">
       <Filter>Include\Geometry</Filter>
@@ -298,9 +292,6 @@
     </None>
     <None Include="Shaders\ShaderHeaders\Version.comp">
       <Filter>Shaders\ShaderHeaders</Filter>
-    </None>
-    <None Include="Shaders\Compute\PolygonBuffer.comp">
-      <Filter>Shaders\Compute</Filter>
     </None>
     <None Include="Shaders\Compute\ParticleCollisions\Buffers\BvhNodeBuffer.comp">
       <Filter>Shaders\Compute\ParticleCollisions\Buffers</Filter>

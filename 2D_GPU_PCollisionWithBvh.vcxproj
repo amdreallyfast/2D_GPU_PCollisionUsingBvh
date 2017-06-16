@@ -155,7 +155,6 @@
     <ClCompile Include="Source\Buffers\SSBOs\ParticlePropertiesSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSortingDataSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.cpp" />
-    <ClCompile Include="Source\Buffers\SSBOs\PolygonSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\ParticleSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\PrefixSumSsbo.cpp" />
     <ClCompile Include="Source\Buffers\SSBOs\SsboBase.cpp" />
@@ -187,7 +186,6 @@
     <ClInclude Include="Include\Buffers\SSBOs\ParticlePropertiesSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSortingDataSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleVelocityVectorGeometrySsbo.h" />
-    <ClInclude Include="Include\Buffers\SSBOs\PolygonSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\ParticleSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\PrefixSumSsbo.h" />
     <ClInclude Include="Include\Buffers\SSBOs\SsboBase.h" />
@@ -243,7 +241,6 @@
     <None Include="Shaders\Compute\ParticleReset\ParticleResetPointEmitter.comp" />
     <None Include="Shaders\Compute\ParticleReset\Random.comp" />
     <None Include="Shaders\Compute\ParticleUpdate.comp" />
-    <None Include="Shaders\Compute\PolygonBuffer.comp" />
     <None Include="Shaders\Compute\PositionToMortonCode.comp" />
     <None Include="Shaders\Compute\QuickNormalize.comp" />
     <None Include="Shaders\Render\FreeType.frag" />

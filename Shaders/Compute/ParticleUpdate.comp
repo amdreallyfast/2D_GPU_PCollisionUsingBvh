@@ -9,11 +9,7 @@
 // Y and Z work group sizes default to 1
 layout (local_size_x = WORK_GROUP_SIZE_X) in;
 
-
-// unlike SSBOs, atomic counter buffers seem to need a declaration like this and cannot be bound 
-// dynamically as in ParticleSsbo and PolygonSsbo, so declare the atomic counters up front to 
-// make it easier to keep the numbers straight.
-// Note: Discovered by experience and through this: https://www.opengl.org/wiki/Atomic_Counter.
+// Note: Binding must be declared in the shader: https://www.opengl.org/wiki/Atomic_Counter.
 layout (binding = ATOMIC_COUNTER_BUFFER_BINDING, offset = 0) uniform atomic_uint acActiveParticleCounter;
 
 
