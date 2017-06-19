@@ -4,4 +4,4 @@ Description:
     could be deterministic and hopefully the GLSL compiler will unroll the loop.
 Creator:    John Cox, 6/2017
 ------------------------------------------------------------------------------------------------*/
-#define MAX_NUM_POTENTIAL_COLLISIONS 32
+#define MAX_NUM_POTENTIAL_COLLISIONS 8

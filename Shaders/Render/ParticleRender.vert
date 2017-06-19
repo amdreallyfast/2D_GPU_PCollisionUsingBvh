@@ -47,13 +47,17 @@ void main()
         float mid = MAX_NUM_POTENTIAL_COLLISIONS * 0.5f;
         float max = MAX_NUM_POTENTIAL_COLLISIONS;
 
-        if (numNearbyParticles == 0)
+        vec4 lowPressureColor = white;
+        vec4 midPressureColor = blue;
+        vec4 highPressureColor = red;
+
+        //if (numNearbyParticles == 0)
+        //{
+        //    particleColor = white;
+        //}
+        //else
         {
-            particleColor = white;
-        }
-        else
-        {
-            //particleColor  = red;
+//            particleColor  = red;
             float blendValue = float(numNearbyParticles);
             float fractionLowToMid = (blendValue - min) / (mid - min);
             fractionLowToMid = clamp(fractionLowToMid, 0.0f, 1.0f);
@@ -62,15 +66,14 @@ void main()
             fractionMidToHigh = clamp(fractionMidToHigh, 0.0f, 1.0f);
   
             // cast boolean to float (1.0f == true, 0.0f == false)
-            // Note: There are two possible linear blends: blue->green and green->red.  This color 
-            // blending is not like blending three points on a triangle, but it is three points on a 
-            // 1-dimensional number line, so need to differentiate between two linear blends.
+            // Note: There are two possible linear blends: low->mid and mid->high.  This color 
+            // blending is not like blending three points on a triangle.  It is rather a linear 
+            // blend of three points on a 1-dimensional number line, so need to differentiate 
+            // between two linear blends, which is all mix(...) can do.
             float pressureIsLow = float(blendValue < mid);
-            vec4 lowToMidPressureColor = mix(white, green, fractionLowToMid);
-            vec4 midToHighPressureColor = mix(green, red, fractionMidToHigh);
             particleColor = 
-                (pressureIsLow * lowToMidPressureColor) + 
-                ((1 - pressureIsLow) * midToHighPressureColor);
+                (pressureIsLow * mix(lowPressureColor, midPressureColor, fractionLowToMid)) + 
+                ((1 - pressureIsLow) * mix(midPressureColor, highPressureColor, fractionMidToHigh));
         }
 
         // Note: The W position seems to be used as a scaling factor (I must have forgotten this 

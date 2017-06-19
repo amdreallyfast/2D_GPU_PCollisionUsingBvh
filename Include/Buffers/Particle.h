@@ -23,7 +23,11 @@ struct Particle
     Particle() :
         _particleTypeIndex(ParticleProperties::ParticleType::NO_PARTICLE_TYPE),
         _numNearbyParticles(0),
-        _isActive(0)
+        _isActive(0),
+        _extraData1(0.0f),
+        _extraData2(0.0f),
+        _extraData3(0.0f),
+        _extraData4(0)
     {
     }
 
@@ -40,6 +44,11 @@ struct Particle
 
     // if off (0), then it won't be updated
     int _isActive;
+
+    float _extraData1;
+    float _extraData2;
+    float _extraData3;
+    int _extraData4;
 
     // any necessary padding out to 16 bytes to match the GPU's version
     int _padding[1];

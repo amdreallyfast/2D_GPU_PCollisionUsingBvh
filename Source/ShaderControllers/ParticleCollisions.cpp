@@ -1142,32 +1142,40 @@ namespace ShaderControllers
         //memcpy(checkPotentialCollisions.data(), bufferPtr, bufferSizeBytes);
         //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-        //unsigned int startingIndex = 0;
-        //std::vector<Particle> checkPostCollisionParticles(_originalParticleSsbo->NumParticles());
-        //unsigned int bufferSizeBytes = checkPostCollisionParticles.size() * sizeof(Particle);
-        //glBindBuffer(GL_SHADER_STORAGE_BUFFER, _originalParticleSsbo->BufferId());
-        //void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
-        //memcpy(checkPostCollisionParticles.data(), bufferPtr, bufferSizeBytes);
-        //glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+        unsigned int startingIndex = 0;
+        std::vector<Particle> checkPostCollisionParticles(_originalParticleSsbo->NumParticles());
+        unsigned int bufferSizeBytes = checkPostCollisionParticles.size() * sizeof(Particle);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, _originalParticleSsbo->BufferId());
+        void *bufferPtr = glMapBufferRange(GL_SHADER_STORAGE_BUFFER, startingIndex, bufferSizeBytes, GL_MAP_READ_BIT);
+        memcpy(checkPostCollisionParticles.data(), bufferPtr, bufferSizeBytes);
+        glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
 
-        // nothing to verify, so just report the results
-        // Note: Write the results to a tab-delimited text file so that I can dump them into an 
-        // Excel spreadsheet.
-        std::ofstream outFile("DetectAndResolveCollisionsDurations.txt");
-        if (outFile.is_open())
+        for (size_t i = 0; i < checkPostCollisionParticles.size(); i++)
         {
-            long long totalSortingTime = durationDetectCollisions + durationResolveCollisions;
-
-            cout << "total collision handling time: " << totalSortingTime << "\tmicroseconds" << endl;
-            outFile << "total collision handling time: " << totalSortingTime << "\tmicroseconds" << endl;
-
-            cout << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
-            outFile << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
-
-            cout << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
-            outFile << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
+            if (isnan(checkPostCollisionParticles[i]._vel.x))
+            {
+                printf("");
+            }
         }
-        outFile.close();
+
+        //// nothing to verify, so just report the results
+        //// Note: Write the results to a tab-delimited text file so that I can dump them into an 
+        //// Excel spreadsheet.
+        //std::ofstream outFile("DetectAndResolveCollisionsDurations.txt");
+        //if (outFile.is_open())
+        //{
+        //    long long totalSortingTime = durationDetectCollisions + durationResolveCollisions;
+
+        //    cout << "total collision handling time: " << totalSortingTime << "\tmicroseconds" << endl;
+        //    outFile << "total collision handling time: " << totalSortingTime << "\tmicroseconds" << endl;
+
+        //    cout << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
+        //    outFile << "detect collisions: " << durationDetectCollisions << "\tmicroseconds" << endl;
+
+        //    cout << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
+        //    outFile << "resolve collisions: " << durationResolveCollisions << "\tmicroseconds" << endl;
+        //}
+        //outFile.close();
     }
 
     /*--------------------------------------------------------------------------------------------

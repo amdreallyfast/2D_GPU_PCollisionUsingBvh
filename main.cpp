@@ -71,7 +71,7 @@ std::shared_ptr<ShaderControllers::ParticleCollisions> particleCollisions = null
 std::shared_ptr<ShaderControllers::RenderParticles> particleRenderer = nullptr;
 std::shared_ptr<ShaderControllers::RenderGeometry> geometryRenderer = nullptr;
 
-const unsigned int MAX_PARTICLE_COUNT = 1000;
+const unsigned int MAX_PARTICLE_COUNT = 5000;
 
 
 /*------------------------------------------------------------------------------------------------
@@ -247,9 +247,9 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(1);
+    particleResetter->ResetParticles(2);
     particleUpdater->Update(deltaTimeSec);
-    particleCollisions->DetectAndResolve(false, false);
+    particleCollisions->DetectAndResolve(true, false);
     //particleCollisions->DetectAndResolve(false);
 
 
