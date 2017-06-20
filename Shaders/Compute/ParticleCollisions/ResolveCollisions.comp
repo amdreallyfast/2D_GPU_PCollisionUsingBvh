@@ -42,7 +42,6 @@ void main()
     Particle p1 = AllParticles[threadIndex];
     ParticleProperties p1Properties = AllParticleProperties[p1._particleTypeIndex];
 
-    // TODO: ??position backoff (shift to undo bounding box overlap)??
     vec4 p1NetDeltaVelocity = vec4(0.0f, 0.0f, 0.0f, 0.0f);
 
     // make a local copy for easier access
@@ -97,47 +96,23 @@ void main()
         float p1VelOnLineOfContact = dot(p1._vel, normalizedLineOfContact);
         float p2VelOnLineOfContact = dot(p2._vel, normalizedLineOfContact);
 
-
-        AllParticles[threadIndex]._extraData1 = distSqr;
-        AllParticles[threadIndex]._extraData2 = inversesqrt(distSqr);
-        AllParticles[threadIndex]._extraData3 = lineOfContact.x;
-        AllParticles[threadIndex]._extraData4 = p2Index;
-//        if (isnan(normalizedLineOfContact.x))
-//        {
-//            continue;
-//        }
-
-        // Note: This is where the Gamasutra article's pseudocode falls apart in the department of properly descriptive variable names.  It calls "P" the delta magnitude of the momentum, but in solving for "optimized P" it comes up with an equation that has units of vel/mass, which is not momentum.  I don't know what else to call this, so I will call it "fraction".
-        // this is an elastic collision, so the change in P1's momentum is the change in velocity * P2's mass
-        float deltaVelocity = (2.0f * (p2VelOnLineOfContact - p1VelOnLineOfContact));   //??why 2x??
+        // Note: 2x because that is how the derivation worked out.  More details in the 
+        // Gamasutra article.
+        // Also Note: This is where the Gamasutra article's pseudocode falls apart in the 
+        // department of properly descriptive variable names.  It calls "P" the delta magnitude 
+        // of the momentum, but in solving for "optimized P" it comes up with a result that has 
+        // units of vel/mass, which is not momentum.  I don't know what else to call this, so I 
+        // will call it "fraction".
+        float deltaVelocity = (2.0f * (p2VelOnLineOfContact - p1VelOnLineOfContact));
         float totalMass = p1Properties._mass + p2Properties._mass;
         float fraction = deltaVelocity / totalMass;
         
         p1NetDeltaVelocity += fraction * p2Properties._mass * normalizedLineOfContact;
 
-//        // ??why do we need to divide by the 
-//
-//        // Note: Delta velocity vector:
-//        // - The total delta velocity vector between the two particles is 
-//        //  2 * (difference in velocities along line of contact) (??why 2x? why not just the difference??).  
-//        // - The total delta momentum takes this delta velocity and divides it by the total mass 
-//        //  of the two particles.  
-//        // - The velocity change for P1 will be the total momentum change (remember that 
-//        //  momentum is vel/mass) multiplied by P1's mass.
-//        float deltaVelocity = (2.0f * (p2VelOnLineOfContact - p1VelOnLineOfContact));
-//        float totalMass = 1.0f / (p1Properties._mass + p2Properties._mass);
-//        float deltaVelocityForP1 = 
-//        float massFraction = (p2Properties._mass / );
-//
-//        float deltaVelocityForP1 = massFraction * (2.0f * (p2VelOnLineOfContact - p1VelOnLineOfContact));
-//        
-//        p1NetDeltaVelocity += (deltaVelocityForP1 * normalizedLineOfContact);
-        
         // only do 1 collision right now
-        //break;
+        break;
     }
 
     AllParticles[threadIndex]._vel += p1NetDeltaVelocity;
-    //AllParticles[threadIndex]._numNearbyParticles = actualCollisionCount;
     AllParticles[threadIndex]._numNearbyParticles = collisionCandidates._numPotentialCollisions;
 }

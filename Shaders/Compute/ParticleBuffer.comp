@@ -16,11 +16,6 @@ struct Particle
     int _numNearbyParticles;
     int _isActive;
 
-    float _extraData1;
-    float _extraData2;
-    float _extraData3;
-    int _extraData4;
-
     // vec4s are 16 bytes, +3x 4-byte items, so needs 1 byte padding on the CPU side
 };
 

@@ -94,7 +94,7 @@ void GenerateParticleEmitters()
     windowSpaceTransform *= glm::translate(glm::mat4(), glm::vec3(0.0f, 0.0f, 0.0f));
 
     float particleMinVel = 0.1f;
-    float particleMaxVel = 1.0f;
+    float particleMaxVel = 0.8f;
 
     //// bar on the left and emitting up and right
     //glm::vec2 bar1P1(-0.8f, -0.8f);
@@ -247,10 +247,9 @@ void UpdateAllTheThings()
     // just hard-code it for this demo
     float deltaTimeSec = 0.01f;
 
-    particleResetter->ResetParticles(2);
+    particleResetter->ResetParticles(4);
     particleUpdater->Update(deltaTimeSec);
-    particleCollisions->DetectAndResolve(true, false);
-    //particleCollisions->DetectAndResolve(false);
+    particleCollisions->DetectAndResolve(false, false);
 
 
     ShaderControllers::WaitOnQueuedSynchronization();
