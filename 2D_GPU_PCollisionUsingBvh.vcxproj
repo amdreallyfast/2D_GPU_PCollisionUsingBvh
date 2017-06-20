@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{612CB533-6A7D-4936-B6E9-9646D44C868D}</ProjectGuid>
     <Keyword>Win32Proj</Keyword>
-    <RootNamespace>2D_GPU_PCollisionWithGeometry
+    <RootNamespace>2D_GPU_PCollisionUsingBvh
     </RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
